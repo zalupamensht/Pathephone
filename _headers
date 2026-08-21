@@ -1,0 +1,11 @@
+# Les pistes et images ne changent jamais sous le meme nom : on les garde un an
+# en cache, la deuxieme visite est instantanee malgre les 38 Mo d audio.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# La page, elle, doit toujours etre relue : sinon une mise a jour ne se voit pas.
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/style.css
+  Cache-Control: public, max-age=0, must-revalidate

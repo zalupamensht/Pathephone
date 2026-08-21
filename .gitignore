@@ -1,0 +1,14 @@
+# images de travail : elles ne font pas partie du site
+*.jpg
+*.jfif
+!assets/*.jpg
+знак альбома 2.png
+_dist.html
+_build.py
+*.zip
+
+# fichiers d assets non utilises par la page
+assets/logo_ink.png
+assets/t1.jpg
+assets/t2.jpg
+assets/t3.jpg

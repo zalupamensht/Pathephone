@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Unmisque — Lucy Bedroque</title>
+<meta name="description" content="Unmisque — album by Lucy Bedroque. Listen with synced lyrics.">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<meta name="theme-color" content="#faf9f7">
+<!-- apercu quand le lien est partage -->
+<meta property="og:title" content="Unmisque — Lucy Bedroque">
+<meta property="og:description" content="Album by Lucy Bedroque. Listen with synced lyrics.">
+<meta property="og:image" content="assets/cover.jpg">
+<meta property="og:type" content="music.album">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg">
+  <span class="blob b1"></span>
+  <span class="blob b2"></span>
+  <span class="blob b3"></span>
+  <span class="glow"></span>
+</div>
+
+<div class="veil"></div>
+
+<div class="fit" id="fit">
+<div class="stage" id="stageBox">
+
+  <img class="intro-logo" src="assets/logo_light.png" alt="">
+
+  <div class="dock">
+    <div class="dock-win">
+      <div class="dock-rail" id="dockRail"></div>
+    </div>
+  </div>
+
+  <div class="sleeve-slot">
+    <img class="sleeve" src="assets/cover.jpg" alt="">
+  </div>
+
+  <div class="deck">
+    <div class="deck-plinth"></div>
+    <div class="deck-face"></div>
+
+    <div class="platter">
+      <div class="platter-mat"></div>
+      <div class="disc-fly" id="discFly">
+        <div class="disc-spin" id="discSpin">
+          <img class="disc" src="assets/disc.png" alt="">
+        </div>
+      </div>
+      <span class="spindle"></span>
+    </div>
+
+    <div class="arm" id="arm">
+      <span class="arm-tube"></span>
+      <span class="arm-head"></span>
+      <span class="arm-pivot"></span>
+    </div>
+
+    <span class="deck-knob k1"></span>
+    <span class="deck-knob k2"></span>
+  </div>
+
+  <svg class="swoosh" viewBox="0 0 520 420" fill="none" aria-hidden="true">
+    <path d="M40 400 C 40 210, 150 40, 380 20" stroke="rgba(20,18,15,.07)" stroke-width="1.6"/>
+    <path d="M72 402 C 74 226, 178 62, 400 44" stroke="rgba(20,18,15,.05)" stroke-width="1"/>
+    <path d="M8 396 C 6 196, 122 18, 356 -4" stroke="rgba(20,18,15,.04)" stroke-width="2.4"/>
+  </svg>
+
+  <div class="lyrics" id="lyrics">
+    <div class="lyr-depth">
+      <div class="lyr-track" id="lyrTrack"></div>
+    </div>
+    <svg class="lyr-note" viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M18 33.5V13.6l18-3.6v17.2" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="13.5" cy="34" r="5" fill="currentColor"/>
+      <circle cx="31.5" cy="30.8" r="5" fill="currentColor"/>
+    </svg>
+  </div>
+
+  <div class="controls">
+    <button class="sound" id="sound" type="button" aria-label="Play / pause">
+      <span class="ico-pause"><i></i><i></i></span>
+      <span class="ico-play"></span>
+    </button>
+    <label class="vol" aria-label="Volume">
+      <input id="vol" type="range" min="0" max="100" value="85">
+    </label>
+  </div>
+
+</div>
+</div>
+
+<audio id="theme" src="assets/track1.mp3?v=2" loop preload="auto"></audio>
+
+<div class="halftone"></div>
+<div class="scan"></div>
+<div class="noise"></div>
+<div class="vignette"></div>
+
+<script>
+/* pistes qui ont un fichier audio : cliquer sur une autre icone du dock change
+   de piste ; les autres numeros du menage restent muets pour le moment */
+/* le ?v= force le navigateur a relire le fichier : sans lui il ressert
+   l ancienne version gardee en cache, et on entend la mauvaise piste */
+var AV = '?v=2';
+var TRACK_AUDIO = {
+  0: 'assets/track0.mp3' + AV,  1: 'assets/track1.mp3' + AV,  2: 'assets/track2.mp3' + AV,
+  3: 'assets/track3.mp3' + AV,  4: 'assets/track4.mp3' + AV,  5: 'assets/track5.mp3' + AV,
+  6: 'assets/track6.mp3' + AV,  7: 'assets/track7.mp3' + AV,  8: 'assets/track8.mp3' + AV,
+  9: 'assets/track9.mp3' + AV,  10: 'assets/track10.mp3' + AV, 11: 'assets/track11.mp3' + AV,
+  12: 'assets/track12.mp3' + AV, 13: 'assets/track13.mp3' + AV, 14: 'assets/track14.mp3' + AV,
+  15: 'assets/track15.mp3' + AV, 16: 'assets/track16.mp3' + AV
+};
+
+/* battements par minute de chaque piste : anime le petit rond de musique
+   sur son propre tempo pendant les instrumentaux */
+var TRACK_BPM = {
+  1: 94, 2: 82, 3: 136, 4: 139, 5: 82, 6: 77, 7: 76, 8: 81, 9: 150,
+  10: 82, 11: 136, 12: 101, 13: 136, 14: 153, 15: 95, 16: 120
+};
+
+/* Version telephone : meme fonctions, mise en page simple et legere.
+   Le seuil est le meme que dans la feuille de style, sinon les deux
+   se contrediraient. */
+var MOBILE = window.matchMedia('(max-width: 820px)').matches;
+if (MOBILE) document.body.classList.add('is-mobile');
+
+/* ---------------- toute la scene tient dans la fenetre ---------------- */
+(function(){
+  if (MOBILE) return;              // sur telephone la page coule toute seule
+
+  var W = 1440, H = 900;
+  var fit  = document.getElementById('fit');
+  var box  = document.getElementById('stageBox');
+
+  function apply(){
+    var k = Math.min(1, (window.innerHeight - 28) / H, (window.innerWidth - 28) / W);
+    k = Math.max(.4, k);
+    box.style.transform = 'scale(' + k + ')';
+    fit.style.height = (H * k) + 'px';
+    fit.style.width  = (W * k) + 'px';
+    document.documentElement.style.setProperty('--fit', k);
+  }
+
+  apply();
+  window.addEventListener('resize', apply);
+})();
+
+/* ---------------- pistes : defilement libre + loupe facon dock ---------------- */
+(function(){
+  var TRACKS = [
+    "Speakers Never Learn","G6 Anthem","Ultraviolet","2010 Justin Bieber","Smackdown",
+    "Fenty Face","Made In Italy","Tout Naturel","Finish Him","Ouija","I Am Impossible",
+    "Cara Mia","Ignorant","One Of Us Is Lying","Unmusique","Cat's Eye","Yes, You May"
+  ];
+
+  var STEP   = 206;      // ecart entre deux pistes, mesure le long de l arc
+  var RADIUS = 560;      // rayon du manege : plus il est petit, plus ca tourne
+  var FADE   = 270;      // debut du fondu, en distance d arc
+  var GONE   = 545;      // au dela, la piste a disparu dans le fond
+  var SIGMA  = 152;      // largeur de la loupe
+  var MAXMAG = .26;      // grossissement maximum sous le curseur
+  var SPREAD = 26;       // ecartement des voisines
+  var SENS   = .17;      // sensibilite de la molette
+
+  var dock = document.querySelector('.dock');
+  var win  = document.querySelector('.dock-win');
+  var rail = document.getElementById('dockRail');
+
+  var items = TRACKS.map(function(name, i){
+    var el = document.createElement('div');
+    el.className = 'trk';
+    el.innerHTML =
+      '<button type="button" class="bub" tabindex="-1" aria-label="Track ' + (i+1) + ' - ' + name + '">' +
+        '<span class="bub-glass"></span>' +
+        '<img class="bub-art" src="assets/emblem.png" alt="">' +
+        '<em class="bub-num">' + (i < 9 ? '0' : '') + (i+1) + '</em>' +
+      '</button>' +
+      '<span class="trk-name">' + name + '</span>';
+    rail.appendChild(el);
+
+    el.querySelector('.bub').addEventListener('click', function(){
+      if (!TRACK_AUDIO[i] || !window.__playTrack) return;
+      window.__playTrack(i);
+      items.forEach(function(o, j){ o.classList.toggle('is-current', j === i); });
+    });
+
+    return el;
+  });
+  if (items[1]) items[1].classList.add('is-current');   // G6 Anthem joue par defaut
+
+  var N     = items.length;
+  var TOTAL = N * STEP;
+  var pos   = 0;         // decalage courant, en pixels
+  var vel   = 0;         // vitesse restante apres le geste
+  var hover  = null;     // position visee du curseur dans le cadre, ou null
+  var hx     = 0;        // position lissee : la loupe rattrape la souris
+  var hAmt   = 0;        // force de la loupe : monte a l entree, retombe a la sortie
+  var idle   = 0;
+
+  function wrap(v){
+    v = (v + TOTAL / 2) % TOTAL;
+    if (v < 0) v += TOTAL;
+    return v - TOTAL / 2;
+  }
+
+  function render(){
+    var half = win.clientWidth / 2;
+
+    for (var i = 0; i < N; i++){
+      var arc = wrap(i * STEP - pos);        // distance le long du manege
+      var d   = Math.abs(arc);
+
+      /* le ruban est enroule sur un cylindre : les pistes s eloignent en
+         tournant vers le fond au lieu de filer tout droit sur les cotes */
+      var th = Math.max(-1.35, Math.min(1.35, arc / RADIUS));
+      var X  = RADIUS * Math.sin(th);
+      var Z  = RADIUS * (Math.cos(th) - 1);
+      var Y  = 54 * (1 - Math.cos(th));      // le ruban descend en s eloignant : on suit le cercle
+      var rotY = -th * 52;                   // les icones se tournent en partant
+
+      var mag = 0, push = 0;
+      if (hAmt > 0.002){
+        var dc = (X + half) - hx;
+        var g  = Math.exp(-(dc * dc) / (SIGMA * SIGMA)) * hAmt;
+        mag  = MAXMAG * g;
+        push = SPREAD * (dc / SIGMA) * g;
+      }
+
+      var edge = d < FADE ? 1 : Math.max(0, 1 - (d - FADE) / (GONE - FADE));
+      var soft = edge * edge * (3 - 2 * edge);
+
+      var el = items[i];
+      if (soft <= 0.002){
+        el.style.opacity = '0';
+        el.style.pointerEvents = 'none';
+        continue;
+      }
+
+      var depth = Math.min(1, -Z / (RADIUS * 1.1));      // 0 devant, 1 au fond
+      el.style.opacity = (soft * (1 - .78 * depth)).toFixed(3);   // le fond s efface davantage
+      el.style.pointerEvents = soft > .1 ? 'auto' : 'none';   // cliquable des qu on la voit, pas seulement au centre
+      el.style.filter =
+        'brightness(' + (1 - .34 * depth).toFixed(3) + ') ' +
+        'blur(' + (depth * 5.2).toFixed(2) + 'px)';
+      el.style.transform =
+        'translate3d(' + (X + half - 75 + push).toFixed(1) + 'px,' +
+                         (Y - mag * 18).toFixed(1) + 'px,' + Z.toFixed(1) + 'px) ' +
+        'rotateY(' + rotY.toFixed(2) + 'deg) ' +
+        'scale(' + (1 + mag).toFixed(3) + ')';
+      el.style.zIndex = String(200 + Math.round(Z) + Math.round(mag * 100));
+    }
+  }
+
+  function step(){
+    /* la loupe se deplace et s allume progressivement : c est ce qui donne
+       le moelleux du dock, un saut direct sur la position souris est sec */
+    if (hover !== null){
+      if (hAmt < 0.002) hx = hover;        // premiere entree : on se cale sans glisser
+      hx   += (hover - hx) * 0.12;
+      hAmt += (1 - hAmt) * 0.055;   // montee lente : meme la premiere fois, ca ne claque pas
+    } else {
+      hAmt += (0 - hAmt) * 0.07;
+    }
+
+    if (Math.abs(vel) > 0.02){
+      pos += vel;
+      vel *= 0.945;                          // glisse plus longtemps, s arrete plus doucement
+      idle = 0;
+    } else {
+      vel = 0;
+      idle++;
+      if (idle > 12){                        // au repos, on se recale doucement sur une piste
+        var target = Math.round(pos / STEP) * STEP;
+        var diff = target - pos;
+        if (Math.abs(diff) > 0.3) pos += diff * 0.075;
+        else pos = target;
+      }
+    }
+    // on garde le decalage dans une plage raisonnable : la liste boucle de toute facon
+    if (pos >  TOTAL) pos -= TOTAL;
+    if (pos < -TOTAL) pos += TOTAL;
+
+    render();
+  }
+
+  function frame(){ step(); requestAnimationFrame(frame); }
+
+  win.addEventListener('wheel', function(e){
+    var d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    e.preventDefault();
+    vel += d * SENS;                          // defilement libre, pas cran par cran
+    vel = Math.max(-26, Math.min(26, vel));
+    idle = 0;
+  }, {passive:false});
+
+  win.addEventListener('mousemove', function(e){
+    var r = win.getBoundingClientRect();
+    var k = r.width / win.clientWidth || 1;      // la scene est mise a l echelle
+    hover = (e.clientX - r.left) / k;
+  });
+  win.addEventListener('mouseleave', function(){ hover = null; });
+  window.addEventListener('blur', function(){ hover = null; });
+
+  window.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight') vel += 14;
+    if (e.key === 'ArrowLeft')  vel -= 14;
+  });
+
+  window.addEventListener('resize', render);
+
+  window.__dockRender = render;
+  window.__dockStep = step;
+  window.__dockState = function(){ return {pos:pos, vel:vel, hover:hover}; };
+  window.__dockPush  = function(d){ vel += d; };
+
+  /* sur telephone la rangee est une simple bande qui glisse au doigt :
+     pas de manege en 3D, pas de boucle d animation, rien a calculer */
+  if (MOBILE){
+    var cur = items[1];
+    if (cur && cur.scrollIntoView) cur.scrollIntoView({inline:'center', block:'nearest'});
+    return;
+  }
+
+  render();
+  requestAnimationFrame(frame);
+})();
+
+
+/* ---------------- paroles synchronisees, facon Apple Music ---------------- */
+(function(){
+  var LYRICS_BY_TRACK = {};
+
+  LYRICS_BY_TRACK[0] = [
+    { t: 12.92,  text: "Strike down, I'ma come back in better armor" },
+    { t: 16.21,  text: "I break the sound, speakers never learn" },
+    { t: 18.72,  text: "Baby, are you ready for the evening? Yeah" },
+    { t: 21.32,  text: "The night's young, I turn to a demon, yeah, yeah" },
+    { t: 24.41,  text: "Strike down, I'ma come back in better armor" },
+    { t: 28.41,  text: "I break the sound, speakers never learn" },
+    { t: 30.76,  text: "Baby, are you ready for the evening? Yeah" },
+    { t: 33.76,  text: "The night's young, I turn to a demon, yeah" },
+    { t: 36.92,  text: "I took her to Williams Sonoma, oh yeah" },
+    { t: 40.20,  text: "Yeah, I'm baked, yay, what it do?" },
+    { t: 43.36,  text: "I pull up to Philly, yeah, for the bros, uh" },
+    { t: 46.45,  text: "Oh yeah, took my foot off the breaks, I'ma zoom" },
+    { t: 49.86,  text: "Legs hurting ya, you on my tip, get off" },
+    { t: 52.86,  text: "You was there too long, your prints is on the floor" },
+    { t: 55.61,  text: "Had to quit dirtying my cup, was going sloth" },
+    { t: 58.86,  text: "Niggas pocket watching, I cannot slow" },
+    { t: 62.21,  text: "(I never lie, I never lie)" },
+    { t: 65.22,  text: "(But, girl, you shouldn't trust me)" },
+    { t: 67.98,  text: "(And that was true, but so much changed)" },
+    { t: 74.43,  text: "Strike down, I'ma come back in better armor" },
+    { t: 77.53,  text: "I break the sound, speakers never learn" },
+    { t: 80.22,  text: "Baby, are you ready for the evening? Yeah" },
+    { t: 82.94,  text: "The night's young, I turn to a demon, yeah, yeah" },
+    { t: 85.98,  text: "Strike down, I'ma come back in better armor" },
+    { t: 89.82,  text: "I break the sound, speakers never learn" },
+    { t: 92.54,  text: "Baby, are you ready for the evening? Yeah" },
+    { t: 95.21,  text: "The night's young (I turn to a demon)" },
+    { t: 98.29,  music: true },
+    { t: 108.29, text: "(I turn to a demon, you)" },
+    { t: 110.65, music: true },
+    { t: 120.57, text: "(I turn to a demon, you)" },
+    { t: 122.90, music: true }
+  ];
+
+  LYRICS_BY_TRACK[1] = [
+    { t: 0.32, text: "If looks could kill, I'm the most wanted terrorist, yeah" },
+    { t: 5.45, text: "She's just as real as it gets, or it's the insomnia" },
+    { t: 10.83, text: "Benji bills, lined up so good, baby, got chills" },
+    { t: 15.67, text: "Girl, I can tell you're excited, it's so obvious" },
+    { t: 20.81, text: "Keep it concealed, you'll never know how" },
+    { t: 25.85, text: "You want to feel, but you backed out, you can't win" },
+    { t: 30.69, text: "G6, girl, it's just you and I (Keep it concealed, you'll never know how)" },
+    { t: 35.74, text: "G6, let's have some fun tonight (You want to feel, but you backed out, you cannot win)" },
+    { t: 41.29, text: "I'm in the champagne you're spraying" },
+    { t: 43.85, text: "Gon' have you done tonight" },
+    { t: 46.67, text: "I ain't with the games you playing" },
+    { t: 48.72, text: "Shawty want someone tonight" },
+    { t: 51.48, text: "Fancy, irresistible" },
+    { t: 53.98, text: "Dance, yeah, unreachable" },
+    { t: 56.49, text: "Arrogant, egotistical" },
+    { t: 59.02, text: "I'm insane, not fixable" },
+    { t: 61.61, text: "And a little bit cynical" },
+    { t: 64.23, text: "In this race, you can't win control" },
+    { t: 66.79, text: "I ain't nothing like you niggas, oh" },
+    { t: 69.37, text: "Bitch, I'm jumping out the fish bowl" },
+    { t: 71.93, text: "I don't know who you think I am, boy" },
+    { t: 74.53, text: "But the shits ain't true" },
+    { t: 76.46, text: "T-shirt in the cold, I don't give a damn, boy" },
+    { t: 79.50, text: "I still pop out with the boots, yeah" },
+    { t: 82.01, text: "Baby, tell me what you feeling now" },
+    { t: 84.05, text: "'Cause you coming onto me like it's urgent, yeah" },
+    { t: 87.10, text: "Uh, hella lax, how I'm feeling now" },
+    { t: 89.14, text: "Tryna roll a good tree with some bourbon, yeah" },
+    { t: 92.32, text: "G6, poppin' that, uh, poppin' that" },
+    { t: 94.67, text: "How do you do that shit?" },
+    { t: 97.31, text: "Tell me you love it, girl, say that shit" },
+    { t: 99.64, text: "Tell me you love, tell me you love (G6)" },
+    { t: 102.62, text: "G6, poppin' that, uh, poppin' that" },
+    { t: 105.24, text: "How do you do that shit?" },
+    { t: 107.41, text: "Tell me you love it, girl, say that shit" },
+    { t: 109.74, text: "Tell me you love, tell me you love, uh, uh" },
+    { t: 113.67, text: "[02:13.39] If looks could kill, I'm the most wanted terrorist, yeah" },
+    { t: 138.41, text: "She's just as real as it gets, or it's the insomnia" },
+    { t: 143.89, text: "Benji bills, lined up so good, baby, got chills" },
+    { t: 148.58, text: "Girl, I can tell you're excited, it's so obvious" },
+    { t: 153.85, text: "Keep it concealed, you'll never know how" },
+    { t: 158.84, text: "You want to feel, but you backed out, you can't win" },
+    { t: 163.69, text: "G6, girl, it's just you and I (Keep it concealed, you'll never know how)" },
+    { t: 168.64, text: "G6, let's have some fun tonight (You want to feel, but you backed out, you cannot win)" },
+    { t: 174.22, text: "I'm in the champagne you're spraying" },
+    { t: 176.70, text: "Gon' have you done tonight" },
+    { t: 179.65, text: "I ain't with the games you playing" },
+    { t: 181.73, text: "Shawty want someone tonight" },
+    { t: 184.03, text: "94" },
+  ];
+
+  LYRICS_BY_TRACK[2] = [
+    { t: 20.35, text: "(You're now tuned into 9lives Radio)" },
+    { t: 23.23, text: "(Lumina)" },
+    { t: 23.91, text: "Crack pipe, if you think she love you, boy" },
+    { t: 26.63, text: "Hittin' crack talk, up your moves, I'll buss you, boy" },
+    { t: 29.50, text: "Even if you bring that pipe, you not untouchable" },
+    { t: 32.18, text: "Even if you think you're weaponed, not gon' trust you, no" },
+    { t: 35.46, text: "Hittin' crack pipe if you think that, better not go out" },
+    { t: 38.45, text: "That right, bitch, I got the speakers blow out" },
+    { t: 41.21, text: "I came in like [?], yeah" },
+    { t: 43.85, text: "I don't like the stage and don't like cameras in my face, yeah" },
+    { t: 46.21, text: "Hit that— hit that— hit that moonwalk from that bitch" },
+    { t: 48.19, text: "I told her ass, \"Beat it now\"" },
+    { t: 50.36, text: "I knew I was gonna shake the game since I was teethin', oh" },
+    { t: 52.98, text: "They ain't believe the kid, them niggas some heathens, oh" },
+    { t: 55.85, text: "I'm gon' have to drive me, my boy turned to speedin' now" },
+    { t: 59.29, text: "I roll up this 'Wood, give this bitch the sake, oh" },
+    { t: 61.73, text: "Huh, I go \"Brr\" in that Kawasaki, oh" },
+    { t: 64.66, text: "Give her Naruto, turn that bitch right into Sasuke" },
+    { t: 67.76, text: "Grab my phone, like best believe I'm blocking, shush" },
+    { t: 70.11, text: "This a three-man, this is ROYGBIV, huh, shit" },
+    { t: 73.15, text: "What's up, pretti? Man, all these girls want you" },
+    { t: 75.66, text: "I'm with pretti, yeah, oh" },
+    { t: 78.33, text: "We make this shit pop out, then she need [?], oh" },
+    { t: 80.89, text: "Uh-huh, I see it all" },
+    { t: 82.75, text: "Hittin' on these hoes, I get 'em in" },
+    { t: 85.70, text: "Dropped a bag at the mall, it was me and twin" },
+    { t: 88.03, text: "Niggas hate the real, then shout and call [?] at the end" },
+    { t: 91.14, text: "I would never fake, pussy boy, I'm not him" },
+    { t: 94.28, text: "Bands even though we dead, boxin'" },
+    { t: 96.76, text: "Still the old me, bitch it's Mr. Ten Figs" },
+    { t: 99.84, text: "Still love my ex-bitch, I can never hit-and-quit" },
+    { t: 102.73, text: "New York, I was fucked up, outside hittin' six" },
+    { t: 105.88, text: "Huh, sticked up, huh, it's a stick" },
+    { t: 108.66, text: "Pussy too wet, had to get her out my pants" },
+    { t: 111.76, text: "\"pretti, what you call that?\" Yeah, my money dance" },
+    { t: 114.48, text: "Niggas better fall back, thought I'd steal my [?]" },
+    { t: 117.43, text: "Seein' red, I'm a rock star" },
+    { t: 120.51, text: "Fuck what they said" },
+    { t: 121.71, text: "That nigga literally got no bars, but he talk shit" },
+    { t: 124.34, text: "I'm never alone" },
+    { t: 126.06, text: "We outside on the mob shit, need a girl and that's it" },
+    { t: 129.42, text: "Ha, uh, ha, ha, ha" },
+    { t: 131.72, text: "Ha, ha, ha" },
+    { t: 132.63, text: "Money counter go deep" },
+    { t: 134.61, text: "Hit a bong and a blunt, got high like nosebleed" },
+    { t: 137.18, text: "This beat so dank, put this shit on LiveLeak" },
+    { t: 140.12, text: "Had a label comin' out a Benz, tryna sign me" },
+    { t: 142.93, text: "I rock two of everything, closet Siamese" },
+    { t: 146.14, text: "I don't know the size of my jeans, this shit in Chinese" },
+    { t: 149.08, text: "Just hot-boxed three blunts, I know I reek" },
+    { t: 152.56, text: "Crack pipe, if you think she love you, boy" },
+    { t: 155.40, text: "Hittin' crack talk, up your moves, I'll buss you, boy" },
+    { t: 158.15, text: "Even if you bring that pipe, you not untouchable" },
+    { t: 161.10, text: "Even if you think you're weaponed, not gon' trust you, no" },
+    { t: 164.08, text: "82" },
+  ];
+
+  LYRICS_BY_TRACK[3] = [
+    { t: 0.07, text: "Schyeah, uh, uh-oh, ay" },
+    { t: 2.51, text: "No, it ain't been easy now" },
+    { t: 4.27, text: "All these bitches, they want me, schyeah" },
+    { t: 6.18, text: "Not then, don't need me now" },
+    { t: 7.79, text: "I don't wanna see your ass next year" },
+    { t: 9.67, text: "Don't know why she fiendin' now" },
+    { t: 11.30, text: "See right through ya, it's clear" },
+    { t: 13.13, text: "See right through ya, ha, damn" },
+    { t: 14.81, text: "You can run, but you can't hide" },
+    { t: 16.51, text: "Girl, wouldn't wanna be ya, like, damn" },
+    { t: 18.38, text: "Kicked her ass out the damn ride" },
+    { t: 19.90, text: "Huh, like, mama mia, like, damn" },
+    { t: 21.85, text: "Kitchen with the damn pies" },
+    { t: 23.45, text: "Niggas 25 with personas" },
+    { t: 24.95, text: "Somethin' called a job, you ain't no vampire" },
+    { t: 26.65, text: "Got the zip on my lap, I'm a stoner" },
+    { t: 28.48, text: "Hit the plug up, meet me 'round the corner, oh, schyeah, uh, damn" },
+    { t: 31.92, text: "In the summer, like my matcha colder, huh, yeah, yeah, ooh" },
+    { t: 35.32, text: "Nigga talk crazy, turn that boy to a donor, huh, huh, oh, schyeah" },
+    { t: 38.63, text: "Make her come to this side, turn that boy to a loner" },
+    { t: 40.68, text: "Blond boy, T14 toner" },
+    { t: 42.43, text: "Got S-tier scents, that boy got F-tier stench" },
+    { t: 45.80, text: "And I hit up a sexy bitch, wanna lay up with a sexy man" },
+    { t: 49.22, text: "Put her in the back seat, move quick" },
+    { t: 51.03, text: "Baby gon' neck me, start the whip" },
+    { t: 52.78, text: "Then she gon' beg me, pop my shit" },
+    { t: 54.67, text: "Then she gon' sex me again" },
+    { t: 56.45, text: "2025 (ooh), I'm goin' 2010 Bieber" },
+    { t: 58.79, text: "Making Unmusique for the people" },
+    { t: 60.43, text: "They wan' hate all on the kid 'cause they sheep, uh" },
+    { t: 62.37, text: "They wan' hate 'cause they know they can't keep up" },
+    { t: 64.06, text: "Good dick gon' turn her to a sleeper" },
+    { t: 65.76, text: "Your girl tellin' me she wan' meet up" },
+    { t: 67.43, text: "She lied to you, but you wanna believe her" },
+    { t: 69.35, text: "Ha, she chasing me like she catching a bus" },
+    { t: 71.14, text: "Look at my wrist now, that shit buss" },
+    { t: 72.90, text: "I got the pizza with the big crust" },
+    { t: 74.66, text: "I'm 'bout to beat her shit like, uh (uh)" },
+    { t: 76.47, text: "Oh, yeah, take me out the rut" },
+    { t: 78.11, text: "Oh, schyeah, this shit get cold" },
+    { t: 80.08, text: "Up that shit, gotta wear my guts" },
+    { t: 81.85, text: "She despise me, hate my guts, uh" },
+    { t: 83.71, text: "I ju-, I just freestyle, yeah, don't give no fucks" },
+    { t: 86.43, text: "I'm having fun, don't give no fucks" },
+    { t: 88.31, text: "She got the bunda, yeah, big butt" },
+    { t: 89.97, text: "I put the uncle in my cup" },
+    { t: 91.79, text: "I let the drum roll play, yeah, I let the sun fall, schyeah" },
+    { t: 94.39, text: "Huh, schyeah, and somehow it's my fault, schyeah" },
+    { t: 96.49, text: "Bitch, look at yourself in the mirror" },
+    { t: 98.22, text: "136" },
+  ];
+
+  LYRICS_BY_TRACK[4] = [
+    { t: 5.90, text: "Oh yeah, oh" },
+    { t: 8.07, text: "I'ma make the pussy ring out, it's Friday Night Smackdown" },
+    { t: 11.10, text: "Jump off the ropes, Swanton Bomb, yeah, it's Monday Night Raw" },
+    { t: 14.55, text: "Bitch asked what's the move, yeah" },
+    { t: 15.89, text: "Told them boys, \"Just pull up to stu',\" yeah" },
+    { t: 17.66, text: "I'm on a boat with the crew, yeah" },
+    { t: 19.26, text: "Bands stretch all the way to All Blue, yeah" },
+    { t: 21.09, text: "I'm going manic, switch moods, yeah" },
+    { t: 22.73, text: "Splash on these boys, I'm Chris Smoove, yeah" },
+    { t: 24.53, text: "I'ma get the crowd good for the new year" },
+    { t: 26.33, text: "Huh, yeah" },
+    { t: 27.93, text: "Would've thought I'm Frieza, I'm with my brother, he Cooler" },
+    { t: 31.34, text: "I'ma piece that boy with no stick, do him like King Cold, yeah" },
+    { t: 34.86, text: "I'ma dive in a super soaker, bring Trunks to the pool, yeah" },
+    { t: 38.25, text: "I'm a god in that pool or poker, boy, I'm the real ruler" },
+    { t: 42.30, text: "I'ma go Kung Fu Kenny, I bring that Sweet Chin music" },
+    { t: 45.45, text: "Said he got girls on girls, but they all really just using" },
+    { t: 49.22, text: "That's racks I been got, show your ass the countdown" },
+    { t: 52.97, text: "I'ma make the pussy ring out, it's Friday Night Smackdown" },
+    { t: 55.98, text: "She wan' fuck me, but she got Catholic guilt" },
+    { t: 59.37, text: "I'm gon' hollow truck it, put that shit on the rail" },
+    { t: 62.82, text: "Do 'em like Aaron Kyro, that boy gon' need some braille" },
+    { t: 66.10, text: "Y'all oldheads need to retire, I'm taking my fucking grail" },
+    { t: 69.93, text: "When I come inside, straight steppin'" },
+    { t: 73.02, text: "When you inside the ring, there's no runnin'" },
+    { t: 76.18, text: "Make plays, I'm in the booth, make a way" },
+    { t: 79.61, text: "Down bad in my old days, yeah, my clouds were gray" },
+    { t: 83.78, text: "I'm goin', yeah, I'm goin' Stone Temple Pilots" },
+    { t: 86.82, text: "Think I gotta take the torch, glo in peace, Scott Weiland" },
+    { t: 90.06, text: "Young nigga just jumped out the Porsche, 911 driving" },
+    { t: 93.49, text: "Yeah, the bitch thought I was a dork" },
+    { t: 95.01, text: "Now she want me to lay pipe, yeah, yeah" },
+    { t: 97.61, text: "I'ma go Kung Fu Kenny, I bring that Sweet Chin music" },
+    { t: 101.05, text: "Said he got girls on girls, but they all really just using" },
+    { t: 104.73, text: "That's racks I been got, show your ass the countdown" },
+    { t: 108.26, text: "I'ma make the pussy ring out, it's Friday Night Smackdown" },
+    { t: 112.25, text: "139" },
+  ];
+
+  LYRICS_BY_TRACK[5] = [
+    { t: 28.30, text: "Lift up the whole game, only need one hand, uh" },
+    { t: 32.51, text: "No one called your name, nigga, put that hand down" },
+    { t: 35.37, text: "You want war with me? You don't bring your man, uh" },
+    { t: 38.09, text: "But you won't do it, no" },
+    { t: 40.21, text: "Yeah, lovely, beautiful" },
+    { t: 43.18, text: "Yeah, I wake up, it's sunny, bitch, I refuse to fold" },
+    { t: 45.54, text: "Yeah, your girl, she wan' suck me, I cannot do it to you" },
+    { t: 48.41, text: "She hit me up last Monday like, \"Lucy, what you doing?\"" },
+    { t: 51.41, text: "I love 'em in any shade, my taste is so nuanced" },
+    { t: 54.45, text: "Got that Fendi on my waist, la bella figura" },
+    { t: 57.35, text: "Look like I got Fenty face, she think I look good, yeah" },
+    { t: 60.26, text: "Watch what you smoke, they fent lacing, oh yeah" },
+    { t: 63.90, text: "[01:07.06] Smoke an ounce out every day" },
+    { t: 70.18, text: "Every— e-every— every day" },
+    { t: 73.87, text: "I kill all the beats, I'm wanted for murder, yeah" },
+    { t: 76.66, text: "I kill all the speakers, bitch, they never learning" },
+    { t: 79.62, text: "In the crowd, they wan' see, said, \"Don't close the curtains\"" },
+    { t: 82.27, text: "On the 'Gram, you can't see me, I post on the burner" },
+    { t: 85.19, text: "Outside, she wan' see me, I'm like, \"Bye-bye, birdie\"" },
+    { t: 87.99, text: "I'm like, \"Bye-bye— bye-bye, birdie\"" },
+    { t: 89.31, text: "Only— yeah, only eighteen, rock out like I'm thirty" },
+    { t: 92.18, text: "Chamillionaire, I'm Altezza, ridin' dirty" },
+    { t: 95.43, text: "I'on even care, fuck that Tesla up, I dirt it" },
+    { t: 98.35, text: "Spent that check on IG brands, now his pockets hurting" },
+    { t: 101.23, text: "I'on need no ID, man, bitch, I know the servers" },
+    { t: 104.15, text: "Gold medal for that sex, I dive in her cervix" },
+    { t: 107.14, text: "She touching me on my chest, she love when I'm shirtless" },
+    { t: 111.08, text: "82" },
+  ];
+
+  LYRICS_BY_TRACK[6] = [
+    { t: 14.02, text: "Strike pose, lights on, bite, vogue" },
+    { t: 18.30, text: "Baby, I got it, got it, got it" },
+    { t: 20.14, text: "I got the lights on, yeah (Yeah)" },
+    { t: 21.54, text: "All on my body, body, body (Yeah)" },
+    { t: 23.22, text: "I got the lights on me, huh, oh (Y-y-yea— yeah)" },
+    { t: 26.48, text: "Strike pose, lights on, bite, vogue" },
+    { t: 30.91, text: "Baby, I got it, got it, got it (Yeah)" },
+    { t: 32.75, text: "I got the lights on, yeah (Yeah)" },
+    { t: 34.07, text: "All on my body, body, body (Yeah)" },
+    { t: 35.72, text: "I got the lights on me" },
+    { t: 37.19, text: "Margiela, down all the way to the toes" },
+    { t: 41.44, text: "Next day, I put on Saint Laurent Paris, uh" },
+    { t: 44.67, text: "Check the tags, garments came from Italy, oh" },
+    { t: 47.69, text: "Italia" },
+    { t: 49.30, text: "Margiela, I'ma suffocate in my clothes, uh" },
+    { t: 53.85, text: "Dripped out in Milan, I'm in the backseat, oh" },
+    { t: 57.21, text: "I ain't gotta pay for these in Italy, uh" },
+    { t: 60.21, text: "Italia, mm" },
+    { t: 63.97, text: "Strike, pose, light, uh" },
+    { t: 67.25, text: "Bite, vogue, huh, uh" },
+    { t: 70.37, text: "(Pay for these in Italia)" },
+    { t: 73.01, text: "Italia, ooh, yeah" },
+    { t: 76.50, text: "Strike pose, lights on, bite, vogue" },
+    { t: 80.77, text: "Baby, I got it, got it, got it (Yeah)" },
+    { t: 82.65, text: "I got the lights on, yeah (Yeah)" },
+    { t: 84.06, text: "All on my body, body, body (Yeah)" },
+    { t: 85.58, text: "I got the lights on me" },
+    { t: 86.90, text: "Margiela, down all the way to the toes" },
+    { t: 91.34, text: "Next day, I put on Saint Laurent Paris, uh" },
+    { t: 94.57, text: "Check the tags, garments came from Italy, oh" },
+    { t: 97.73, text: "Italia" },
+    { t: 99.41, text: "Margiela, I'ma suffocate in my clothes, uh" },
+    { t: 103.85, text: "Dripped out in Milan, I'm in the backseat, oh" },
+    { t: 107.14, text: "I ain't gotta pay for these in Italy, uh" },
+    { t: 110.21, text: "Italia, mm" },
+    { t: 114.02, text: "77" },
+  ];
+
+  LYRICS_BY_TRACK[7] = [
+    { t: 9.30, text: "(inno)" },
+    { t: 12.58, text: "Gunda, everyday jewelry" },
+    { t: 15.19, text: "I'm in London, off an Addy, too lit" },
+    { t: 18.48, text: "Going Gundam, artillery usage" },
+    { t: 21.51, text: "When the sun up, I turn to a nuisance" },
+    { t: 24.33, text: "I-I-I'on got luck, I'm just passionate for what I love" },
+    { t: 27.98, text: "I'on got trust, shake they hand, they'll leave you all dusted" },
+    { t: 31.67, text: "Uh, yeah, Gu-Gunda, everyday jewelry" },
+    { t: 37.07, text: "Bitch, I'm in the jungle, every day a movie" },
+    { t: 40.01, text: "Bitch, you must be buggin', I ain't with the foolery" },
+    { t: 43.34, text: "Baby, pull up to luncheon, salad with a smoothie" },
+    { t: 46.43, text: "How these niggas function with the brain smoothing?" },
+    { t: 49.58, text: "She do me like suction, yeah, her brain smoothly" },
+    { t: 52.82, text: "I pull up to function, ha, everybody start moving" },
+    { t: 55.96, text: "I'm an icеdancer, I'ma drain my bank account, boy" },
+    { t: 60.33, text: "[01:15.89] Yeah, I was lostrushi at fourteen, for sure" },
+    { t: 79.03, text: "Okay, I spillеd the Hi-Tech on the 14th, oh no" },
+    { t: 82.29, text: "It's real, I hit up Teruki, he gon' send some more" },
+    { t: 85.45, text: "Oh yeah, I cannot stomach this, but it's just how it go" },
+    { t: 88.56, text: "Am I the chosen one? Am I a lil' prodigy? Yeah" },
+    { t: 91.01, text: "I copped the pickup truck, put wings on that bitch" },
+    { t: 92.99, text: "That shit ain't right of me, yeah" },
+    { t: 94.28, text: "Told the gang he got cucked, the FBI couldn't get that out of me, yeah" },
+    { t: 97.49, text: "Hey, I'on even like fighting, niggas don't even throw hands" },
+    { t: 99.51, text: "They grabbing me, yeah" },
+    { t: 100.50, text: "I'm unnatural (Unnatural)" },
+    { t: 103.32, text: "Baby, I'm unnatural (I'm unnatural)" },
+    { t: 106.39, text: "Baby, I'm unnatural (Unnatural)" },
+    { t: 109.46, text: "Improv, I'm unnatural, oh yeah" },
+    { t: 113.02, text: "I'm unnatural (Unnatural)" },
+    { t: 115.93, text: "I'm un— I'm unnatural (I'm unnatural)" },
+    { t: 119.06, text: "Baby, I'm unnatural (Unnatural)" },
+    { t: 121.81, text: "Improv, I'm unnatural" },
+    { t: 126.22, text: "76" },
+  ];
+
+  LYRICS_BY_TRACK[8] = [
+    { t: 0.17, text: "(Ivvys actually reached out)" },
+    { t: 0.66, text: "She loving my fragrance" },
+    { t: 2.55, text: "He seeing baphomet off that fake Runtz" },
+    { t: 5.71, text: "When I start performing, all of them jump" },
+    { t: 8.87, text: "How yo' ass gon' diss me then start running off? Oh" },
+    { t: 12.31, text: "Need a face lift, I take his face off, uh" },
+    { t: 14.99, text: "She wan' give me face, she wan' take my pants off, uh" },
+    { t: 18.17, text: "I remember when I thought I ain't have no option" },
+    { t: 20.88, text: "Whole time, she wan' give me up like auction" },
+    { t: 24.58, text: "That bitch, she wan' eat me up like pasta" },
+    { t: 27.33, text: "I'm recording this song, I'm finishing this shit, oh yeah" },
+    { t: 29.62, text: "And she suck on the bone, she finishing this shit, oh yeah" },
+    { t: 33.08, text: "I'ma chief on the bong, diminishing this shit, oh yeah" },
+    { t: 36.17, text: "Hold up, give me a quick minute right now" },
+    { t: 37.74, text: "You can see the two tone in my grin, innit?" },
+    { t: 39.86, text: "Yeah, I got blue balls, I ain't finishing" },
+    { t: 41.72, text: "Enjoy your holiday, nigga" },
+    { t: 43.16, text: "I'ma Rudolph 'em, finish him, yeah" },
+    { t: 45.09, text: "They made fun of me, nigga" },
+    { t: 46.17, text: "Now I'm up in this bitch, yeah" },
+    { t: 47.35, text: "Lucy 发给我的这个 open 真的太好听" },
+    { t: 50.04, text: "一切都是那么完美扎进了我的心里" },
+    { t: 53.64, text: "没有任何矫揉造作" },
+    { t: 56.40, text: "整个作品浑然天成" },
+    { t: 59.18, text: "他们都不敢信" },
+    { t: 60.74, text: "他们都不敢听" },
+    { t: 61.99, text: "戴着眼罩梦里摸大象鼻子" },
+    { t: 62.14, text: "幻想音乐是自己的真命天子" },
+    { t: 63.99, text: "进步是我唯一的选择" },
+    { t: 65.02, text: "压力促使着我不停的向前进" },
+    { t: 68.06, text: "这才是刚刚开始" },
+    { t: 70.85, text: "看客们在旁边下着赌注" },
+    { t: 77.27, text: "每一个人看我的眼神" },
+    { t: 79.82, text: "都充斥着迷茫和糊涂" },
+    { t: 82.85, text: "他们都不知道在干什么" },
+    { t: 85.53, text: "只有我知道自己在干什么" },
+    { t: 88.53, text: "只有我知道自己在干什么" },
+    { t: 91.55, text: "只有我知道" },
+    { t: 93.01, text: "只有我知道" },
+    { t: 103.01, text: "81" },
+  ];
+
+  LYRICS_BY_TRACK[9] = [
+    { t: 13.17, text: "I can't be the one to tell you, I'ma keep it real" },
+    { t: 16.28, text: "She don't give a fuck 'bout what you think, she don't care how you feel" },
+    { t: 19.65, text: "She on this side calling me king, on her fucking kneels" },
+    { t: 22.69, text: "When I rap— rap like this, ain't too crazy, I'm running drills" },
+    { t: 25.81, text: "(Off drank, KO) Got that boy running drills" },
+    { t: 29.05, text: "(Knockout, like KO) Told the ref, \"Ring that bell\"" },
+    { t: 32.13, text: "(K-K-KO) Got that boy running drills" },
+    { t: 35.33, text: "(Knockout, like KO) Told ref, \"Ring that shit now\"" },
+    { t: 38.72, text: "Shit get messy, I'm scoring, bitch, I'm Messi, uh" },
+    { t: 41.85, text: "Big blunt, face it, kick door, I'ma bring pressure" },
+    { t: 44.93, text: "Wrist watch, flex it, on the floor, too much Henny, uh" },
+    { t: 48.13, text: "Blister your face, yeah, can't tell the time, need Big Benny, uh" },
+    { t: 51.32, text: "She invite herself in my room, said, \"Lucy, can you bend me?\" Uh" },
+    { t: 54.57, text: "Can you put yourself in my shoes? It ain't easy being next up" },
+    { t: 57.64, text: "I ain't dumb, girl, I ain't stupid, monkey see, monkey do, my stooges" },
+    { t: 60.84, text: "I'm the motherfuckin' king, got groove, make sure the words sting like— sting like—" },
+    { t: 64.00, text: "Huh, yeah, scare the boy with the board, got ouija" },
+    { t: 66.17, text: "Death stare the boy down, I'm Weegee" },
+    { t: 67.80, text: "DMT cart got 'em tweaking" },
+    { t: 69.46, text: "Lean on me if you feel weak, yeah" },
+    { t: 71.05, text: "Keep it family friendly, bleep it" },
+    { t: 72.66, text: "He not a family friend, she lied" },
+    { t: 74.24, text: "Tough luck, my boy, you tried" },
+    { t: 75.80, text: "Get these new niggas out of my kitchen" },
+    { t: 77.41, text: "Off day one, yeah, you fired" },
+    { t: 79.01, text: "I'm the leader, told these niggas, \"Sitzen\"" },
+    { t: 80.60, text: "But I ain't fucking with the Third Reich" },
+    { t: 82.20, text: "Yeah, oh yeah, ich war siebzehn" },
+    { t: 83.80, text: "Made SISTERHOOD on the mic" },
+    { t: 85.41, text: "Ich-ich habe keine lieblingsfarbe" },
+    { t: 87.13, text: "I love every type, oh yeah, yeah" },
+    { t: 90.08, text: "I can't be the one to tell you, I'ma keep it real" },
+    { t: 93.17, text: "She don't give a fuck 'bout what you think, she don't care how you feel" },
+    { t: 96.37, text: "She on this side calling me king, on her fucking kneels" },
+    { t: 99.52, text: "When I rap— rap like this, ain't too crazy, I'm running drills" },
+    { t: 102.65, text: "(Off drank, KO) Got that boy running drills" },
+    { t: 105.81, text: "(Knockout, like KO) Told the ref, \"Ring that bell\"" },
+    { t: 109.02, text: "(K-K-KO) Got that boy running drills" },
+    { t: 112.26, text: "(Knockout, like KO) Told ref, \"Ring that shit now\"" },
+    { t: 116.05, text: "150" },
+  ];
+
+  LYRICS_BY_TRACK[10] = [
+    { t: 0.17, text: "Bitch I'm bed rockin', and i'm smooth" },
+    { t: 3.02, text: "You can't stop me, Oh scyeah" },
+    { t: 6.06, text: "Speakers knockin', it go boom (Boom, woah)" },
+    { t: 12.53, text: "Yeah uh, I can make a frat nigga love drag racing" },
+    { t: 15.93, text: "I can make a fat nigga hate food yeah" },
+    { t: 18.75, text: "I can make a trap nigga build a ship to space yeah" },
+    { t: 21.71, text: "Turn a smash player right to a shooter" },
+    { t: 24.61, text: "Uh, i can transform a virgin to a slut yeah" },
+    { t: 27.42, text: "He said he love girls but he into futa" },
+    { t: 30.42, text: "I was at my lowest, my dog hit me like he Brian" },
+    { t: 33.43, text: "Huh, do it for my son yeah, lil' Stewie" },
+    { t: 35.80, text: "I can make-I can make Izaya Tiji love his fans, yeah" },
+    { t: 39.08, text: "I could make your favorite rapper kick the cup, ooh" },
+    { t: 42.48, text: "I could beat Michael Jackson in a dance-off" },
+    { t: 45.26, text: "I-I could-I could wield the sword, I got guts" },
+    { t: 47.70, text: "I can really stop the storm, hit my line, huh" },
+    { t: 50.83, text: "I'm gon' make a blondie blonde hate Starbucks" },
+    { t: 54.05, text: "Huh, said she love girls, now she love guys" },
+    { t: 58.77, text: "Get Good, this shit take practice, oh" },
+    { t: 63.59, text: "Coach put me in now, I'm about to change the game" },
+    { t: 66.48, text: "Hope it give me good dinner, wagyu with champagne" },
+    { t: 69.61, text: "Uh uh, yeah" },
+    { t: 71.20, text: "Get good, this shit take practice, oh" },
+    { t: 75.07, text: "Coach put me in now, I'm about to change the game" },
+    { t: 78.04, text: "Hope it give me good dinner, wagyu with champagne" },
+    { t: 81.19, text: "Bitch I'm bed rockin', and i'm smooth" },
+    { t: 84.39, text: "You can't stop me, Oh scyeah" },
+    { t: 87.13, text: "Speakers knockin', it go boom (Boom, woah)" },
+    { t: 93.40, text: "82" },
+  ];
+
+  LYRICS_BY_TRACK[11] = [
+    { t: 13.98, text: "I gave you devotion, are you some kind of god? Uh" },
+    { t: 19.90, text: "You lose more than you secure when you get to know her" },
+    { t: 23.54, text: "In the flesh, shown, uh" },
+    { t: 25.31, text: "Delicate bone, still cara mia" },
+    { t: 28.28, text: "(Won't pick up the phone, but I know you still there)" },
+    { t: 31.26, text: "You're too far from home, still cara mia" },
+    { t: 34.38, text: "(And if you pick up, pick up, I won't know what to say, yeah, no)" },
+    { t: 39.08, text: "So much better without it now" },
+    { t: 40.24, text: "Woke up to the sun's kisses, a wonderful morning now" },
+    { t: 43.90, text: "I'ma sabotage a perfect moment, I'ma start thinking" },
+    { t: 47.13, text: "I'm not God's perfect soldier" },
+    { t: 49.01, text: "I'm not what you dreamed me to be, no, yeah" },
+    { t: 52.13, text: "She pull me in closer, said, \"Baby, hold me\"" },
+    { t: 55.03, text: "Got sickness in motion, don't let the boat sway" },
+    { t: 58.24, text: "Call her up on my Nokia, yeah, uh" },
+    { t: 61.35, text: "It's this or it's nothing, come over soon" },
+    { t: 64.32, text: "Ring me up today 'cause you won't do it tomorrow" },
+    { t: 67.66, text: "(Girl, no, you ain't doing that)" },
+    { t: 70.69, text: "Is it something you crave or do you use just to borrow?" },
+    { t: 74.26, text: "(Baby, is you cool with that?)" },
+    { t: 77.10, text: "Baby, were you faking it?" },
+    { t: 79.07, text: "In your facade, did you believe you were making it?" },
+    { t: 82.26, text: "When we collide next, will I have the patience? Yeah" },
+    { t: 86.08, text: "Or will I forget you out my own will?" },
+    { t: 90.15, text: "Uh, are you older?" },
+    { t: 93.13, text: "Am I still at fault? Yeah" },
+    { t: 97.02, text: "Uh, did I grow up? See, oh" },
+    { t: 100.28, text: "Girl, see now" },
+    { t: 102.28, text: "I'm desperate for motion and I can hardly wait" },
+    { t: 109.35, text: "And all I do is count the days off, yeah" },
+    { t: 112.27, text: "Still in the flesh, shown" },
+    { t: 115.26, text: "Delicate bone, still cara mia" },
+    { t: 118.14, text: "(Won't pick up the phone, but I know you still there)" },
+    { t: 121.10, text: "You're too far from home, still cara mia" },
+    { t: 124.36, text: "(And if you pick up, pick up, I won't know what to say, yeah, no)" },
+    { t: 128.11, text: "Delicate bone, still cara mia" },
+    { t: 130.77, text: "(Won't pick up the phone, but I know you still there)" },
+    { t: 134.24, text: "You're too far from home, still cara mia" },
+    { t: 137.29, text: "(And if you pick up, pick up, I won't know what to say, yeah, no)" },
+    { t: 141.32, text: "136" },
+  ];
+
+  LYRICS_BY_TRACK[12] = [
+    { t: 10.02, text: "(Um, we're a study group)" },
+    { t: 19.54, text: "Huh, yeah, I ain't even care, uh" },
+    { t: 22.14, text: "I ain't even ca— I ain't even care" },
+    { t: 23.77, text: "She flex, said she fucked that boy, I don't even care" },
+    { t: 26.17, text: "Shawty wanna show her ass out, I ain't even stare" },
+    { t: 28.74, text: "I don't even try, niggas think I got a mean glare" },
+    { t: 31.45, text: "He not really bright, goin' Sheen there" },
+    { t: 33.61, text: "I don't even fight and don't wan' pull out that machine there" },
+    { t: 35.65, text: "Baby, look in my eyes, see I don't even care, uh" },
+    { t: 39.01, text: "Uh-huh, yeah" },
+    { t: 40.61, text: "I been on that, you don't evеn know what you claiming" },
+    { t: 43.81, text: "Yeah, uh" },
+    { t: 45.26, text: "I'm too sick and I hope I don't get wеll soon" },
+    { t: 48.50, text: "Huh, yeah" },
+    { t: 49.99, text: "I depend on it like a chronic, need asylum" },
+    { t: 53.31, text: "Yeah, uh" },
+    { t: 54.58, text: "You the last one that said it, now they tryna find ya, uh" },
+    { t: 58.06, text: "Do it feel good being understood?" },
+    { t: 60.19, text: "Would you withdraw today?" },
+    { t: 62.62, text: "If you put your problems right up in the 'Wood, uh" },
+    { t: 65.02, text: "And put on this song, you straight" },
+    { t: 67.38, text: "Girl, you know comparison kills" },
+    { t: 69.70, text: "Do not look the other way" },
+    { t: 72.14, text: "I can't even bare to stand still, uh" },
+    { t: 74.18, text: "I just throw it up, I just made a mil', uh" },
+    { t: 76.67, text: "Yeah, I don't even care" },
+    { t: 79.23, text: "Uh, I-I ain't even care" },
+    { t: 81.11, text: "Shawty said she fucking and I don't even care" },
+    { t: 83.30, text: "I ain't ever been lucky, I just put it in the air" },
+    { t: 85.58, text: "Going tomfoolery buckets, they said I need a pear" },
+    { t: 88.26, text: "I told 'em suck it, bitch, I don't even care, uh" },
+    { t: 90.90, text: "He into cucking, put that boy in a chair" },
+    { t: 93.30, text: "Think he safe ducking, I see him right there" },
+    { t: 96.37, text: "Yeah" },
+    { t: 97.48, text: "I been on that, you don't even know what you claiming" },
+    { t: 100.96, text: "Yeah, uh" },
+    { t: 102.53, text: "I'm too sick and I hope I don't get well soon" },
+    { t: 119.31, text: "101" },
+  ];
+
+  LYRICS_BY_TRACK[13] = [
+    { t: 14.33, text: "I lie, lie" },
+    { t: 16.36, text: "The truth is obscured, so I lie, lie, yeah, um" },
+    { t: 20.81, text: "Your face screams wry, wry" },
+    { t: 23.19, text: "It's not looking green, so come right, right, oh my, my" },
+    { t: 28.45, text: "You did it to her, oh no, you did it to her, now" },
+    { t: 31.98, text: "It's never forgive and forget" },
+    { t: 34.99, text: "You did it to her, you did it to her, yeah" },
+    { t: 38.96, text: "She'll never forgive you again" },
+    { t: 42.54, text: "Don't talk to me, no, ship sailed long ago" },
+    { t: 46.24, text: "Can't go nowhere with arrogance, no" },
+    { t: 49.05, text: "You wouldn't talk to me anyway" },
+    { t: 52.15, text: "But I know you're there, no? (There's no more faking)" },
+    { t: 56.29, text: "[01:24.59] Wanted to blanket you up in my embrace" },
+    { t: 87.74, text: "Got you so good in my love, I couldn't waste it" },
+    { t: 91.41, text: "In my room, I lick you all up and down, oh yeah" },
+    { t: 94.98, text: "I know how to makе you feel good, I can still taste it" },
+    { t: 98.52, text: "Don't even chеck nothin', nah" },
+    { t: 100.02, text: "I ain't calling, stop looking at the phone" },
+    { t: 101.85, text: "Love-bomb 'cause you know you did me wrong" },
+    { t: 103.76, text: "Now I'm wrong 'cause I'm stringing you along" },
+    { t: 105.28, text: "Ship sailed, uh, get gone" },
+    { t: 107.19, text: "You don't wanna understand that" },
+    { t: 108.98, text: "I'm gone and you cannot stand that (Boy, you dead that, now)" },
+    { t: 112.53, text: "I won't talk to you, no, ship sailed long ago" },
+    { t: 116.33, text: "Can't go nowhere with ignorance, no" },
+    { t: 119.38, text: "While yes, I'm here and I'm quiet" },
+    { t: 122.99, text: "I'm entertained, uh (There's no more faking)" },
+    { t: 128.10, text: "[02:19.10] You lie, you lie, ooh" },
+    { t: 142.12, text: "[02:32.90] You lie, you lie, ooh, ooh" },
+    { t: 156.26, text: "136" },
+  ];
+
+  LYRICS_BY_TRACK[14] = [
+    { t: 12.87, text: "Uh, eardrums gon' break when you hear the music" },
+    { t: 16.06, text: "Uh, it's got no date, you can always use it" },
+    { t: 19.38, text: "They wan' talk about me, they love it, oh" },
+    { t: 22.51, text: "You can never top me, I love it, yeah" },
+    { t: 25.79, text: "(But it's so unmusic) Oh, I love it, yeah" },
+    { t: 28.63, text: "(But it's so unmusic) Yeah, I love it, nah" },
+    { t: 31.92, text: "(But it's so unmusic) Nah, I love it, yeah" },
+    { t: 34.95, text: "(It's so unmusic) Yeah, I love it, yeah" },
+    { t: 38.55, text: "Lil' bro been cool, yeah" },
+    { t: 40.16, text: "I do it like, uh, I need me a cougar" },
+    { t: 43.24, text: "I bring out the duals, ayy, got that Ruger" },
+    { t: 46.23, text: "Need a girl that love me now, love me like she Pucca (Say go)" },
+    { t: 50.44, text: "Uh, you cannot trust these niggas, um" },
+    { t: 52.33, text: "You can't trust your heroes" },
+    { t: 53.95, text: "All them boys make mе sick, um" },
+    { t: 55.44, text: "They lie for some еuros" },
+    { t: 57.00, text: "They lie for some guap" },
+    { t: 58.24, text: "They cap, desperate for some top" },
+    { t: 59.72, text: "They get catfished on the phone" },
+    { t: 61.32, text: "Why? They desperate for some dome" },
+    { t: 63.16, text: "You ain't got lungs like that, nah" },
+    { t: 64.59, text: "But you wan' keep flexin' that dope" },
+    { t: 66.24, text: "You ain't got guns like that, nah" },
+    { t: 67.80, text: "On the 'Gram flexin' fake pole" },
+    { t: 69.32, text: "On the— on the motherfuckin' road right now" },
+    { t: 70.81, text: "Bitch, I only got one goal" },
+    { t: 72.43, text: "To make Unmusique for you" },
+    { t: 75.40, text: "Uh, eardrums gon' break when you hear the music" },
+    { t: 78.68, text: "Uh, it's got no date, you can always use it" },
+    { t: 81.64, text: "They wan' talk about me, they love it, oh" },
+    { t: 84.80, text: "You can never top me, I love it, yeah" },
+    { t: 87.92, text: "(But it's so unmusic) Oh, I love it, yeah" },
+    { t: 91.12, text: "(But it's so unmusic) I love it, nah" },
+    { t: 94.21, text: "(But it's so unmusic) Nah, I love it, yeah" },
+    { t: 97.12, text: "(It's so unmusic) Love— love it, yeah" },
+    { t: 100.80, text: "But it's so unmusic" },
+    { t: 103.48, text: "But it's so unmusic" },
+    { t: 104.78, text: "Oh yeah, I love it, yeah" },
+    { t: 108.43, text: "I love it, yeah, I love it, yeah" },
+    { t: 111.59, text: "You love it, yeah" },
+    { t: 113.95, text: "[01:57.83] You love it, yeah" },
+    { t: 118.88, text: "[02:04.05] You love it, yeah" },
+    { t: 125.39, text: "Love— love—" },
+    { t: 126.61, text: "[02:10.36] You love it, yeah" },
+    { t: 131.61, text: "[02:16.57] You love it, yeah" },
+    { t: 139.09, text: "153" },
+  ];
+
+  LYRICS_BY_TRACK[15] = [
+    { t: 17.94, text: "(You are now tuned in to 9lives radio)" },
+    { t: 21.34, text: "I won't take this as loss" },
+    { t: 26.19, text: "It's just another gate" },
+    { t: 31.54, text: "Buy a game you won't touch" },
+    { t: 36.02, text: "It's just another day, oh yeah" },
+    { t: 41.06, text: "Boss up, baby, just boss up" },
+    { t: 45.86, text: "Boss up, baby, just boss up" },
+    { t: 51.55, text: "Uh, you not fried, but you hungry" },
+    { t: 53.79, text: "Oh yeah, you sad, but won't phone me" },
+    { t: 56.31, text: "Wanna see me on the map, but won't own me" },
+    { t: 58.86, text: "It's not me, you can't be mad if you lonely" },
+    { t: 62.39, text: "It's too late to be mad, it's too late to pout" },
+    { t: 66.90, text: "Oh yeah, it's too late to be sad, it's too late to frown" },
+    { t: 71.66, text: "Girl, you let me down, oh yeah, but couldn't tell you that" },
+    { t: 78.74, text: "(Should've said that you ain't need this)" },
+    { t: 81.84, text: "You're a lie, and you're a cheat" },
+    { t: 87.57, text: "Where am I? Boy, you not with me" },
+    { t: 92.64, text: "You know what I want's not next to you" },
+    { t: 95.69, text: "It's out the way, it's out the way" },
+    { t: 100.16, text: "Come south, my way" },
+    { t: 103.50, text: "95" },
+  ];
+
+  LYRICS_BY_TRACK[16] = [
+    { t: 0.23, text: "Should've did this sooner" },
+    { t: 2.22, text: "Boy, I had to lose to first place" },
+    { t: 4.44, text: "This shit, ooh, yeah, I'ma take you to the moon" },
+    { t: 7.91, text: "Smoke with me, this shit smooth, yeah" },
+    { t: 10.40, text: "Baby, let me see you groove" },
+    { t: 12.32, text: "I'ma get you good in that room, uh" },
+    { t: 14.23, text: "Long nose like Gru" },
+    { t: 16.14, text: "Got my minions on the move, uh" },
+    { t: 18.40, text: "I'm not sorry, no" },
+    { t: 21.28, text: "Baby, go and get the car ready, oh" },
+    { t: 25.57, text: "Yeah, we gon' hit the highway, the road" },
+    { t: 29.96, text: "We gon' do this my way or go" },
+    { t: 33.10, text: "Connect, hit, goal (Connect, hit, goal)" },
+    { t: 37.43, text: "If you're stressed, get dome (If you're stressed, get dome)" },
+    { t: 41.64, text: "Outside your door (Waiting with patience)" },
+    { t: 45.47, text: "Had to decide, ooh" },
+    { t: 48.70, text: "But it wasn't easy for you, uh" },
+    { t: 52.49, text: "I kept on squeezing, beg me to loosen" },
+    { t: 56.50, text: "Insisted on screaming at you, uh" },
+    { t: 60.39, text: "Yesterday, I dreamed it, it came true, uh" },
+    { t: 64.27, text: "You carry" },
+    { t: 65.75, text: "Kick dirt in her eyes, this is the mess you made" },
+    { t: 69.30, text: "\"Can I ruin your life?\" And she said, \"Yes, you may\"" },
+    { t: 73.39, text: "Meant to hold you, uh, not to stress the weight" },
+    { t: 77.83, text: "Wanted to draw closer to you, now you're a stretch away" },
+    { t: 81.71, text: "Kick dirt in her eyes, this is the mess you made" },
+    { t: 85.36, text: "\"Can I ruin your life?\" And she said, \"Yes, you may\"" },
+    { t: 89.60, text: "Meant to hold you, uh, not to stress the weight" },
+    { t: 93.77, text: "Wanted to draw closer to you, now you're a stretch away" },
+    { t: 97.29, text: "120" },
+  ];
+
+
+  var audio = document.getElementById('theme');
+  var box   = document.getElementById('lyrics');
+  var track = document.getElementById('lyrTrack');
+  if (!audio || !box) return;
+
+  /* la colonne est reconstruite a chaque changement de piste : une ligne par
+     entree chantee, les entrees "music" restent des trous dans lines[] */
+  var LYRICS = [];
+  var lines  = [];
+  var sung   = [];      // indices des lignes chantees, pour le mode reglage
+
+  function buildLines(idx){
+    LYRICS = LYRICS_BY_TRACK[idx] || [];
+    track.innerHTML = '';
+    lines = [];
+    sung  = [];
+
+    /* le petit rond de musique danse sur le tempo de la piste active */
+    var bpm = TRACK_BPM[idx] || 100;
+    box.style.setProperty('--beat', (60 / bpm).toFixed(3) + 's');
+
+    LYRICS.forEach(function(l, i){
+      if (!l.text){ lines[i] = null; return; }
+
+      var el = document.createElement('p');
+      el.className = 'lyr';
+
+      /* ce qui est entre parentheses est un choeur : plus petit et plus pale */
+      var m = l.text.match(/^(.*?)\s*\((.+)\)\s*$/);
+      if (m){
+        el.appendChild(document.createTextNode(m[1]));
+        var echo = document.createElement('span');
+        echo.className = 'lyr-echo';
+        echo.textContent = m[2];
+        el.appendChild(echo);
+      } else {
+        el.textContent = l.text;
+      }
+
+      el.addEventListener('click', function(){
+        target = 0; back = true; box.classList.remove('is-scrubbing');
+        audio.currentTime = l.t + 0.02;
+      });
+      track.appendChild(el);
+      lines[i] = el;
+      sung.push(i);
+    });
+  }
+
+  var current = -1;
+
+  function activeAt(time){
+    var n = -1;
+    for (var i = 0; i < LYRICS.length; i++){ if (time >= LYRICS[i].t) n = i; else break; }
+    return n;
+  }
+
+  /* la position affichee (pos) chasse en continu la position voulue (want),
+     que ce soit le fil de la chanson ou le point pris a la molette : un seul
+     ressort, toujours actif, donc jamais de saut brusque d une ligne a l autre,
+     meme quand on revient de loin */
+  var autoY = 0, pos = 0;
+
+  function place(n){
+    var el = lines[n];
+    if (!el) return;                       // pendant l instrumental on ne bouge pas la colonne
+    autoY = -(el.offsetTop + el.offsetHeight / 2 - box.clientHeight / 2);
+  }
+
+  /* La molette fait defiler le texte a la main, bute sur la premiere et la
+     derniere ligne pour qu on ne parte jamais dans le vide, puis la chanson
+     reprend la main en douceur apres une pause. */
+  var target = 0, back = true, backTimer = 0;
+
+  function bounds(){
+    var first = null, last = null;
+    for (var i = 0; i < lines.length; i++){
+      if (!lines[i]) continue;
+      if (!first) first = lines[i];
+      last = lines[i];
+    }
+    if (!first) return [0, 0];
+    var half = box.clientHeight / 2;
+    var top    = half - (first.offsetTop + first.offsetHeight / 2);   // premiere ligne au centre
+    var bottom = half - (last.offsetTop  + last.offsetHeight  / 2);   // derniere ligne au centre
+    return [bottom, top];
+  }
+
+  function wanted(){
+    var b = bounds();
+    var base = back ? autoY : autoY + target;
+    return Math.max(b[0], Math.min(b[1], base));
+  }
+
+  (function loop(){
+    var w = wanted();
+    pos += (w - pos) * 0.14;
+    if (Math.abs(w - pos) < .3) pos = w;
+    track.style.transform = 'translateY(' + pos.toFixed(1) + 'px)';
+    requestAnimationFrame(loop);
+  })();
+
+  /* un seul chemin pour la molette et pour le doigt : on pousse le decalage,
+     borne aux deux extremites, puis la chanson reprend la main apres la pause */
+  function nudge(dy){
+    var b = bounds();
+    back = false;
+    target = Math.max(b[0] - autoY, Math.min(b[1] - autoY, target + dy));
+    box.classList.add('is-scrubbing');
+
+    clearTimeout(backTimer);
+    backTimer = setTimeout(function(){
+      back = true; target = 0;                // la chanson reprend la main, en douceur
+      box.classList.remove('is-scrubbing');
+    }, 4000);
+  }
+
+  box.addEventListener('wheel', function(e){
+    e.preventDefault();
+    nudge(-e.deltaY * 0.7);
+  }, {passive:false});
+
+  /* au doigt : on suit le glissement, un pour un */
+  var touchY = null;
+  box.addEventListener('touchstart', function(e){
+    touchY = e.touches[0].clientY;
+  }, {passive:true});
+
+  box.addEventListener('touchmove', function(e){
+    if (touchY === null) return;
+    var y = e.touches[0].clientY;
+    nudge(y - touchY);
+    touchY = y;
+    e.preventDefault();                       // la page ne doit pas glisser derriere
+  }, {passive:false});
+
+  box.addEventListener('touchend', function(){ touchY = null; }, {passive:true});
+
+  function paint(n){
+    for (var i = 0; i < lines.length; i++){
+      if (!lines[i]) continue;
+      lines[i].classList.toggle('is-now',  i === n);
+      lines[i].classList.toggle('is-past', i <  n);
+    }
+  }
+
+  function apply(n){
+    var quiet = !!(n < 0 || (LYRICS[n] && LYRICS[n].music));   // sans le double !, toggle bascule au lieu d eteindre
+    box.classList.toggle('is-quiet', quiet);   // le texte s enfonce, la note apparait
+    if (!quiet){ paint(n); place(n); }
+    else paint(n);
+  }
+
+  function check(){
+    if (!LYRICS.length) return;
+    var n = activeAt(audio.currentTime);
+    if (n !== current){ current = n; apply(n); }
+  }
+
+  function tick(){ check(); requestAnimationFrame(tick); }
+
+  /* appele quand on change de piste depuis le dock : reconstruit la colonne
+     avec les paroles de la nouvelle piste (vide si elle n en a pas encore) */
+  window.__setLyricsTrack = function(idx){
+    buildLines(idx);
+    current = -1;
+    autoY = 0; pos = 0; target = 0; back = true;
+    box.classList.remove('is-scrubbing');
+    apply(-1);
+  };
+
+  buildLines(1);   // G6 Anthem par defaut
+  apply(-1);
+  audio.addEventListener('timeupdate', check);   // filet de securite si les images sont bridees
+  audio.addEventListener('seeked', check);
+  audio.addEventListener('play', check);
+  requestAnimationFrame(tick);
+
+  /* ---- mode reglage : on pose les temps en tapant sur la barre d espace ---- */
+  var tuning = false, cursor = 0, stamps = [];
+
+  window.addEventListener('keydown', function(e){
+    var k = e.key.toLowerCase();
+
+    if (k === 'l'){
+      tuning = !tuning; cursor = 0; stamps = [];
+      box.classList.toggle('is-tuning', tuning);
+      return;
+    }
+    if (!tuning) return;
+
+    if (e.code === 'Space'){
+      e.preventDefault();
+      var idx = sung[cursor];
+      stamps.push([idx, +audio.currentTime.toFixed(2)]);
+      cursor = Math.min(sung.length - 1, cursor + 1);
+      current = idx; apply(idx);
+    }
+
+    if (k === 'e'){
+      var out = stamps.map(function(p){
+        return '    { t: ' + p[1].toFixed(2) + ', text: "' + LYRICS[p[0]].text.replace(/"/g, '\\"') + '" }';
+      }).join(',' + '\n');
+      out = 'var LYRICS = [' + '\n' + out + '\n  ];';
+      console.log(out);
+      if (navigator.clipboard) navigator.clipboard.writeText(out);
+    }
+  });
+
+  window.__lyrics = function(){
+    return {current: current, quiet: box.classList.contains('is-quiet'), lines: track.children.length};
+  };
+})();
+
+/* ---------------- arrivee du disque, impact, puis lecture en boucle ---------------- */
+(function(){
+  var LAND = 3500;                       // instant ou le disque touche le plateau, ms
+
+  var body  = document.body;
+  var fly   = document.getElementById('discFly');
+  var deck  = document.querySelector('.deck');
+  var audio = document.getElementById('theme');
+  var btn   = document.getElementById('sound');
+  var vol   = document.getElementById('vol');
+
+  audio.volume = vol.value / 100;
+  vol.addEventListener('input', function(){
+    audio.volume = vol.value / 100;
+    vol.style.setProperty('--v', vol.value + '%');
+  });
+  vol.style.setProperty('--v', vol.value + '%');
+
+  /* le disque doit venir du centre de l ecran, bien droit : on mesure l ecart
+     entre le centre du plateau et le centre de la fenetre, puis on annule la
+     rotation de la platine pour que la trajectoire reste verticale a l ecran */
+  var platter = document.querySelector('.platter');
+
+  function aim(){
+    var r  = platter.getBoundingClientRect();    // repere fixe : le disque, lui, bouge
+    var cx = r.left + r.width / 2;
+    var cy = r.top + r.height / 2;
+    var vw = window.innerWidth, vh = window.innerHeight;
+
+    var deg = 0;
+    var m = getComputedStyle(deck).transform;
+    if (m && m !== 'none'){
+      var v = m.slice(m.indexOf('(') + 1, -1).split(',');
+      deg = Math.atan2(parseFloat(v[1]), parseFloat(v[0]));
+    }
+    var c = Math.cos(-deg), s = Math.sin(-deg);
+
+    /* la scene est mise a l echelle : on repasse les ecarts en unites de scene,
+       puis on annule la rotation de la platine pour que la trajectoire reste
+       droite a l ecran */
+    var k = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fit')) || 1;
+
+    function put(name, sx, sy){
+      var dx = (sx - cx) / k, dy = (sy - cy) / k;
+      fly.style.setProperty('--' + name + 'x', (dx * c - dy * s).toFixed(1) + 'px');
+      fly.style.setProperty('--' + name + 'y', (dx * s + dy * c).toFixed(1) + 'px');
+    }
+
+    put('f', vw * 0.50, vh * 0.50);   // le disque se revele au centre, sous le signe
+  }
+  if (!MOBILE){                    // sans platine, il n y a rien a viser
+    aim();
+    window.addEventListener('resize', aim);
+  }
+
+  /* L arrivee du disque et la musique doivent partir ensemble. Or un navigateur
+     refuse le son tant que la page n a recu aucun geste : on teste d abord, sans
+     bruit, si le son est autorise. Si oui on lance tout de suite ; sinon on garde
+     le disque en l air et on demarre les deux au premier geste. */
+
+  var wanted  = true;
+  var started = false;
+
+  function paintBtn(){
+    btn.classList.toggle('is-paused', audio.paused);
+    btn.classList.toggle('is-waiting', !started || (audio.paused && wanted));
+    body.classList.toggle('is-playing', !audio.paused);   // le disque s arrete avec la musique
+  }
+
+  function tryPlay(){
+    if (!wanted) return;
+    var p = audio.play();
+    if (p && p.catch) p.catch(function(){});
+    setTimeout(paintBtn, 80);
+  }
+
+  /* on clique une autre icone du dock : la piste change, la platine continue
+     de tourner sans repasser par l intro */
+  var trackIdx = 1;   // G6 Anthem par defaut
+
+  window.__playTrack = function(idx){
+    var src = TRACK_AUDIO[idx];
+    if (!src || idx === trackIdx) return;
+    trackIdx = idx;
+
+    var wasPlaying = started && !audio.paused;
+    audio.pause();
+    audio.src = src;
+    audio.currentTime = 0;
+
+    if (window.__setLyricsTrack) window.__setLyricsTrack(idx);
+
+    if (wasPlaying) tryPlay();
+    paintBtn();
+  };
+
+  function startIntro(){
+    if (started) return;
+    started = true;
+    body.classList.add('is-armed');          // le disque part du centre de l ecran
+
+    /* sur telephone il n y a pas de platine : le signe s efface, tout arrive
+       d un coup et la musique part tout de suite */
+    if (MOBILE){
+      body.classList.add('is-lighten');
+      body.classList.add('is-stage');
+      body.classList.add('is-landed');
+      tryPlay();
+      paintBtn();
+      return;
+    }
+
+    /* le fond et la platine se levent ensemble, dans la meme respiration :
+       ainsi tout est deja en place quand le disque se pose, et l atterrissage
+       reste le seul temps fort, pas un troisieme sursaut separe */
+    setTimeout(function(){
+      body.classList.add('is-lighten');      // le noir se leve
+    }, LAND - 900);
+
+    setTimeout(function(){
+      body.classList.add('is-stage');        // la platine sort du vide, juste derriere
+    }, LAND - 760);
+
+    setTimeout(function(){
+      body.classList.add('is-landed');       // il se pose : le plateau tourne, le bras descend
+      body.classList.add('is-hit');
+      setTimeout(function(){ body.classList.remove('is-hit'); }, 240);
+      tryPlay();                             // et la musique demarre au meme instant
+      paintBtn();
+    }, LAND);
+  }
+
+  function waitForGesture(){
+    var evts = ['pointerdown','keydown','wheel','touchstart'];
+    function go(){
+      evts.forEach(function(e){ window.removeEventListener(e, go); });
+      startIntro();
+    }
+    evts.forEach(function(e){ window.addEventListener(e, go, {passive:true}); });
+  }
+
+  waitForGesture();
+  window.__startIntro = startIntro;
+
+  btn.addEventListener('click', function(e){
+    e.stopPropagation();
+    if (!started){ startIntro(); paintBtn(); return; }
+    if (audio.paused){ wanted = true; tryPlay(); }
+    else { wanted = false; audio.pause(); }
+    paintBtn();
+  });
+
+  audio.addEventListener('play', paintBtn);
+  audio.addEventListener('pause', paintBtn);
+  paintBtn();
+})();
+</script>
+
+</body>
+</html>
