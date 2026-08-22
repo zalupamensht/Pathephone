@@ -51,8 +51,44 @@ body{
   background:#0b0a09;
   transition:opacity 1.35s cubic-bezier(.4,.1,.2,1);
 }
-body.is-lighten .veil,
-body.is-stage .veil{opacity:0}
+/* sur telephone il n y a pas d atterrissage : le noir se leve en fondu */
+body.is-lighten .veil{opacity:0}
+
+/* La nappe claire est un disque centre sur le point d impact. Elle grandit par
+   transform:scale, que la carte graphique mene toute seule : c est ce qui la
+   rend fluide. L ancien clip-path obligeait le navigateur a repeindre tout
+   l ecran a chaque image, d ou les saccades.
+   --wr est pose par le script : c est la distance du disque au coin le plus
+   eloigne. A scale(1) l onde couvre donc l ecran pile, sans course a vide. */
+.veil-open{
+  position:fixed;z-index:1;
+  left:var(--ox,50%);top:var(--oy,50%);
+  width:calc(var(--wr,140vmax) * 2.7);
+  height:calc(var(--wr,140vmax) * 2.7);
+  margin-left:calc(var(--wr,140vmax) * -1.35);
+  margin-top:calc(var(--wr,140vmax) * -1.35);
+  border-radius:50%;
+  /* plein jusqu au rayon utile, puis le bord se fond : pas de contour net */
+  background:radial-gradient(closest-side,
+              var(--paper) 0 76%,
+              rgba(250,249,247,.6) 87%,
+              rgba(250,249,247,0) 100%);
+  pointer-events:none;
+  transform:scale(0);
+  transition:opacity .5s ease;
+}
+body.is-open .veil-open{
+  animation:veilopen 1s cubic-bezier(.32,.62,.28,1) forwards;
+}
+@keyframes veilopen{
+  from{transform:scale(0)}
+  to  {transform:scale(1)}
+}
+
+/* l onde est passee : on retire les deux nappes pour rendre au fond ses
+   teintes pastel, que sinon la nappe blanche masquerait pour toujours */
+body.is-lit .veil{display:none}
+body.is-lit .veil-open{opacity:0}
 
 /* le signe est taille pour coincider exactement avec l etiquette du disque
    (l etiquette fait 31.7% du disque, soit ~95px ; le dessin occupe 92% du
@@ -229,7 +265,7 @@ body.is-stage .sleeve{
 /* chaque piece de la platine apparait, le disque reste visible */
 .deck-plinth,.deck-face,.platter-mat,.spindle,.arm,.deck-knob,.platter::before{
   opacity:0;
-  transition:opacity 1.25s ease .18s;
+  transition:opacity 1.25s ease .5s;
 }
 body.is-stage .deck-plinth,
 body.is-stage .deck-face,
@@ -368,7 +404,7 @@ body.is-armed .disc-fly::after{animation:discring 3.5s both}
   z-index:6;
   transform-origin:100% 50%;
   transform:rotate(-63deg);
-  transition:transform 1.25s cubic-bezier(.3,.78,.28,1),opacity 1.25s ease .18s;
+  transition:transform 1.25s cubic-bezier(.3,.78,.28,1),opacity 1.25s ease .5s;
 }
 body.is-landed .arm{transform:rotate(-31deg)}
 .arm-pivot{
@@ -622,6 +658,9 @@ body.is-stage .swoosh{opacity:1}
   .disc-fly{animation:none;opacity:0;transform:none}
   body.is-armed .disc-fly{animation:discfade 1.1s ease-out both}
   .disc-fly::after{animation:none;opacity:0}
+  /* pas de cercle qui s etale : la nappe couvre deja tout et monte en fondu */
+  .veil-open{transform:scale(1);opacity:0;transition:opacity .7s ease}
+  body.is-open .veil-open{animation:none;opacity:1}
   .disc-spin{animation:none}
   .lyr-note{animation:none}
   .bub,.trk,.arm,.sound{transition:none}
@@ -651,9 +690,28 @@ body.is-stage .swoosh{opacity:1}
     display:flex;flex-direction:column;
   }
 
-  /* ce qui ne sert qu a la belle image disparait */
-  .deck,.sleeve-slot,.swoosh,.blob,.glow,
+  /* ce qui ne sert qu a la belle image disparait. La platine, elle, reste :
+     c est le coeur du site. La pochette part, son interet est le survol. */
+  .sleeve-slot,.swoosh,.blob,.glow,
   .halftone,.scan,.noise,.vignette{display:none}
+
+  /* --- la platine, reduite pour tenir dans la largeur du telephone ---
+     Le bloc garde ses 660x396 pour que ses pieces restent bien placees ;
+     seule l image est reduite. Les marges negatives ramenent la place qu il
+     occupe dans la colonne a sa taille reelle a l ecran. */
+  .deck{
+    display:block;
+    position:relative;left:auto;top:auto;
+    flex:0 0 auto;align-self:center;
+    width:660px;height:396px;
+    transform:rotate(-6deg) scale(.46);
+    transform-origin:50% 50%;
+    margin:-91px -170px;
+    transition:opacity 1.25s ease .2s;
+  }
+  /* la secousse est calee sur la taille du bureau : elle ferait sauter
+     l echelle du telephone */
+  body.is-hit .deck{animation:none}
 
   .intro-logo{width:200px;height:200px;margin:-100px 0 0 -100px}
 

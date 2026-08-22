@@ -25,6 +25,8 @@
 </div>
 
 <div class="veil"></div>
+<!-- la nappe claire : au contact du disque elle s ouvre en cercle depuis lui -->
+<div class="veil-open" id="veilOpen"></div>
 
 <div class="fit" id="fit">
 <div class="stage" id="stageBox">
@@ -129,6 +131,10 @@ var TRACK_BPM = {
    se contrediraient. */
 var MOBILE = window.matchMedia('(max-width: 820px)').matches;
 if (MOBILE) document.body.classList.add('is-mobile');
+
+/* le systeme demande de limiter les animations : le vol du disque est alors
+   remplace par un simple fondu, donc rien a attendre avant la pose */
+var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------------- toute la scene tient dans la fenetre ---------------- */
 (function(){
@@ -408,7 +414,8 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 105.24, text: "How do you do that shit?" },
     { t: 107.41, text: "Tell me you love it, girl, say that shit" },
     { t: 109.74, text: "Tell me you love, tell me you love, uh, uh" },
-    { t: 113.67, text: "[02:13.39] If looks could kill, I'm the most wanted terrorist, yeah" },
+    { t: 113.67, music: true },
+    { t: 133.39, text: "If looks could kill, I'm the most wanted terrorist, yeah" },
     { t: 138.41, text: "She's just as real as it gets, or it's the insomnia" },
     { t: 143.89, text: "Benji bills, lined up so good, baby, got chills" },
     { t: 148.58, text: "Girl, I can tell you're excited, it's so obvious" },
@@ -420,7 +427,7 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 176.70, text: "Gon' have you done tonight" },
     { t: 179.65, text: "I ain't with the games you playing" },
     { t: 181.73, text: "Shawty want someone tonight" },
-    { t: 184.03, text: "94" },
+    { t: 184.03, music: true },
   ];
 
   LYRICS_BY_TRACK[2] = [
@@ -478,7 +485,7 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 155.40, text: "Hittin' crack talk, up your moves, I'll buss you, boy" },
     { t: 158.15, text: "Even if you bring that pipe, you not untouchable" },
     { t: 161.10, text: "Even if you think you're weaponed, not gon' trust you, no" },
-    { t: 164.08, text: "82" },
+    { t: 164.08, music: true },
   ];
 
   LYRICS_BY_TRACK[3] = [
@@ -531,7 +538,7 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 91.79, text: "I let the drum roll play, yeah, I let the sun fall, schyeah" },
     { t: 94.39, text: "Huh, schyeah, and somehow it's my fault, schyeah" },
     { t: 96.49, text: "Bitch, look at yourself in the mirror" },
-    { t: 98.22, text: "136" },
+    { t: 98.22, music: true },
   ];
 
   LYRICS_BY_TRACK[4] = [
@@ -571,7 +578,7 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 101.05, text: "Said he got girls on girls, but they all really just using" },
     { t: 104.73, text: "That's racks I been got, show your ass the countdown" },
     { t: 108.26, text: "I'ma make the pussy ring out, it's Friday Night Smackdown" },
-    { t: 112.25, text: "139" },
+    { t: 112.25, music: true },
   ];
 
   LYRICS_BY_TRACK[5] = [
@@ -587,7 +594,8 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 54.45, text: "Got that Fendi on my waist, la bella figura" },
     { t: 57.35, text: "Look like I got Fenty face, she think I look good, yeah" },
     { t: 60.26, text: "Watch what you smoke, they fent lacing, oh yeah" },
-    { t: 63.90, text: "[01:07.06] Smoke an ounce out every day" },
+    { t: 63.90, music: true },
+    { t: 67.06, text: "Smoke an ounce out every day" },
     { t: 70.18, text: "Every— e-every— every day" },
     { t: 73.87, text: "I kill all the beats, I'm wanted for murder, yeah" },
     { t: 76.66, text: "I kill all the speakers, bitch, they never learning" },
@@ -602,7 +610,7 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 101.23, text: "I'on need no ID, man, bitch, I know the servers" },
     { t: 104.15, text: "Gold medal for that sex, I dive in her cervix" },
     { t: 107.14, text: "She touching me on my chest, she love when I'm shirtless" },
-    { t: 111.08, text: "82" },
+    { t: 111.08, music: true },
   ];
 
   LYRICS_BY_TRACK[6] = [
@@ -641,7 +649,7 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 103.85, text: "Dripped out in Milan, I'm in the backseat, oh" },
     { t: 107.14, text: "I ain't gotta pay for these in Italy, uh" },
     { t: 110.21, text: "Italia, mm" },
-    { t: 114.02, text: "77" },
+    { t: 114.02, music: true },
   ];
 
   LYRICS_BY_TRACK[7] = [
@@ -660,7 +668,8 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 49.58, text: "She do me like suction, yeah, her brain smoothly" },
     { t: 52.82, text: "I pull up to function, ha, everybody start moving" },
     { t: 55.96, text: "I'm an icеdancer, I'ma drain my bank account, boy" },
-    { t: 60.33, text: "[01:15.89] Yeah, I was lostrushi at fourteen, for sure" },
+    { t: 60.33, music: true },
+    { t: 75.89, text: "Yeah, I was lostrushi at fourteen, for sure" },
     { t: 79.03, text: "Okay, I spillеd the Hi-Tech on the 14th, oh no" },
     { t: 82.29, text: "It's real, I hit up Teruki, he gon' send some more" },
     { t: 85.45, text: "Oh yeah, I cannot stomach this, but it's just how it go" },
@@ -678,7 +687,7 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 115.93, text: "I'm un— I'm unnatural (I'm unnatural)" },
     { t: 119.06, text: "Baby, I'm unnatural (Unnatural)" },
     { t: 121.81, text: "Improv, I'm unnatural" },
-    { t: 126.22, text: "76" },
+    { t: 126.22, music: true },
   ];
 
   LYRICS_BY_TRACK[8] = [
@@ -721,7 +730,7 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 88.53, text: "只有我知道自己在干什么" },
     { t: 91.55, text: "只有我知道" },
     { t: 93.01, text: "只有我知道" },
-    { t: 103.01, text: "81" },
+    { t: 103.01, music: true },
   ];
 
   LYRICS_BY_TRACK[9] = [
@@ -764,7 +773,7 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 105.81, text: "(Knockout, like KO) Told the ref, \"Ring that bell\"" },
     { t: 109.02, text: "(K-K-KO) Got that boy running drills" },
     { t: 112.26, text: "(Knockout, like KO) Told ref, \"Ring that shit now\"" },
-    { t: 116.05, text: "150" },
+    { t: 116.05, music: true },
   ];
 
   LYRICS_BY_TRACK[10] = [
@@ -796,7 +805,7 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 81.19, text: "Bitch I'm bed rockin', and i'm smooth" },
     { t: 84.39, text: "You can't stop me, Oh scyeah" },
     { t: 87.13, text: "Speakers knockin', it go boom (Boom, woah)" },
-    { t: 93.40, text: "82" },
+    { t: 93.40, music: true },
   ];
 
   LYRICS_BY_TRACK[11] = [
@@ -839,7 +848,7 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 130.77, text: "(Won't pick up the phone, but I know you still there)" },
     { t: 134.24, text: "You're too far from home, still cara mia" },
     { t: 137.29, text: "(And if you pick up, pick up, I won't know what to say, yeah, no)" },
-    { t: 141.32, text: "136" },
+    { t: 141.32, music: true },
   ];
 
   LYRICS_BY_TRACK[12] = [
@@ -880,7 +889,7 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 97.48, text: "I been on that, you don't even know what you claiming" },
     { t: 100.96, text: "Yeah, uh" },
     { t: 102.53, text: "I'm too sick and I hope I don't get well soon" },
-    { t: 119.31, text: "101" },
+    { t: 119.31, music: true },
   ];
 
   LYRICS_BY_TRACK[13] = [
@@ -896,7 +905,8 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 46.24, text: "Can't go nowhere with arrogance, no" },
     { t: 49.05, text: "You wouldn't talk to me anyway" },
     { t: 52.15, text: "But I know you're there, no? (There's no more faking)" },
-    { t: 56.29, text: "[01:24.59] Wanted to blanket you up in my embrace" },
+    { t: 56.29, music: true },
+    { t: 84.59, text: "Wanted to blanket you up in my embrace" },
     { t: 87.74, text: "Got you so good in my love, I couldn't waste it" },
     { t: 91.41, text: "In my room, I lick you all up and down, oh yeah" },
     { t: 94.98, text: "I know how to makе you feel good, I can still taste it" },
@@ -911,9 +921,11 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 116.33, text: "Can't go nowhere with ignorance, no" },
     { t: 119.38, text: "While yes, I'm here and I'm quiet" },
     { t: 122.99, text: "I'm entertained, uh (There's no more faking)" },
-    { t: 128.10, text: "[02:19.10] You lie, you lie, ooh" },
-    { t: 142.12, text: "[02:32.90] You lie, you lie, ooh, ooh" },
-    { t: 156.26, text: "136" },
+    { t: 128.10, music: true },
+    { t: 139.10, text: "You lie, you lie, ooh" },
+    { t: 142.12, music: true },
+    { t: 152.90, text: "You lie, you lie, ooh, ooh" },
+    { t: 156.26, music: true },
   ];
 
   LYRICS_BY_TRACK[14] = [
@@ -957,12 +969,16 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 104.78, text: "Oh yeah, I love it, yeah" },
     { t: 108.43, text: "I love it, yeah, I love it, yeah" },
     { t: 111.59, text: "You love it, yeah" },
-    { t: 113.95, text: "[01:57.83] You love it, yeah" },
-    { t: 118.88, text: "[02:04.05] You love it, yeah" },
+    { t: 113.95, music: true },
+    { t: 117.83, text: "You love it, yeah" },
+    { t: 118.88, music: true },
+    { t: 124.05, text: "You love it, yeah" },
     { t: 125.39, text: "Love— love—" },
-    { t: 126.61, text: "[02:10.36] You love it, yeah" },
-    { t: 131.61, text: "[02:16.57] You love it, yeah" },
-    { t: 139.09, text: "153" },
+    { t: 126.61, music: true },
+    { t: 130.36, text: "You love it, yeah" },
+    { t: 131.61, music: true },
+    { t: 136.57, text: "You love it, yeah" },
+    { t: 139.09, music: true },
   ];
 
   LYRICS_BY_TRACK[15] = [
@@ -986,7 +1002,7 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 92.64, text: "You know what I want's not next to you" },
     { t: 95.69, text: "It's out the way, it's out the way" },
     { t: 100.16, text: "Come south, my way" },
-    { t: 103.50, text: "95" },
+    { t: 103.50, music: true },
   ];
 
   LYRICS_BY_TRACK[16] = [
@@ -1019,7 +1035,7 @@ if (MOBILE) document.body.classList.add('is-mobile');
     { t: 85.36, text: "\"Can I ruin your life?\" And she said, \"Yes, you may\"" },
     { t: 89.60, text: "Meant to hold you, uh, not to stress the weight" },
     { t: 93.77, text: "Wanted to draw closer to you, now you're a stretch away" },
-    { t: 97.29, text: "120" },
+    { t: 97.29, music: true },
   ];
 
 
@@ -1286,6 +1302,25 @@ if (MOBILE) document.body.classList.add('is-mobile');
     }
 
     put('f', vw * 0.50, vh * 0.50);   // le disque se revele au centre, sous le signe
+
+    aimWave(cx, cy);   // l onde partira de la, c est a dire du disque pose
+  }
+
+  /* Centre de l onde et rayon dont elle a besoin pour couvrir l ecran depuis
+     ce centre : c est la distance au coin le plus eloigne. Sans ce calcul,
+     l onde finirait sa course bien avant la fin de l animation (ou apres). */
+  function aimWave(cx, cy){
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var need = Math.max(
+      Math.sqrt(cx * cx + cy * cy),
+      Math.sqrt((vw - cx) * (vw - cx) + cy * cy),
+      Math.sqrt(cx * cx + (vh - cy) * (vh - cy)),
+      Math.sqrt((vw - cx) * (vw - cx) + (vh - cy) * (vh - cy))
+    );
+    var s = document.body.style;
+    s.setProperty('--ox', cx.toFixed(0) + 'px');
+    s.setProperty('--oy', cy.toFixed(0) + 'px');
+    s.setProperty('--wr', Math.ceil(need) + 'px');
   }
   if (!MOBILE){                    // sans platine, il n y a rien a viser
     aim();
@@ -1352,21 +1387,47 @@ if (MOBILE) document.body.classList.add('is-mobile');
     /* le fond et la platine se levent ensemble, dans la meme respiration :
        ainsi tout est deja en place quand le disque se pose, et l atterrissage
        reste le seul temps fort, pas un troisieme sursaut separe */
-    setTimeout(function(){
-      body.classList.add('is-lighten');      // le noir se leve
-    }, LAND - 900);
+    /* Tout se joue au contact : le fond reste noir jusque la, puis l onde
+       claire part du disque et la scene nait avec elle.
+       On ne declenche PAS sur un minuteur : si le navigateur prend du retard,
+       le disque n a pas fini de tomber et l onde partirait a cote de lui. On
+       attend la fin reelle du vol ; le minuteur ne sert que de filet. */
+    var landed = false;
 
-    setTimeout(function(){
-      body.classList.add('is-stage');        // la platine sort du vide, juste derriere
-    }, LAND - 760);
+    function land(){
+      if (landed) return;
+      landed = true;
 
-    setTimeout(function(){
+      /* Le centre de l onde est celui du disque lui meme, releve maintenant.
+         Comme on arrive ici a la fin de son vol, il est sur le plateau ; et si
+         le navigateur avait pris du retard, l onde partirait quand meme de la
+         ou le disque se trouve vraiment, jamais a cote de lui. */
+      if (fly){
+        var r = fly.getBoundingClientRect();
+        aimWave(r.left + r.width / 2, r.top + r.height / 2);
+      }
+
       body.classList.add('is-landed');       // il se pose : le plateau tourne, le bras descend
+      body.classList.add('is-open');         // l onde claire s ouvre depuis le point d impact
+      body.classList.add('is-stage');        // la platine et le reste naissent avec l onde
       body.classList.add('is-hit');
       setTimeout(function(){ body.classList.remove('is-hit'); }, 240);
       tryPlay();                             // et la musique demarre au meme instant
       paintBtn();
-    }, LAND);
+
+      /* l onde a fini sa course : on retire les nappes pour rendre au fond
+         ses teintes pastel */
+      setTimeout(function(){ body.classList.add('is-lit'); }, 1000);
+    }
+
+    if (REDUCED){
+      setTimeout(land, LAND);                // sans vol, il n y a rien a attendre
+    } else {
+      fly.addEventListener('animationend', function(e){
+        if (e.animationName === 'flyin') land();
+      });
+      setTimeout(land, LAND + 700);          // filet, si l evenement ne vient pas
+    }
   }
 
   function waitForGesture(){
