@@ -128,8 +128,8 @@ body.is-armed .intro-logo{
   position:absolute;left:0;right:0;top:26px;z-index:8;
   display:flex;justify-content:center;
   pointer-events:none;                 /* seule la rangee reagit a la souris */
-  opacity:0;transform:translateY(-140px);
-  transition:opacity 1.1s ease 1.15s,transform 1.25s cubic-bezier(.2,.72,.2,1) 1.15s;
+  opacity:0;transform:translateY(-46px) scale(.88);
+  transition:opacity 1s ease .72s,transform 1.15s cubic-bezier(.2,.72,.2,1) .72s;
 }
 body.is-stage .dock{opacity:1;transform:none}
 body.is-stage .dock-win{pointer-events:auto}
@@ -234,7 +234,7 @@ body.is-stage .sleeve-slot{pointer-events:auto}
   filter:grayscale(1) contrast(1.08) brightness(.98);
   box-shadow:10px 12px 0 rgba(20,18,15,.1);
   transform:translate(-26px,26px) scale(.97);
-  transition:opacity 1.3s ease .5s,transform 1.3s cubic-bezier(.2,.7,.2,1) .5s;
+  transition:opacity 1.2s ease .62s,transform 1.2s cubic-bezier(.2,.7,.2,1) .62s;
 }
 body.is-stage .sleeve{
   opacity:1;
@@ -258,9 +258,11 @@ body.is-stage .sleeve{
 .deck{
   position:absolute;left:340px;top:318px;z-index:5;
   width:660px;height:396px;
-  transform:rotate(-6deg);
-  transition:transform 1.35s cubic-bezier(.2,.72,.2,1) .18s;
+  /* elle monte du fond : un peu plus petite et plus basse, puis elle se pose */
+  transform:rotate(-6deg) translateY(28px) scale(.955);
+  transition:transform 1.3s cubic-bezier(.2,.72,.2,1) .5s;
 }
+body.is-stage .deck{transform:rotate(-6deg)}
 
 /* chaque piece de la platine apparait, le disque reste visible */
 .deck-plinth,.deck-face,.platter-mat,.spindle,.arm,.deck-knob,.platter::before{
@@ -461,8 +463,8 @@ body.is-hit .deck{animation:hit 220ms cubic-bezier(.2,.8,.3,1) 1}
 .controls{
   position:absolute;right:52px;bottom:44px;z-index:9;
   display:flex;align-items:center;gap:16px;
-  opacity:0;transform:translateY(18px);pointer-events:none;
-  transition:opacity .9s ease 1.9s,transform .9s ease 1.9s;
+  opacity:0;transform:translateY(24px) scale(.9);pointer-events:none;
+  transition:opacity .85s ease 1.08s,transform .95s cubic-bezier(.2,.72,.2,1) 1.08s;
 }
 body.is-stage .controls{opacity:1;transform:none;pointer-events:auto}
 
@@ -530,8 +532,8 @@ body.is-stage .controls{opacity:1;transform:none;pointer-events:auto}
   width:310px;height:474px;
   overflow:hidden;
   perspective:900px;
-  opacity:0;transform:translateX(28px);
-  transition:opacity 1.1s ease 1.5s,transform 1.2s cubic-bezier(.2,.72,.2,1) 1.5s;
+  opacity:0;transform:translateY(30px) scale(.94);
+  transition:opacity 1s ease .9s,transform 1.1s cubic-bezier(.2,.72,.2,1) .9s;
   /* les bords se fondent, comme dans le lecteur d Apple */
   -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 16%,#000 84%,transparent 100%);
           mask-image:linear-gradient(180deg,transparent 0,#000 16%,#000 84%,transparent 100%);
@@ -622,7 +624,7 @@ body.is-playing .lyrics.is-quiet .lyr-note{animation-play-state:running}
   position:absolute;left:96px;bottom:44px;
   width:520px;height:420px;
   z-index:1;pointer-events:none;
-  opacity:0;transition:opacity 1.6s ease .9s;
+  opacity:0;transition:opacity 1.4s ease 1.2s;
 }
 body.is-stage .swoosh{opacity:1}
 
@@ -704,11 +706,14 @@ body.is-stage .swoosh{opacity:1}
     position:relative;left:auto;top:auto;
     flex:0 0 auto;align-self:center;
     width:660px;height:396px;
-    transform:rotate(-6deg) scale(.46);
+    transform:rotate(-6deg) translateY(22px) scale(.43);
     transform-origin:50% 50%;
     margin:-91px -170px;
-    transition:opacity 1.25s ease .2s;
+    transition:transform 1.2s cubic-bezier(.2,.72,.2,1) .45s,opacity 1.2s ease .45s;
   }
+  /* sans cette ligne, la regle de bureau (plus specifique) reprendrait la main
+     et rendrait a la platine sa taille d ecran large */
+  body.is-stage .deck{transform:rotate(-6deg) scale(.46)}
   /* la secousse est calee sur la taille du bureau : elle ferait sauter
      l echelle du telephone */
   body.is-hit .deck{animation:none}
