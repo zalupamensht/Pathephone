@@ -217,6 +217,55 @@ body.is-stage .dock-win{pointer-events:auto}
   color:rgba(20,18,15,.6);
 }
 
+/* ---------- choix de l album, en bas ----------
+   Memes pastilles de verre que les pistes, en plus petit : la pochette de
+   l album occupe tout le rond, on reconnait l album au premier coup d oeil. */
+
+.albums{
+  position:absolute;left:0;right:0;bottom:36px;z-index:8;
+  display:flex;justify-content:center;gap:30px;
+  pointer-events:none;
+  opacity:0;transform:translateY(26px) scale(.92);
+  transition:opacity .9s ease 1.25s,transform 1s cubic-bezier(.2,.72,.2,1) 1.25s;
+}
+/* la rangee occupe toute la largeur : on ne rend cliquables que les pastilles,
+   sinon sa zone vide happerait les clics voisins */
+body.is-stage .albums{opacity:1;transform:none}
+body.is-stage .alb{pointer-events:auto}
+
+.alb{
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  background:none;border:0;padding:0;cursor:pointer;
+  transition:transform .42s cubic-bezier(.22,.72,.16,1);
+}
+.alb:hover{transform:translateY(-5px)}
+.alb .bub{width:76px;height:76px}
+/* la pochette remplit le rond au lieu du petit signe des pistes */
+.alb .bub-art{
+  left:0;top:0;width:100%;height:100%;
+  margin:0;transform:none;border-radius:50%;
+  object-fit:cover;opacity:.94;
+}
+.alb-name{
+  font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+  text-align:center;line-height:1.5;
+  color:rgba(20,18,15,.55);
+  max-width:110px;
+}
+.alb.is-current .bub{
+  box-shadow:
+    0 0 0 2px rgba(20,18,15,.7),
+    0 12px 22px rgba(20,18,15,.14),
+    inset 0 2px 3px rgba(255,255,255,.9);
+}
+.alb.is-current .alb-name{color:rgba(20,18,15,.85)}
+.alb:focus-visible .bub{outline:2px solid var(--ink);outline-offset:5px}
+
+/* album sans pistes pour l instant : la rangee du haut et les paroles
+   n auraient rien a montrer, on les met de cote */
+body.is-bare .dock,
+body.is-bare .lyrics{opacity:0;pointer-events:none}
+
 /* ---------- pochette appuyee contre la platine ---------- */
 
 .sleeve-slot{
@@ -779,6 +828,19 @@ body.is-stage .swoosh{opacity:1}
   .lyr-track{padding:44px 18px}
   .lyr{font-size:19px;line-height:1.3}
   .lyr.is-now{transform:none}          /* pas d agrandissement : rien ne depasse */
+
+  /* --- le choix de l album, juste au dessus de la barre --- */
+  .albums{
+    position:static;bottom:auto;
+    flex:0 0 auto;
+    gap:22px;padding:6px 0 2px;
+    transform:none;
+    transition:opacity .8s ease .95s;
+  }
+  body.is-stage .albums{transform:none}
+  .alb .bub{width:50px;height:50px}
+  .alb{gap:6px}
+  .alb-name{font-size:8px;letter-spacing:.08em;max-width:90px}
 
   /* --- la barre du bas --- */
   .controls{

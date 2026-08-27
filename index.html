@@ -84,6 +84,9 @@
     </svg>
   </div>
 
+  <!-- choix de l album : les pastilles sont remplies par le script -->
+  <div class="albums" id="albums"></div>
+
   <div class="controls">
     <button class="sound" id="sound" type="button" aria-label="Play / pause">
       <span class="ico-pause"><i></i><i></i></span>
@@ -1251,6 +1254,67 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   window.__lyrics = function(){
     return {current: current, quiet: box.classList.contains('is-quiet'), lines: track.children.length};
   };
+})();
+
+/* ---------------- choix de l album ---------------- */
+(function(){
+  /* Un album = un disque et une pochette. Le reste (pistes, paroles) viendra
+     plus tard pour les albums qui n en ont pas encore. */
+  var ALBUMS = [
+    { title:'Unmisque',       by:'Lucy Bedroque',
+      disc:'assets/disc.png',  cover:'assets/cover.jpg',  thumb:'assets/alb1.jpg', tracks:true  },
+    { title:'Revengeseekerz', by:'Jane Remover',
+      disc:'assets/disc2.png', cover:'assets/cover2.jpg', thumb:'assets/alb2.jpg', tracks:false }
+  ];
+
+  var box    = document.getElementById('albums');
+  var disc   = document.querySelector('.disc');
+  var sleeve = document.querySelector('.sleeve');
+  var audio  = document.getElementById('theme');
+  if (!box || !disc) return;
+
+  /* on charge les images de l album voisin a l avance : au clic, le disque
+     change d un coup au lieu de clignoter en blanc le temps du telechargement */
+  ALBUMS.forEach(function(a){
+    [a.disc, a.cover].forEach(function(src){ var i = new Image(); i.src = src; });
+  });
+
+  var cur = 0;
+
+  var items = ALBUMS.map(function(a, i){
+    var el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'alb';
+    el.setAttribute('aria-label', a.title + ' - ' + a.by);
+    el.innerHTML =
+      '<span class="bub">' +
+        '<span class="bub-glass"></span>' +
+        '<img class="bub-art" src="' + a.thumb + '" alt="">' +
+      '</span>' +
+      '<span class="alb-name">' + a.title + '</span>';
+    el.addEventListener('click', function(){ pick(i); });
+    box.appendChild(el);
+    return el;
+  });
+
+  function pick(i){
+    if (i === cur || !ALBUMS[i]) return;
+    cur = i;
+    var a = ALBUMS[i];
+
+    disc.src = a.disc;
+    if (sleeve) sleeve.src = a.cover;
+    items.forEach(function(el, j){ el.classList.toggle('is-current', j === i); });
+
+    /* album encore sans pistes : rien a jouer et rien a montrer en haut.
+       audio.pause() declenche l evenement qui remet le bouton au bon dessin. */
+    document.body.classList.toggle('is-bare', !a.tracks);
+    if (!a.tracks && audio && !audio.paused) audio.pause();
+  }
+
+  items[0].classList.add('is-current');
+  window.__setAlbum   = pick;
+  window.__albumState = function(){ return {current: cur, total: ALBUMS.length}; };
 })();
 
 /* ---------------- arrivee du disque, impact, puis lecture en boucle ---------------- */
