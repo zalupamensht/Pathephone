@@ -241,6 +241,7 @@ body.is-stage .albums{opacity:1;transform:none}
 body.is-stage .alb{pointer-events:auto}
 
 .alb{
+  width:132px;                              /* meme place pour chacun : les ronds restent symetriques */
   display:flex;flex-direction:column;align-items:center;gap:10px;
   background:none;border:0;padding:0;cursor:pointer;
   transition:transform .42s cubic-bezier(.22,.72,.16,1);
@@ -257,7 +258,7 @@ body.is-stage .alb{pointer-events:auto}
   font-size:9px;letter-spacing:.16em;text-transform:uppercase;
   text-align:center;line-height:1.5;
   color:rgba(20,18,15,.55);
-  max-width:110px;
+  max-width:100%;
 }
 .alb.is-current .bub{
   box-shadow:
@@ -748,43 +749,21 @@ body.alb-red{
   color:#0b0507;
 }
 
-/* les taches pastel n ont plus lieu d etre : le fond est deja une couleur pleine */
-body.alb-red .blob{display:none}
-body.alb-red .glow{
-  background:radial-gradient(circle,
-              rgba(255,146,96,.42) 0%,
-              rgba(214,20,34,.26) 34%,
-              rgba(120,0,12,0) 68%);
-}
+/* l image porte deja sa lumiere et ses angles sombres : les taches pastel
+   et la lueur du fond clair ne feraient que s y poser par dessus */
+body.alb-red .blob,
+body.alb-red .glow{display:none}
 
-/* eclats noirs partant des coins : c est ce qui donne la nervosite du style */
-body.alb-red .bg::before,
-body.alb-red .bg::after{
-  content:"";position:absolute;inset:-25%;pointer-events:none;
-}
-body.alb-red .bg::before{
-  background:conic-gradient(from 196deg at 6% 2%,
-    #0b0507 0 5deg, transparent 5deg 11deg,
-    #0b0507 11deg 14deg, transparent 14deg 26deg,
-    #0b0507 26deg 29deg, transparent 29deg 360deg);
-  opacity:.92;
-}
-body.alb-red .bg::after{
-  background:conic-gradient(from 18deg at 98% 100%,
-    #0b0507 0 4deg, transparent 4deg 12deg,
-    #0b0507 12deg 16deg, transparent 16deg 24deg,
-    #0b0507 24deg 26deg, transparent 26deg 360deg);
-  opacity:.8;
-}
-
-/* Le collage : encre, etoiles, portees et fleurs. Il couvre toute la fenetre
-   et non la scene mise a l echelle, sinon il laisserait deux bandes rouges
-   nues sur les ecrans larges. Il reste sous tout le reste. */
+/* Le fond de l album : l image fournie, a fond perdu.
+   cover la recadre au lieu de l etirer : elle garde ses proportions et
+   remplit la fenetre quelle que soit sa forme. Le cadrage part toujours du
+   centre, donc c est le meme partout, du telephone au grand ecran ; c est
+   la largeur des bords perdus qui change, pas ce qu on garde. */
 .deco{display:none}
 body.alb-red .deco{
   display:block;
   position:absolute;inset:0;z-index:0;
-  width:100%;height:100%;
+  background:url("assets/bg2.jpg") center center / cover no-repeat;
   pointer-events:none;
   opacity:0;transition:opacity 1.4s ease .3s;
 }
@@ -795,10 +774,13 @@ body.alb-red.is-lighten .deco{opacity:1}
    Sur le rouge elle etouffait le collage, dont les points font deja partie du
    dessin, par plaques et non partout : on la retire ici. */
 body.alb-red .halftone{display:none}
-body.alb-red .scan{opacity:.05}
-body.alb-red .noise{opacity:.3}
+/* les couches de salete sont faites pour le papier clair : sur l image du fond
+   elles la ternissaient. On les laisse a peine, juste de quoi lier la scene
+   au fond, sans repeindre le dessin. */
+body.alb-red .scan{opacity:.04}
+body.alb-red .noise{opacity:.14}
 body.alb-red .vignette{
-  background:radial-gradient(ellipse at 50% 46%,rgba(11,5,7,0) 46%,rgba(11,5,7,.4) 100%);
+  background:radial-gradient(ellipse at 50% 46%,rgba(11,5,7,0) 52%,rgba(11,5,7,.3) 100%);
 }
 /* les courbes fines du fond clair jureraient sur le rouge */
 body.alb-red .swoosh{display:none}
@@ -828,7 +810,10 @@ body.alb-red .bub:hover{
     inset 0 -14px 26px rgba(0,0,0,.46),
     inset 0 2px 3px rgba(255,255,255,.3);
 }
-body.alb-red .bub-num{color:rgba(255,238,232,.6)}
+body.alb-red .bub-num{
+  color:rgba(255,255,255,.7);
+  text-shadow:0 0 8px rgba(255,255,255,.5);
+}
 /* la piste qui joue est cerclee de blanc : sur le noir c est le seul liseré qui se voit */
 body.alb-red .trk.is-current .bub,
 body.alb-red .alb.is-current .bub{
@@ -839,9 +824,18 @@ body.alb-red .alb.is-current .bub{
 }
 body.alb-red .trk-name,
 body.alb-red .alb-name{
-  color:#0b0507;font-weight:700;
+  color:rgba(255,255,255,.76);font-weight:700;
+  text-shadow:0 0 10px rgba(255,255,255,.42),
+              0 0 24px rgba(255,110,110,.34),
+              0 1px 2px rgba(11,5,7,.6);
 }
-body.alb-red .alb.is-current .alb-name{color:#fff}
+body.alb-red .trk.is-current .trk-name,
+body.alb-red .alb.is-current .alb-name{
+  color:#fff;
+  text-shadow:0 0 8px rgba(255,255,255,.95),
+              0 0 26px rgba(255,255,255,.7),
+              0 1px 2px rgba(11,5,7,.5);
+}
 body.alb-red .bub:focus-visible,
 body.alb-red .alb:focus-visible .bub{outline-color:#fff}
 
@@ -855,41 +849,74 @@ body.alb-red .sleeve{
 /* ---- la platine se met au noir pour ne pas trancher sur le rouge ---- */
 
 body.alb-red .deck-plinth{
-  background:linear-gradient(168deg,#1c0509 0%,#0d0204 46%,#050102 100%);
+  background:linear-gradient(168deg,#140406 0%,#080102 48%,#020000 100%);
   box-shadow:
-    0 30px 46px rgba(0,0,0,.5),
-    0 6px 12px rgba(0,0,0,.35),
-    inset 0 1px 0 rgba(255,255,255,.14);
+    0 30px 46px rgba(0,0,0,.58),
+    0 6px 12px rgba(0,0,0,.42),
+    inset 0 1px 0 rgba(255,255,255,.1);
 }
+/* plaque unie : sur le rouge, les rayures du metal brosse faisaient un moire
+   de traits verticaux qui accrochait l oeil plus que la platine elle meme */
 body.alb-red .deck-face{
-  background:linear-gradient(178deg,#3a3430 0%,#221e1b 34%,#2e2a26 64%,#171412 100%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 -2px 6px rgba(0,0,0,.5);
+  background:linear-gradient(178deg,#1e1a18 0%,#121010 40%,#181514 70%,#0a0908 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 -2px 8px rgba(0,0,0,.6);
 }
-body.alb-red .deck-face::after{
-  background:repeating-linear-gradient(90deg,rgba(255,255,255,.14) 0 1px,rgba(0,0,0,.2) 1px 3px);
-}
+body.alb-red .deck-face::after{display:none}
 body.alb-red .platter::before{
-  background:radial-gradient(circle at 38% 30%,#4a4340 0%,#2a2523 46%,#151211 100%);
-  box-shadow:0 10px 20px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.14);
+  background:radial-gradient(circle at 38% 30%,#2b2624 0%,#171413 46%,#0a0808 100%);
+  box-shadow:0 10px 20px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.1);
 }
+/* le bras et son axe brillaient comme du chrome neuf a cote d une platine noire */
+body.alb-red .arm-tube{background:linear-gradient(180deg,#8f8b85,#5d5a55 52%,#332f2c)}
+body.alb-red .arm-pivot{
+  background:radial-gradient(circle at 36% 30%,#9a958e,#5b5852 60%,#2e2b28 100%);
+}
+body.alb-red .spindle{background:linear-gradient(180deg,#c9c5bf,#59564f)}
 body.alb-red .deck-knob{
   background:linear-gradient(180deg,#d8262f,#8b0a14);
   box-shadow:0 2px 4px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.4);
 }
 
-/* ---- paroles : noir sur rouge, la ligne chantee passe en blanc ---- */
+/* ---- paroles : le texte est allume, comme les fleurs du fond ----
+   Les lignes a venir ne font que rougeoyer ; celle qu on chante s allume
+   pour de bon, halo blanc puis halo rouge, et une ombre sombre dessous
+   pour qu elle tienne meme sur les plages claires du collage. */
 
-body.alb-red .lyr{color:rgba(11,5,7,.4)}
-body.alb-red .lyr:hover{color:rgba(11,5,7,.72)}
-body.alb-red .lyr.is-past{color:rgba(11,5,7,.24)}
+body.alb-red .lyr{
+  color:rgba(255,255,255,.46);
+  text-shadow:0 0 12px rgba(255,255,255,.3),0 1px 2px rgba(11,5,7,.5);
+}
+body.alb-red .lyr:hover{
+  color:rgba(255,255,255,.8);
+  text-shadow:0 0 16px rgba(255,255,255,.55),0 1px 2px rgba(11,5,7,.5);
+}
+body.alb-red .lyr.is-past{
+  color:rgba(255,255,255,.3);
+  text-shadow:0 0 10px rgba(255,255,255,.2),0 1px 2px rgba(11,5,7,.45);
+}
 body.alb-red .lyr.is-now{
   color:#fff;
-  text-shadow:0 2px 0 #0b0507,0 0 20px rgba(0,0,0,.5);
+  text-shadow:
+    0 0 7px rgba(255,255,255,.95),
+    0 0 24px rgba(255,255,255,.7),
+    0 0 52px rgba(255,96,96,.6),
+    0 2px 3px rgba(11,5,7,.6);
 }
-body.alb-red .lyr-echo{color:rgba(11,5,7,.42)}
-body.alb-red .lyr.is-now .lyr-echo{color:rgba(255,255,255,.82)}
-body.alb-red .lyr-note{color:rgba(11,5,7,.6)}
-body.alb-red .lyrics.is-tuning{box-shadow:inset 0 0 0 1px rgba(11,5,7,.4)}
+body.alb-red .lyr-echo{
+  color:rgba(255,255,255,.4);
+  text-shadow:0 0 10px rgba(255,255,255,.28),0 1px 2px rgba(11,5,7,.45);
+}
+body.alb-red .lyr.is-now .lyr-echo{
+  color:rgba(255,255,255,.86);
+  text-shadow:0 0 14px rgba(255,255,255,.6),0 1px 2px rgba(11,5,7,.5);
+}
+/* la note prend le meme halo : c est un dessin, donc drop-shadow et non text-shadow */
+body.alb-red .lyr-note{
+  color:rgba(255,255,255,.78);
+  filter:drop-shadow(0 0 9px rgba(255,255,255,.65))
+         drop-shadow(0 0 26px rgba(255,110,110,.5));
+}
+body.alb-red .lyrics.is-tuning{box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
 
 /* ---- lecture, pause, volume ---- */
 
@@ -1050,12 +1077,10 @@ body.alb-red #vol:focus-visible{outline-color:#fff}
   #vol{width:150px;height:8px}
 }
 
-/* sur telephone le collage est plus dense qu il n en faut derriere une seule
-   colonne : il reste, en retrait, et les eclats des coins s effacent */
+/* sur telephone le cadrage ne change pas : l image tient toujours en entier.
+   On la retient seulement un peu, pour que les paroles restent nettes. */
 @media (max-width: 820px){
-  body.alb-red .deco{opacity:.5}
+  body.alb-red .deco{opacity:.8}
   body.alb-red.is-stage .deco,
-  body.alb-red.is-lighten .deco{opacity:.5}
-  body.alb-red .bg::before,
-  body.alb-red .bg::after{display:none}
+  body.alb-red.is-lighten .deco{opacity:.8}
 }
