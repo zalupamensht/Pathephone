@@ -754,31 +754,21 @@ body.alb-red{
 body.alb-red .blob,
 body.alb-red .glow{display:none}
 
-/* Le fond de l album : l image fournie, entiere, jamais rognee.
-   Une fenetre n a presque jamais la forme exacte de l image : la barre du
-   navigateur mange de la hauteur, et un telephone est debout. Recadrer
-   voudrait dire perdre l etoile d un cote ou les feuillages de l autre.
-   L image tient donc toujours en entier (contain), et le reste de la fenetre
-   est comble par une reprise floue de cette meme image : l ecran est plein,
-   aucun bord ne se voit, et on voit tout le dessin, sur n importe quel ecran. */
+/* Le fond de l album : l image remplit la fenetre, sans laisser de bande vide.
+   Faire tenir l image entiere revenait a border la page de flou des que la
+   fenetre n avait pas exactement sa forme, ce qui arrive presque toujours :
+   la barre du navigateur mange de la hauteur, si bien qu une page sur un
+   ecran 16:9 est en realite bien plus large que haute.
+   L image est donc posee a fond perdu et rognee depuis le centre ; c est a
+   elle d etre dessinee plus large que la plus large des fenetres, avec de la
+   marge sur les bords. */
 .deco{display:none}
 body.alb-red .deco{
   display:block;
   position:absolute;inset:0;z-index:0;
-  overflow:hidden;
+  background:url("assets/bg2.jpg") center center / cover no-repeat;
   pointer-events:none;
   opacity:0;transition:opacity 1.4s ease .3s;
-}
-.deco-fill,
-.deco-art{position:absolute;inset:0;display:block}
-.deco-fill{
-  background:url("assets/bg2.jpg") center center / cover no-repeat;
-  /* le flou ronge les bords : on deborde du cadre pour qu il reste plein */
-  filter:blur(60px) brightness(.8) saturate(1.1);
-  transform:scale(1.2);
-}
-.deco-art{
-  background:url("assets/bg2.jpg") center center / contain no-repeat;
 }
 body.alb-red.is-stage .deco,
 body.alb-red.is-lighten .deco{opacity:1}
