@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 
@@ -23,8 +23,11 @@
   <span class="blob b3"></span>
   <span class="glow"></span>
   <!-- collage de la page rouge : cache sur les autres albums -->
-  <!-- fond de l album -->
-  <div class="deco"></div>
+  <!-- fond de l album : l image entiere, posee sur une reprise floue d elle meme -->
+  <div class="deco">
+    <span class="deco-fill"></span>
+    <span class="deco-art"></span>
+  </div>
 </div>
 
 <div class="veil"></div>
@@ -104,7 +107,8 @@
 </div>
 </div>
 
-<audio id="theme" src="assets/track1.mp3?v=2" loop preload="auto"></audio>
+<!-- pas de "loop" : une piste qui se termine passe la main a la suivante -->
+<audio id="theme" src="assets/track1.mp3?v=2" preload="auto"></audio>
 
 <div class="halftone"></div>
 <div class="scan"></div>
@@ -1737,8 +1741,7 @@ var ALBUMS = [
 
   { title:'Revengeseekerz', by:'Jane Remover', theme:'red',
     disc:'assets/disc2.png', cover:'assets/cover2.jpg', thumb:'assets/alb2.jpg',
-    /* les pastilles des pistes montrent le vinyle lui-meme, pas la pochette */
-    art:'assets/disc2.png', artFill:true,
+    art:'assets/trk2.jpg', artFill:true,
     start:7,                                  /* Dancing with your eyes closed */
     tracks: A2 }
 ];
@@ -2462,6 +2465,15 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (audio.paused){ wanted = true; tryPlay(); }
     else { wanted = false; audio.pause(); }
     paintBtn();
+  });
+
+  /* la piste est finie : on enchaine sur la suivante de l album, et apres la
+     derniere on repart de la premiere. Le meme numero est force, sinon un
+     album d une seule piste ne repartirait jamais. */
+  audio.addEventListener('ended', function(){
+    var list = ALB().tracks;
+    if (!list.length) return;
+    window.__playTrack((trackIdx + 1) % list.length, true);
   });
 
   audio.addEventListener('play', paintBtn);

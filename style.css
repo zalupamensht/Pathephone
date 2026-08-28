@@ -754,18 +754,31 @@ body.alb-red{
 body.alb-red .blob,
 body.alb-red .glow{display:none}
 
-/* Le fond de l album : l image fournie, a fond perdu.
-   cover la recadre au lieu de l etirer : elle garde ses proportions et
-   remplit la fenetre quelle que soit sa forme. Le cadrage part toujours du
-   centre, donc c est le meme partout, du telephone au grand ecran ; c est
-   la largeur des bords perdus qui change, pas ce qu on garde. */
+/* Le fond de l album : l image fournie, entiere, jamais rognee.
+   Une fenetre n a presque jamais la forme exacte de l image : la barre du
+   navigateur mange de la hauteur, et un telephone est debout. Recadrer
+   voudrait dire perdre l etoile d un cote ou les feuillages de l autre.
+   L image tient donc toujours en entier (contain), et le reste de la fenetre
+   est comble par une reprise floue de cette meme image : l ecran est plein,
+   aucun bord ne se voit, et on voit tout le dessin, sur n importe quel ecran. */
 .deco{display:none}
 body.alb-red .deco{
   display:block;
   position:absolute;inset:0;z-index:0;
-  background:url("assets/bg2.jpg") center center / cover no-repeat;
+  overflow:hidden;
   pointer-events:none;
   opacity:0;transition:opacity 1.4s ease .3s;
+}
+.deco-fill,
+.deco-art{position:absolute;inset:0;display:block}
+.deco-fill{
+  background:url("assets/bg2.jpg") center center / cover no-repeat;
+  /* le flou ronge les bords : on deborde du cadre pour qu il reste plein */
+  filter:blur(60px) brightness(.8) saturate(1.1);
+  transform:scale(1.2);
+}
+.deco-art{
+  background:url("assets/bg2.jpg") center center / contain no-repeat;
 }
 body.alb-red.is-stage .deco,
 body.alb-red.is-lighten .deco{opacity:1}
