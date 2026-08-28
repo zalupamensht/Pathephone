@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
@@ -1737,7 +1737,8 @@ var ALBUMS = [
 
   { title:'Revengeseekerz', by:'Jane Remover', theme:'red',
     disc:'assets/disc2.png', cover:'assets/cover2.jpg', thumb:'assets/alb2.jpg',
-    art:'assets/cover2.jpg', artFill:true,
+    /* les pastilles des pistes montrent le vinyle lui-meme, pas la pochette */
+    art:'assets/disc2.png', artFill:true,
     start:7,                                  /* Dancing with your eyes closed */
     tracks: A2 }
 ];
@@ -2220,7 +2221,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var items = ALBUMS.map(function(a, i){
     var el = document.createElement('button');
     el.type = 'button';
-    el.className = 'alb';
+    /* la pastille porte le decor de SON album, pas celui de la page ouverte :
+       c est a sa couleur qu on reconnait l album vers lequel on va */
+    el.className = 'alb alb-t-' + a.theme;
     el.setAttribute('aria-label', a.title + ' - ' + a.by);
     el.innerHTML =
       '<span class="bub">' +

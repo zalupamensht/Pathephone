@@ -787,7 +787,8 @@ body.alb-red .swoosh{display:none}
 
 /* ---- pastilles de verre : verre fume au lieu de verre clair ---- */
 
-body.alb-red .bub{
+body.alb-red .trk .bub,
+body.alb-red .alb-t-red .bub{
   border-color:rgba(255,255,255,.2);
   background:linear-gradient(180deg,#3a1015 0%,#1a070b 48%,#050203 100%);
   box-shadow:
@@ -796,31 +797,41 @@ body.alb-red .bub{
     inset 0 -14px 26px rgba(0,0,0,.5),
     inset 0 2px 3px rgba(255,255,255,.28);
 }
-body.alb-red .bub-glass{
+body.alb-red .trk .bub-glass,
+body.alb-red .alb-t-red .bub-glass{
   background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,.06) 62%,rgba(255,255,255,0));
 }
-body.alb-red .bub::after{
+body.alb-red .trk .bub::after,
+body.alb-red .alb-t-red .bub::after{
   background:radial-gradient(120% 88% at 50% 118%,rgba(255,120,90,.3) 0%,rgba(255,255,255,0) 58%);
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);
 }
-body.alb-red .bub:hover{
+body.alb-red .trk .bub:hover,
+body.alb-red .alb-t-red .bub:hover{
   box-shadow:
     0 0 0 3px #0b0507,
     0 26px 40px rgba(0,0,0,.56),
     inset 0 -14px 26px rgba(0,0,0,.46),
     inset 0 2px 3px rgba(255,255,255,.3);
 }
-body.alb-red .bub-num{
+body.alb-red .trk .bub-num{
   color:rgba(255,255,255,.7);
   text-shadow:0 0 8px rgba(255,255,255,.5);
 }
 /* la piste qui joue est cerclee de blanc : sur le noir c est le seul liseré qui se voit */
 body.alb-red .trk.is-current .bub,
-body.alb-red .alb.is-current .bub{
+body.alb-red .alb-t-red.is-current .bub{
   box-shadow:
     0 0 0 3px #fff,
     0 16px 26px rgba(0,0,0,.5),
     inset 0 2px 3px rgba(255,255,255,.28);
+}
+/* sur verre clair un lisere blanc ne se verrait pas : le sien reste sombre */
+body.alb-red .alb-t-paper.is-current .bub{
+  box-shadow:
+    0 0 0 3px #0b0507,
+    0 16px 26px rgba(0,0,0,.5),
+    inset 0 2px 3px rgba(255,255,255,.9);
 }
 body.alb-red .trk-name,
 body.alb-red .alb-name{
@@ -836,8 +847,8 @@ body.alb-red .alb.is-current .alb-name{
               0 0 26px rgba(255,255,255,.7),
               0 1px 2px rgba(11,5,7,.5);
 }
-body.alb-red .bub:focus-visible,
-body.alb-red .alb:focus-visible .bub{outline-color:#fff}
+body.alb-red .trk .bub:focus-visible,
+body.alb-red .alb-t-red:focus-visible .bub{outline-color:#fff}
 
 /* ---- la pochette garde ses couleurs, avec l ombre franche du style ---- */
 
