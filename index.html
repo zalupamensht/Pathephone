@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 
@@ -45,6 +45,9 @@
       <span class="ember e7"></span>
       <span class="ember e8"></span>
       <span class="ember e9"></span>
+      <span class="tear v1"></span>
+      <span class="tear v2"></span>
+      <span class="tear v3"></span>
     </span>
   </div>
 </div>
@@ -1748,6 +1751,26 @@ var A2 = [
       ] }
   ];
 
+/* ---- Trojan Horse : les pistes, sans leurs fichiers ----
+   Le second champ porte les invites de la piste ; il s affiche sous le titre
+   dans la rangee du haut, en plus petit. Vide quand la piste est seule. */
+var A3 = [
+  ["5",                                      "with fakemink \u00b7 ft. never goodbye"],
+  ["STARS",                                  "ft. never goodbye"],
+  ["ATLANTA",                                ""],
+  ["ALL YOU'LL HEAR IS MY SONG IN YOUR HEAD", "ft. JUSQ"],
+  ["MISERY",                                 ""],
+  ["NEW SOLUTION",                           "with Grimes"],
+  ["BLUE",                                   ""],
+  ["NEVER KILL YOURSELF",                    "with never goodbye"],
+  ["MEANT2B",                                ""],
+  ["LOVE&ADDICTION",                         ""],
+  ["SORRY",                                  ""],
+  ["God",                                    "with Current Joys & never goodbye"]
+].map(function(t){
+  return { name:t[0], feat:t[1], audio:null, bpm:100, lyrics:[] };
+});
+
 var ALBUMS = [
   { title:'Unmusique', by:'Lucy Bedroque', theme:'paper',
     disc:'assets/disc.png', cover:'assets/cover.jpg', thumb:'assets/alb1.jpg',
@@ -1762,7 +1785,16 @@ var ALBUMS = [
     disc:'assets/disc2.png', cover:'assets/cover2.jpg', thumb:'assets/alb2.jpg',
     art:'assets/trk2.jpg', artFill:true,
     start:7,                                  /* Dancing with your eyes closed */
-    tracks: A2 }
+    tracks: A2 },
+
+  /* Les fichiers de celui ci ne sont pas encore la : silent le dit une fois
+     pour toutes, et tout ce qui touche au son s ecarte de lui meme. */
+  { title:'Trojan Horse', by:'matt proxy', theme:'blue',
+    disc:'assets/disc3.webp', cover:'assets/cover3.jpg', thumb:'assets/alb3.jpg',
+    art:'assets/trk3.jpg', artFill:true,
+    silent:true,
+    start:0,
+    tracks: A3 }
 ];
 
 /* l album ouvert : une seule variable, lue partout, jamais recopiee */
@@ -1836,7 +1868,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
           '<img class="bub-art" src="' + a.art + '" alt="">' +
           '<em class="bub-num">' + (i < 9 ? '0' : '') + (i+1) + '</em>' +
         '</button>' +
-        '<span class="trk-name">' + t.name + '</span>';
+        '<span class="trk-name">' + t.name +
+          (t.feat ? '<em class="trk-feat">' + t.feat + '</em>' : '') +
+        '</span>';
       rail.appendChild(el);
 
       el.querySelector('.bub').addEventListener('click', function(){
@@ -2271,6 +2305,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
        la feuille de style s occupe du reste */
     ALBUMS.forEach(function(o){ document.body.classList.remove('alb-' + o.theme); });
     document.body.classList.add('alb-' + a.theme);
+    /* un album sans fichiers cache ce qui ne sert qu au son : la colonne des
+       paroles et les commandes de lecture */
+    document.body.classList.toggle('is-silent', !!a.silent);
 
     /* la rangee du haut est refaite avec les pistes du nouvel album, puis
        celle qui l ouvre demarre : c est elle qu on veut entendre en arrivant */
@@ -2280,6 +2317,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   items[0].classList.add('is-current');
   document.body.classList.add('alb-' + ALBUMS[0].theme);
+  document.body.classList.toggle('is-silent', !!ALBUMS[0].silent);
   window.__setAlbum   = pick;
   window.__albumState = function(){
     return {current: CUR_ALBUM, total: ALBUMS.length, track: ALB().start};
@@ -2370,12 +2408,13 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function paintBtn(){
     btn.classList.toggle('is-paused', audio.paused);
-    btn.classList.toggle('is-waiting', !started || (audio.paused && wanted));
+    btn.classList.toggle('is-waiting',
+      !ALB().silent && (!started || (audio.paused && wanted)));
     body.classList.toggle('is-playing', !audio.paused);   // le disque s arrete avec la musique
   }
 
   function tryPlay(){
-    if (!wanted) return;
+    if (!wanted || !audio.getAttribute('src')) return;   // album muet : rien a lancer
     var p = audio.play();
     if (p && p.catch) p.catch(function(){});
     setTimeout(paintBtn, 80);
@@ -2391,6 +2430,19 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var t = ALB().tracks[idx];
     if (!t || (idx === trackIdx && !force)) return;
     trackIdx = idx;
+
+    /* album muet : la piste choisie se marque, mais il n y a rien a lancer.
+       Poser une source vide ferait recharger la page elle meme comme un son,
+       donc on retire l attribut au lieu de le vider. */
+    if (!t.audio){
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+      if (window.__setLyricsTrack) window.__setLyricsTrack(idx);
+      if (window.__dockMark) window.__dockMark(idx);
+      paintBtn();
+      return;
+    }
 
     var wasPlaying = started && !audio.paused;
     audio.pause();
