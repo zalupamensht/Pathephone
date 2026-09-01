@@ -1065,222 +1065,227 @@ body.alb-red #vol:focus-visible{outline-color:#fff}
 
 
 /* ==================================================================
-   Trojan Horse : la bande magnetique qui a lache
+   Trojan Horse : une nature morte sur papier vieilli
    ------------------------------------------------------------------
-   Meme mise en page, repeinte : du noir bleute, le decor pose au fond,
-   et tout le texte allume, comme les eclats du fond. L album n a pas
-   encore ses fichiers ; is-silent retire ce qui ne servirait a rien.
+   Le fond est clair et chaud, a mi chemin entre l ombre et la lumiere.
+   Ni le blanc ni le noir seuls n y tiennent : le texte est donc de
+   l encre sombre entouree d un halo creme. Sur le papier c est le halo
+   qui disparait et l encre qui parle ; sur les objets sombres poses
+   dessus, c est le halo qui detache la lettre. La meme regle sert
+   partout, et rien n a besoin d etre place a la main.
    ================================================================== */
 
-body.alb-blue{
-  --paper:#0a1428;
-  --ink:#03070f;
+body.alb-sepia{
+  --paper:#c8b189;
+  --ink:#1d1409;
   background:
-    radial-gradient(120% 90% at 50% 8%, #0d1c38 0%, #061027 44%, #01050e 100%);
-  color:#e8f2ff;
+    radial-gradient(120% 90% at 50% 12%, #a8916a 0%, #7d6748 46%, #3b2f1f 100%);
+  color:#1d1409;
 }
 
-/* le decor porte deja sa lumiere : les taches pastel du fond clair
-   ne feraient que s y poser par dessus */
-body.alb-blue .blob,
-body.alb-blue .glow,
-body.alb-blue .swoosh,
-body.alb-blue .halftone{display:none}
+/* le papier porte deja sa lumiere et ses angles sombres */
+body.alb-sepia .blob,
+body.alb-sepia .glow,
+body.alb-sepia .swoosh,
+body.alb-sepia .halftone{display:none}
 
-body.alb-blue .deco{
+body.alb-sepia .deco{
   display:block;
   position:absolute;inset:0;z-index:0;
   overflow:hidden;
-  background:url("assets/bg3.jpg") center center / cover no-repeat;
+  background:url("assets/bg3.jpg?v=2") center center / cover no-repeat;
   pointer-events:none;
   opacity:0;transition:opacity 1.4s ease .3s;
-  animation:bgdrift 72s ease-in-out infinite alternate;
+  animation:bgdrift 84s ease-in-out infinite alternate;
 }
-body.alb-blue.is-stage .deco,
-body.alb-blue.is-lighten .deco{opacity:1}
+body.alb-sepia.is-stage .deco,
+body.alb-sepia.is-lighten .deco{opacity:1}
 
-/* la bande est deja pleine de bruit : on n en rajoute qu un souffle */
-body.alb-blue .scan{opacity:.06}
-body.alb-blue .noise{opacity:.16}
-body.alb-blue .vignette{
-  background:radial-gradient(ellipse at 50% 46%,rgba(1,5,14,0) 50%,rgba(1,5,14,.42) 100%);
+/* le grain du papier est deja dans l image : on n en rajoute qu un voile */
+body.alb-sepia .scan{opacity:.03}
+body.alb-sepia .noise{opacity:.10}
+body.alb-sepia .vignette{
+  background:radial-gradient(ellipse at 50% 46%,rgba(40,28,14,0) 54%,rgba(40,28,14,.34) 100%);
 }
 
-/* ---- pastilles : le rond nu, comme sur la page rouge ---- */
+/* ---- pastilles : le rond nu, cercle d un brun d encre ---- */
 
-body.alb-blue .trk .bub,
-body.alb-blue .alb-t-blue .bub{
-  border-color:rgba(0,0,0,.5);
-  background:#03070f;
+body.alb-sepia .trk .bub,
+body.alb-sepia .alb-t-sepia .bub{
+  border-color:rgba(29,20,9,.5);
+  background:#241a0e;
   box-shadow:
-    0 0 0 2px rgba(3,7,15,.85),
-    0 16px 26px rgba(0,0,0,.55);
+    0 0 0 2px rgba(247,235,208,.35),
+    0 16px 26px rgba(40,28,14,.5);
 }
-body.alb-blue .trk .bub-glass,
-body.alb-blue .alb-t-blue .bub-glass{display:none}
-body.alb-blue .trk .bub::after,
-body.alb-blue .alb-t-blue .bub::after{
+body.alb-sepia .trk .bub-glass,
+body.alb-sepia .alb-t-sepia .bub-glass{display:none}
+body.alb-sepia .trk .bub::after,
+body.alb-sepia .alb-t-sepia .bub::after{
   background:none;
-  box-shadow:inset 0 0 0 1px rgba(120,190,255,.22);
+  box-shadow:inset 0 0 0 1px rgba(29,20,9,.45);
 }
-body.alb-blue .trk .bub-art,
-body.alb-blue .alb-t-blue .bub-art{opacity:1}
-body.alb-blue .trk .bub:hover,
-body.alb-blue .alb-t-blue .bub:hover{
+body.alb-sepia .trk .bub-art,
+body.alb-sepia .alb-t-sepia .bub-art{opacity:1}
+body.alb-sepia .trk .bub:hover,
+body.alb-sepia .alb-t-sepia .bub:hover{
   box-shadow:
-    0 0 0 2px rgba(150,215,255,.85),
-    0 26px 40px rgba(0,0,0,.6);
+    0 0 0 2px rgba(29,20,9,.85),
+    0 26px 40px rgba(40,28,14,.55);
 }
-body.alb-blue .trk .bub-num{
-  color:rgba(230,245,255,.78);
-  text-shadow:0 0 9px rgba(120,200,255,.75);
+body.alb-sepia .trk .bub-num{
+  color:rgba(250,240,218,.82);
+  text-shadow:0 1px 3px rgba(29,20,9,.9);
 }
-body.alb-blue .trk.is-current .bub,
-body.alb-blue .alb-t-blue.is-current .bub{
+/* la piste ouverte est cerclee d encre, doublee de creme pour tenir
+   aussi bien sur le papier clair que sur les objets sombres */
+body.alb-sepia .trk.is-current .bub,
+body.alb-sepia .alb-t-sepia.is-current .bub{
   box-shadow:
-    0 0 0 3px #cfe9ff,
-    0 0 22px rgba(90,180,255,.6),
-    0 16px 26px rgba(0,0,0,.55);
+    0 0 0 3px #1d1409,
+    0 0 0 5px rgba(247,235,208,.75),
+    0 16px 26px rgba(40,28,14,.5);
 }
-body.alb-blue .alb-t-paper.is-current .bub{
+body.alb-sepia .alb-t-paper.is-current .bub{
   box-shadow:
-    0 0 0 3px #03070f,
-    0 16px 26px rgba(0,0,0,.5),
+    0 0 0 3px #1d1409,
+    0 16px 26px rgba(40,28,14,.5),
     inset 0 2px 3px rgba(255,255,255,.9);
 }
-body.alb-blue .alb-t-red.is-current .bub{
+body.alb-sepia .alb-t-red.is-current .bub{
   box-shadow:
-    0 0 0 3px #fff,
-    0 16px 26px rgba(0,0,0,.5);
+    0 0 0 3px #7d0410,
+    0 0 0 5px rgba(247,235,208,.7),
+    0 16px 26px rgba(40,28,14,.5);
 }
 
-/* ---- tout le texte est allume : c est la signature de la page ---- */
+/* ---- le texte : de l encre, avec un halo creme autour ---- */
 
-body.alb-blue .trk-name,
-body.alb-blue .alb-name{
-  color:rgba(226,242,255,.8);font-weight:700;
-  text-shadow:0 0 10px rgba(140,205,255,.6),
-              0 0 26px rgba(60,150,255,.42),
-              0 1px 2px rgba(1,5,14,.7);
+/* Le fond est a mi chemin : ni clair ni sombre, il ne donnait a lui seul
+   qu un contraste de 3 pour 1, sous le seuil de lecture. Le halo n est donc
+   pas une lueur mais une plaque : plusieurs ombres serrees et opaques qui
+   remplacent le fond juste autour de la lettre. Le contraste devient celui
+   de l encre sur la creme, treize pour un, quel que soit ce qu il y a
+   dessous — papier clair, collier sombre ou portee de musique. */
+body.alb-sepia .trk-name,
+body.alb-sepia .alb-name{
+  color:#2a1d0e;font-weight:700;
+  text-shadow:
+    0 0 2px rgba(252,244,224,1),
+    0 0 4px rgba(252,244,224,1),
+    0 0 7px rgba(252,244,224,1),
+    0 0 12px rgba(252,244,224,.9),
+    0 0 22px rgba(252,244,224,.6);
 }
-body.alb-blue .trk.is-current .trk-name,
-body.alb-blue .alb.is-current .alb-name{
-  color:#fff;
-  text-shadow:0 0 8px rgba(255,255,255,.95),
-              0 0 26px rgba(120,200,255,.85),
-              0 0 54px rgba(40,130,255,.6),
-              0 1px 2px rgba(1,5,14,.6);
+body.alb-sepia .trk.is-current .trk-name,
+body.alb-sepia .alb.is-current .alb-name{
+  color:#0e0802;
+  text-shadow:
+    0 0 2px rgba(255,250,236,1),
+    0 0 5px rgba(255,250,236,1),
+    0 0 9px rgba(255,250,236,1),
+    0 0 16px rgba(255,250,236,.95),
+    0 0 34px rgba(255,244,210,.7);
 }
-body.alb-blue .trk-feat{
-  color:rgba(190,225,255,.72);
-  text-shadow:0 0 8px rgba(120,190,255,.5),0 1px 2px rgba(1,5,14,.7);
+body.alb-sepia .trk-feat{
+  color:#3a2a14;
+  text-shadow:
+    0 0 2px rgba(252,244,224,1),
+    0 0 4px rgba(252,244,224,1),
+    0 0 8px rgba(252,244,224,.9);
 }
-body.alb-blue .trk .bub:focus-visible,
-body.alb-blue .alb-t-blue:focus-visible .bub{outline-color:#cfe9ff}
+body.alb-sepia .trk .bub:focus-visible,
+body.alb-sepia .alb-t-sepia:focus-visible .bub{outline-color:#1d1409}
 
-/* ---- la pochette garde ses couleurs, l ombre passe au noir bleute ---- */
+/* ---- la pochette, avec l ombre franche du style ---- */
 
-body.alb-blue .sleeve{
+body.alb-sepia .sleeve{
   filter:none;
-  box-shadow:14px 16px 0 #03070f;
+  box-shadow:14px 16px 0 rgba(29,20,9,.72);
 }
 
-/* ---- la platine se met au noir bleute ---- */
+/* ---- la platine passe au brun sombre : elle se pose sur le papier
+        comme un objet de plus de la nature morte ---- */
 
-body.alb-blue .deck-plinth{
-  background:linear-gradient(168deg,#0b1526 0%,#050b18 48%,#01040b 100%);
+body.alb-sepia .deck-plinth{
+  background:linear-gradient(168deg,#2b1e10 0%,#1a1108 48%,#0d0804 100%);
   box-shadow:
-    0 30px 46px rgba(0,0,0,.62),
-    0 6px 12px rgba(0,0,0,.45),
-    inset 0 1px 0 rgba(150,200,255,.12);
+    0 30px 46px rgba(30,20,10,.5),
+    0 6px 12px rgba(30,20,10,.4),
+    inset 0 1px 0 rgba(247,235,208,.16);
 }
-body.alb-blue .deck-face{
-  background:linear-gradient(178deg,#16202f 0%,#0d141f 40%,#111926 70%,#070c14 100%);
-  box-shadow:inset 0 1px 0 rgba(150,200,255,.12),inset 0 -2px 8px rgba(0,0,0,.62);
+body.alb-sepia .deck-face{
+  background:linear-gradient(178deg,#3a2a18 0%,#241a0e 40%,#2e2113 70%,#170f07 100%);
+  box-shadow:inset 0 1px 0 rgba(247,235,208,.16),inset 0 -2px 8px rgba(20,12,4,.6);
 }
-body.alb-blue .deck-face::after{display:none}
-body.alb-blue .platter::before{
-  background:radial-gradient(circle at 38% 30%,#26313f 0%,#141c27 46%,#080d14 100%);
-  box-shadow:0 10px 20px rgba(0,0,0,.55),inset 0 0 0 1px rgba(150,200,255,.12);
+body.alb-sepia .deck-face::after{display:none}
+body.alb-sepia .platter::before{
+  background:radial-gradient(circle at 38% 30%,#463320 0%,#2a1e11 46%,#150e06 100%);
+  box-shadow:0 10px 20px rgba(30,20,10,.5),inset 0 0 0 1px rgba(247,235,208,.14);
 }
-body.alb-blue .arm-tube{background:linear-gradient(180deg,#9aa6b4,#606a78 52%,#333a44)}
-body.alb-blue .arm-pivot{
-  background:radial-gradient(circle at 36% 30%,#a6b1bf,#5f6975 60%,#2f343c 100%);
+/* le bras prend le laiton des bijoux plutot que le chrome */
+body.alb-sepia .arm-tube{background:linear-gradient(180deg,#c8ab72,#8d7444 52%,#4b3c22)}
+body.alb-sepia .arm-pivot{
+  background:radial-gradient(circle at 36% 30%,#d6bb85,#8d7444 60%,#453718 100%);
 }
-body.alb-blue .spindle{background:linear-gradient(180deg,#d2dae6,#5b6472)}
-body.alb-blue .deck-knob{
-  background:linear-gradient(180deg,#2f8fe0,#0d3f78);
-  box-shadow:0 2px 4px rgba(0,0,0,.6),inset 0 1px 0 rgba(190,225,255,.45);
+body.alb-sepia .spindle{background:linear-gradient(180deg,#e0c68e,#6d5a32)}
+body.alb-sepia .deck-knob{
+  background:linear-gradient(180deg,#c69a4e,#6d4c1c);
+  box-shadow:0 2px 4px rgba(20,12,4,.6),inset 0 1px 0 rgba(255,240,205,.45);
 }
 
 /* ---- lecture, pause, volume ---- */
 
-body.alb-blue .sound{
-  border-color:rgba(150,205,255,.24);
-  background:linear-gradient(180deg,#0d1b30,#03070f);
-  box-shadow:0 0 0 2px #03070f,0 12px 20px rgba(0,0,0,.5),inset 0 2px 3px rgba(160,210,255,.24);
+body.alb-sepia .sound{
+  border-color:rgba(247,235,208,.3);
+  background:linear-gradient(180deg,#3a2a18,#1a1108);
+  box-shadow:0 0 0 2px rgba(247,235,208,.35),0 12px 20px rgba(30,20,10,.45),
+             inset 0 2px 3px rgba(247,235,208,.22);
 }
-body.alb-blue .sound:hover{box-shadow:0 0 0 2px #03070f,0 18px 26px rgba(0,0,0,.6)}
-body.alb-blue .sound:focus-visible{outline-color:#cfe9ff}
-body.alb-blue .ico-pause i{background:#e8f4ff}
-body.alb-blue .ico-play{border-left-color:#e8f4ff}
-body.alb-blue #vol{
-  background:linear-gradient(90deg,#cfe9ff 0 var(--v,85%),rgba(200,230,255,.22) var(--v,85%) 100%);
+body.alb-sepia .sound:hover{box-shadow:0 0 0 2px rgba(29,20,9,.85),0 18px 26px rgba(30,20,10,.55)}
+body.alb-sepia .sound:focus-visible{outline-color:#1d1409}
+body.alb-sepia .ico-pause i{background:#f7ebd0}
+body.alb-sepia .ico-play{border-left-color:#f7ebd0}
+body.alb-sepia #vol{
+  background:linear-gradient(90deg,#2a1d0e 0 var(--v,85%),rgba(247,235,208,.4) var(--v,85%) 100%);
 }
-body.alb-blue #vol::-webkit-slider-thumb{
-  border-color:rgba(150,205,255,.3);
-  background:linear-gradient(180deg,#16263e,#03070f);
-  box-shadow:0 4px 8px rgba(0,0,0,.55),inset 0 1px 2px rgba(180,220,255,.3);
+body.alb-sepia #vol::-webkit-slider-thumb{
+  border-color:rgba(247,235,208,.4);
+  background:linear-gradient(180deg,#3a2a18,#1a1108);
+  box-shadow:0 4px 8px rgba(30,20,10,.5),inset 0 1px 2px rgba(247,235,208,.3);
 }
-body.alb-blue #vol::-moz-range-thumb{
-  border-color:rgba(150,205,255,.3);
-  background:linear-gradient(180deg,#16263e,#03070f);
+body.alb-sepia #vol::-moz-range-thumb{
+  border-color:rgba(247,235,208,.4);
+  background:linear-gradient(180deg,#3a2a18,#1a1108);
 }
-body.alb-blue #vol:focus-visible{outline-color:#cfe9ff}
+body.alb-sepia #vol:focus-visible{outline-color:#1d1409}
 
-/* ---- ce qui vit sur la page bleue ----
-   Pas de fleurs ici : c est une bande magnetique. Ce qui bouge, c est le
-   signal qui decroche — de larges barres claires qui descendent lentement en
-   emportant l image, et deux traits de lumiere froide qui passent. */
+/* ---- ce qui vit sur cette page ----
+   Ni fleurs ni decrochages video : sur une nature morte, ce qui bouge est
+   la poussiere prise dans la lumiere. Elle reprend les memes elements que
+   les braises de la page rouge, en plus lent et en plus discret. */
 
-.tear{display:none}
-body.alb-blue .tear{
-  display:block;position:absolute;left:0;right:0;
-  height:2px;
-  background:linear-gradient(180deg,
-              rgba(190,230,255,0) 0%,
-              rgba(190,230,255,.5) 40%,
-              rgba(255,255,255,.85) 55%,
-              rgba(120,190,255,0) 100%);
-  box-shadow:0 0 16px rgba(120,190,255,.55);
+body.alb-sepia .fl,
+body.alb-sepia .tear,
+body.alb-sepia .ray{display:none}
+
+body.alb-sepia .ember{
+  display:block;position:absolute;
+  width:3px;height:3px;border-radius:50%;
+  background:rgba(255,246,222,.9);
+  box-shadow:0 0 6px rgba(255,238,200,.85);
   opacity:0;
-  animation:track 9s linear infinite;
+  animation:rise 34s linear infinite;
 }
-body.alb-blue .tear.v1{animation-duration:11s;animation-delay:-1s}
-body.alb-blue .tear.v2{animation-duration:17s;animation-delay:-7s;height:5px}
-body.alb-blue .tear.v3{animation-duration:26s;animation-delay:-16s;height:1px}
-@keyframes track{
-  0%  {top:-4%; opacity:0}
-  8%  {opacity:.7}
-  88% {opacity:.55}
-  100%{top:104%;opacity:0}
-}
-
-/* les traits de lumiere, en froid */
-body.alb-blue .ray{
-  position:absolute;display:block;height:1px;
-  background:linear-gradient(90deg,
-              rgba(150,210,255,0) 0%,
-              rgba(210,240,255,.85) 46%,
-              rgba(255,255,255,.95) 58%,
-              rgba(150,210,255,0) 100%);
-  filter:blur(.4px) drop-shadow(0 0 9px rgba(110,190,255,.8));
-  opacity:0;
-  animation:sweep 17s linear infinite;
-}
-body.alb-blue .ray.r1{top:24%;width:44%;transform:rotate(-3deg);animation-duration:19s;animation-delay:-3s}
-body.alb-blue .ray.r2{top:64%;width:36%;transform:rotate(2deg); animation-duration:27s;animation-delay:-14s}
-body.alb-blue .ray.r3{display:none}
+body.alb-sepia .ember.e1{left:9%; animation-duration:31s;animation-delay:-3s}
+body.alb-sepia .ember.e2{left:21%;animation-duration:44s;animation-delay:-19s;width:2px;height:2px}
+body.alb-sepia .ember.e3{left:33%;animation-duration:37s;animation-delay:-28s;width:2px;height:2px}
+body.alb-sepia .ember.e4{left:44%;animation-duration:49s;animation-delay:-11s;width:2px;height:2px}
+body.alb-sepia .ember.e5{left:55%;animation-duration:35s;animation-delay:-33s}
+body.alb-sepia .ember.e6{left:66%;animation-duration:46s;animation-delay:-22s;width:2px;height:2px}
+body.alb-sepia .ember.e7{left:77%;animation-duration:33s;animation-delay:-6s;width:2px;height:2px}
+body.alb-sepia .ember.e8{left:86%;animation-duration:51s;animation-delay:-40s;width:2px;height:2px}
+body.alb-sepia .ember.e9{left:95%;animation-duration:39s;animation-delay:-15s}
 
 /* ---- album sans fichiers : ce qui ne sert qu au son s efface ----
    La colonne des paroles resterait vide et les commandes ne commanderaient
