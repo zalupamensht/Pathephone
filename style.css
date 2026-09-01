@@ -1089,14 +1089,70 @@ body.alb-sepia .glow,
 body.alb-sepia .swoosh,
 body.alb-sepia .halftone{display:none}
 
+/* Ici le fond n est plus une image de fond mais une plaque : une feuille
+   posee dans la fenetre comme le ferait `cover`, qui porte le papier et, par
+   dessus, les bijoux a leur place exacte. Une image de fond ne permettait pas
+   de viser un point precis du dessin ; sur la plaque, tout se dit en
+   pourcentage, et les bijoux restent colles au papier a toute taille.
+   La feuille deborde de 3 pour cent : la derive joue dans cette marge et ne
+   decouvre jamais un bord. */
 body.alb-sepia .deco{
   display:block;
   position:absolute;inset:0;z-index:0;
   overflow:hidden;
-  background:url("assets/bg3.jpg?v=6") center center / cover no-repeat;
+  background:none;
   pointer-events:none;
   opacity:0;transition:opacity 1.4s ease .3s;
-  animation:bgdrift 84s ease-in-out infinite alternate;
+}
+.deco-plate{display:none}
+body.alb-sepia .deco-plate{
+  display:block;
+  position:absolute;left:50%;top:50%;
+  width:max(103vw, calc(103vh * 2.28193));
+  aspect-ratio:1894 / 830;
+  transform:translate(-50%,-50%);
+  animation:platederive 84s ease-in-out infinite alternate;
+}
+@keyframes platederive{
+  from{transform:translate(-50%,-50%) translateX(-1.1%)}
+  to  {transform:translate(-50%,-50%) translateX(1.1%)}
+}
+.deco-paper{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  display:block;
+  user-select:none;-webkit-user-drag:none;
+}
+
+/* ---- les bijoux, que la main peut pousser un peu ----
+   Au repos ils sont exactement la ou la photo les avait poses : leur ombre
+   est restee sur le papier, et rien ne signale qu ils sont detachables. Le
+   survol les souleve d un cheveu et leur donne une ombre propre ; la main
+   les emmene ensuite de trente pixels au plus, de quoi sentir qu on y touche
+   sans jamais defaire la composition. Un double clic les rend a leur place. */
+.bijou{
+  position:absolute;
+  display:block;
+  z-index:2;
+  pointer-events:auto;
+  cursor:grab;
+  touch-action:none;
+  user-select:none;-webkit-user-drag:none;
+  transform:translate3d(var(--dx,0px), var(--dy,0px), 0);
+  transition:transform .55s cubic-bezier(.22,.72,.16,1),
+             filter .35s ease;
+}
+.bijou:hover{
+  filter:drop-shadow(3px 5px 6px rgba(40,26,10,.34));
+}
+.bijou.is-held{
+  cursor:grabbing;
+  transition:filter .2s ease;                 /* le doigt mene, sans retard */
+  filter:drop-shadow(7px 11px 13px rgba(40,26,10,.44));
+}
+@media (prefers-reduced-motion:reduce){
+  body.alb-sepia .deco-plate{animation:none}
+  .bijou{transition:none}
 }
 body.alb-sepia.is-stage .deco,
 body.alb-sepia.is-lighten .deco{opacity:1}
@@ -1164,36 +1220,84 @@ body.alb-sepia .alb-t-red.is-current .bub{
 /* Le fond est a mi chemin : ni clair ni sombre, il ne donnait a lui seul
    qu un contraste de 3 pour 1, sous le seuil de lecture. Le halo n est donc
    pas une lueur mais une plaque : plusieurs ombres serrees et opaques qui
-   remplacent le fond juste autour de la lettre. Le contraste devient celui
-   de l encre sur la creme, treize pour un, quel que soit ce qu il y a
-   dessous — papier clair, collier sombre ou portee de musique. */
+   remplacent le fond juste autour de la lettre.
+
+   Sa couleur est prise dans le papier lui meme, non dans le blanc. Les tons
+   les plus clairs du fond montent a rgb(206,170,120) ; la plaque se pose un
+   cran au dessus, en sable chaud, ce qui la fait lire comme une eclaircie du
+   papier et non comme une etiquette rapportee. Le contraste y reste de 10
+   pour 1, bien au dessus du seuil, alors que le blanc creme d avant tranchait
+   sur tout le reste de la page. */
 body.alb-sepia .trk-name,
 body.alb-sepia .alb-name{
   color:#2a1d0e;font-weight:700;
   text-shadow:
-    0 0 2px rgba(252,244,224,1),
-    0 0 4px rgba(252,244,224,1),
-    0 0 7px rgba(252,244,224,1),
-    0 0 12px rgba(252,244,224,.9),
-    0 0 22px rgba(252,244,224,.6);
+    0 0 2px rgba(224,202,162,1),
+    0 0 4px rgba(224,202,162,1),
+    0 0 7px rgba(224,202,162,1),
+    0 0 12px rgba(222,199,157,.9),
+    0 0 22px rgba(216,191,146,.55);
 }
 body.alb-sepia .trk.is-current .trk-name,
 body.alb-sepia .alb.is-current .alb-name{
   color:#0e0802;
   text-shadow:
-    0 0 2px rgba(255,250,236,1),
-    0 0 5px rgba(255,250,236,1),
-    0 0 9px rgba(255,250,236,1),
-    0 0 16px rgba(255,250,236,.95),
-    0 0 34px rgba(255,244,210,.7);
+    0 0 2px rgba(235,216,180,1),
+    0 0 5px rgba(235,216,180,1),
+    0 0 9px rgba(232,212,174,1),
+    0 0 16px rgba(228,206,166,.95),
+    0 0 34px rgba(220,196,150,.65);
 }
 body.alb-sepia .trk-feat{
   color:#3a2a14;
   text-shadow:
-    0 0 2px rgba(252,244,224,1),
-    0 0 4px rgba(252,244,224,1),
-    0 0 8px rgba(252,244,224,.9);
+    0 0 2px rgba(224,202,162,1),
+    0 0 4px rgba(224,202,162,1),
+    0 0 8px rgba(220,196,152,.9);
 }
+
+/* ---- les paroles, sur le meme principe ----
+   Elles heritaient des regles du papier clair : de l encre sombre avec un
+   liseré blanc, pense pour un fond a 250 de clarte. Sur ce papier a 146 la
+   ligne a venir tombait a 3 pour 1. Elles reprennent donc la plaque de sable,
+   d autant plus dense que la ligne est proche de celle qu on chante. */
+body.alb-sepia .lyr{
+  color:rgba(38,26,12,.52);
+  text-shadow:0 0 3px rgba(224,202,162,.9),0 0 7px rgba(224,202,162,.75);
+}
+body.alb-sepia .lyr:hover{
+  color:rgba(30,20,8,.8);
+  text-shadow:0 0 3px rgba(230,210,172,1),0 0 8px rgba(226,204,164,.85);
+}
+body.alb-sepia .lyr.is-past{
+  color:rgba(38,26,12,.34);
+  text-shadow:0 0 3px rgba(224,202,162,.7),0 0 7px rgba(224,202,162,.5);
+}
+body.alb-sepia .lyr.is-now{
+  color:#140c02;
+  text-shadow:
+    0 0 2px rgba(238,220,186,1),
+    0 0 5px rgba(238,220,186,1),
+    0 0 10px rgba(234,214,178,.98),
+    0 0 20px rgba(228,206,166,.85),
+    0 0 40px rgba(220,196,150,.6);
+}
+body.alb-sepia .lyr-echo{
+  color:rgba(38,26,12,.42);
+  text-shadow:0 0 3px rgba(224,202,162,.85);
+}
+body.alb-sepia .lyr.is-now .lyr-echo{
+  color:rgba(20,12,2,.82);
+  text-shadow:0 0 4px rgba(236,218,182,1),0 0 9px rgba(230,210,170,.9);
+}
+/* la note est un dessin, donc drop-shadow et non text-shadow */
+body.alb-sepia .lyr-note{
+  color:#2a1d0e;
+  filter:drop-shadow(0 0 4px rgba(232,212,174,1))
+         drop-shadow(0 0 12px rgba(224,202,162,.8));
+}
+body.alb-sepia .lyrics.is-tuning{box-shadow:inset 0 0 0 1px rgba(58,42,20,.5)}
+
 body.alb-sepia .trk .bub:focus-visible,
 body.alb-sepia .alb-t-sepia:focus-visible .bub{outline-color:#1d1409}
 

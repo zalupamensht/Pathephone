@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=15">
+<link rel="stylesheet" href="style.css?v=16">
 </head>
 <body>
 
@@ -25,6 +25,21 @@
   <!-- collage de la page rouge : cache sur les autres albums -->
   <!-- fond de l album -->
   <div class="deco">
+    <div class="deco-plate" id="decoPlate">
+      <img class="deco-paper" src="assets/bg3.jpg" alt="">
+      <img class="bijou" data-bijou="bracelet" src="assets/bj_bracelet.png" alt="" draggable="false"
+           style="left:6.5470%;top:11.0843%;width:6.9694%;height:66.9880%">
+      <img class="bijou" data-bijou="pendentif" src="assets/bj_pendentif.png" alt="" draggable="false"
+           style="left:12.4604%;top:11.3253%;width:5.9134%;height:80.7229%">
+      <img class="bijou" data-bijou="pepite" src="assets/bj_pepite.png" alt="" draggable="false"
+           style="left:81.7318%;top:23.6145%;width:6.1246%;height:12.7711%">
+      <img class="bijou" data-bijou="camee" src="assets/bj_camee.png" alt="" draggable="false"
+           style="left:81.5206%;top:40.4819%;width:7.6030%;height:20.7229%">
+      <img class="bijou" data-bijou="perles" src="assets/bj_perles.png" alt="" draggable="false"
+           style="left:83.1045%;top:62.8916%;width:4.9630%;height:16.3855%">
+      <img class="bijou" data-bijou="chaine" src="assets/bj_chaine.png" alt="" draggable="false"
+           style="left:88.4900%;top:18.0723%;width:6.7582%;height:62.4096%">
+    </div>
     <!-- ce qui vit par dessus le fond : fleurs, traits de lumiere, braises -->
     <span class="deco-life" aria-hidden="true">
       <svg class="fl f1" viewBox="0 0 100 100" aria-hidden="true"><g fill="#fff"><path d="M50,50 C44,34 45,17 50,6 C55,17 56,34 50,50 Z" transform="rotate(0 50 50)"/><path d="M50,50 C44,34 45,17 50,6 C55,17 56,34 50,50 Z" transform="rotate(72 50 50)"/><path d="M50,50 C44,34 45,17 50,6 C55,17 56,34 50,50 Z" transform="rotate(144 50 50)"/><path d="M50,50 C44,34 45,17 50,6 C55,17 56,34 50,50 Z" transform="rotate(216 50 50)"/><path d="M50,50 C44,34 45,17 50,6 C55,17 56,34 50,50 Z" transform="rotate(288 50 50)"/></g><circle cx="50" cy="50" r="4.5" fill="#fff"/></svg>
@@ -2707,6 +2722,96 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   window.__lyrics = function(){
     return {current: current, quiet: box.classList.contains('is-quiet'), lines: track.children.length};
+  };
+})();
+
+/* ---------------- les bijoux du papier, que la main peut pousser ----------------
+
+   Un geste discret : on prend un bijou, on le deplace de trente pixels au
+   plus, il reste ou on l a laisse. La borne est ce qui rend le geste sur :
+   sans elle on defait la composition en trois secondes, et le fond cesse
+   d etre un fond.
+
+   Trente pixels s entendent a la taille d origine de la feuille. A l ecran
+   la plaque est agrandie ou reduite, donc la borne suit le meme rapport :
+   sinon le meme geste deplacerait beaucoup sur un grand ecran et presque
+   rien sur un petit.
+
+   Le deplacement est garde en pixels de la feuille, pas de l ecran : si la
+   fenetre change de taille, le bijou reste au meme endroit du papier. */
+(function(){
+  var LARGEUR_FEUILLE = 1894;          // la feuille, a sa taille d origine
+  var COURSE = 30;                     // le deplacement permis, dans cette taille
+
+  var plaque = document.getElementById('decoPlate');
+  if (!plaque) return;
+  var bijoux = [].slice.call(plaque.querySelectorAll('.bijou'));
+  if (!bijoux.length) return;
+
+  var pris = null;                     // le bijou tenu
+  var depart = null;                   // ou la main l a saisi
+
+  function rapport(){                  // combien un pixel de feuille fait a l ecran
+    var l = plaque.getBoundingClientRect().width;
+    return l ? l / LARGEUR_FEUILLE : 1;
+  }
+
+  function poser(el){
+    var k = rapport();
+    el.style.setProperty('--dx', (el._dx * k).toFixed(2) + 'px');
+    el.style.setProperty('--dy', (el._dy * k).toFixed(2) + 'px');
+  }
+
+  bijoux.forEach(function(el){
+    el._dx = 0; el._dy = 0;
+
+    el.addEventListener('pointerdown', function(e){
+      if (e.button !== undefined && e.button !== 0) return;
+      e.preventDefault();
+      pris = el;
+      depart = {x: e.clientX, y: e.clientY, dx: el._dx, dy: el._dy, k: rapport()};
+      el.classList.add('is-held');
+      el.style.zIndex = 3;                       // celui qu on tient passe devant
+      if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
+    });
+
+    /* rendre le bijou a sa place : le geste inverse de celui qui l a deplace */
+    el.addEventListener('dblclick', function(){
+      el._dx = 0; el._dy = 0; poser(el);
+    });
+  });
+
+  window.addEventListener('pointermove', function(e){
+    if (!pris) return;
+    var k = depart.k || 1;
+    var dx = depart.dx + (e.clientX - depart.x) / k;
+    var dy = depart.dy + (e.clientY - depart.y) / k;
+    /* la borne est un disque et non un carre : sans cela le bijou irait plus
+       loin en diagonale que droit devant, et la course se sentirait carree */
+    var d = Math.sqrt(dx * dx + dy * dy);
+    if (d > COURSE){ dx = dx / d * COURSE; dy = dy / d * COURSE; }
+    pris._dx = dx; pris._dy = dy;
+    poser(pris);
+  }, {passive:true});
+
+  function lacher(){
+    if (!pris) return;
+    pris.classList.remove('is-held');
+    pris.style.zIndex = '';
+    pris = null;
+  }
+  window.addEventListener('pointerup', lacher);
+  window.addEventListener('pointercancel', lacher);
+
+  /* la fenetre change de taille : la plaque aussi, donc les decalages sont
+     recalcules pour que chaque bijou garde sa place sur le papier */
+  window.addEventListener('resize', function(){ bijoux.forEach(poser); });
+
+  window.__bijouxEtat = function(){
+    return bijoux.map(function(el){
+      return {nom: el.getAttribute('data-bijou'),
+              dx: +el._dx.toFixed(1), dy: +el._dy.toFixed(1)};
+    });
   };
 })();
 
