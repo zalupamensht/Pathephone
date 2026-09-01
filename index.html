@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=14">
+<link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
 
@@ -1751,25 +1751,475 @@ var A2 = [
       ] }
   ];
 
-/* ---- Trojan Horse : les pistes, sans leurs fichiers ----
-   Le second champ porte les invites de la piste ; il s affiche sous le titre
-   dans la rangee du haut, en plus petit. Vide quand la piste est seule. */
+/* ---- Trojan Horse : douze pistes, leurs paroles et leur tempo ----
+   Le second champ porte les invites de la piste ; il s affiche sous le
+   titre dans la rangee du haut, en plus petit. Vide quand elle est seule. */
 var A3 = [
-  ["5",                                      "with fakemink \u00b7 ft. never goodbye"],
-  ["STARS",                                  "ft. never goodbye"],
-  ["ATLANTA",                                ""],
-  ["ALL YOU'LL HEAR IS MY SONG IN YOUR HEAD", "ft. JUSQ"],
-  ["MISERY",                                 ""],
-  ["NEW SOLUTION",                           "with Grimes"],
-  ["BLUE",                                   ""],
-  ["NEVER KILL YOURSELF",                    "with never goodbye"],
-  ["MEANT2B",                                ""],
-  ["LOVE&ADDICTION",                         ""],
-  ["SORRY",                                  ""],
-  ["God",                                    "with Current Joys & never goodbye"]
-].map(function(t){
-  return { name:t[0], feat:t[1], audio:null, bpm:100, lyrics:[] };
-});
+  { name:"5", feat:"with fakemink · ft. never goodbye",
+    audio:"assets/b3_1.mp3" + AV, bpm:99,
+    lyrics:[
+        { t: 0.68,   text: "I've been lookin' all over, I had to let you know" },
+        { t: 5.42,   text: "Know that I really loved you, I had to let you go" },
+        { t: 9.65,   text: "Let's do the night go away" },
+        { t: 12.56,  text: "I know you feel it in your heart" },
+        { t: 15.11,  text: "Music fillin' my brain" },
+        { t: 19.45,  text: "Let's do the night go away" },
+        { t: 22.25,  text: "I know you feel it in your heart" },
+        { t: 24.83,  text: "Music fillin' my brain" },
+        { t: 29.68,  text: "It's like my mind is stuck in rear view" },
+        { t: 31.54,  text: "It's like you tryna speak, I can't really hear you" },
+        { t: 34.19,  text: "And I lost control, I could never steer you" },
+        { t: 36.32,  text: "I was fallin' and you got me like a pair of parachute" },
+        { t: 38.94,  text: "Does the prison system really deserve to execute?" },
+        { t: 41.38,  text: "'Cause what if them niggas got you for shit you didn't do?" },
+        { t: 43.85,  text: "Does the homeless man outside deserve your attitude?" },
+        { t: 46.13,  text: "'Cause he got some values even though they don't matter to you" },
+        { t: 48.73,  text: "Your love is safe, I can't get it out of you" },
+        { t: 51.18,  text: "Lie to my face, I can't get it out of you" },
+        { t: 53.65,  text: "I need some change, I'ma fight, not you" },
+        { t: 56.05,  text: "Ice on my face, I'm a five-star dude" },
+        { t: 58.47,  text: "You like New York 'cause I heart you" },
+        { t: 60.92,  text: "I'ma take a flight, I'ma depart too" },
+        { t: 62.91,  text: "Wear hate on my sight, I'm a sea salt dude" },
+        { t: 65.31,  text: "Yeah, I got Betsy on my body, TLC that I abuse" },
+        { t: 68.24,  text: "I saw LA, LA saw you" },
+        { t: 70.57,  text: "Soft like some bass, harsh like sawtooth" },
+        { t: 73.02,  text: "And I made a hit, hit hard, Babe Ruth" },
+        { t: 75.42,  text: "We got a smell similar to perish proof" },
+        { t: 78.43,  text: "I've been lookin' all over, I had to let you know" },
+        { t: 79.91,  text: "Know that I really loved you, I had to let you go" },
+        { t: 88.47,  text: "I stay stuck by your side, I need never go" },
+        { t: 92.92,  text: "Know it has to fade, that's why I had to leave it low" },
+        { t: 97.13,  text: "Let's do the night go away" },
+        { t: 99.93,  text: "I know you feel it in your heart" },
+        { t: 102.68, text: "Music fillin' my brain" },
+        { t: 106.85, text: "Let's do the night go away" },
+        { t: 109.79, text: "I know you feel it in your heart" },
+        { t: 112.34, text: "Music fillin' my brain" },
+        { t: 116.59, text: "Let's do the night go away" },
+        { t: 119.47, text: "I know you feel it in your heart" },
+        { t: 122.38, text: "Music fillin' my brain" },
+        { t: 126.28, text: "Let's do the night go away" },
+        { t: 129.11, text: "I know you feel it in your heart" },
+        { t: 131.83, text: "Music fillin' my brain" },
+        { t: 133.93, music: true }
+    ] },
+
+  { name:"STARS", feat:"ft. never goodbye",
+    audio:"assets/b3_2.mp3" + AV, bpm:66,
+    lyrics:[
+        { t: 101.29, text: "Smoke a blunt in LA, spin away" },
+        { t: 103.12, text: "Gotta find it so proud it's still in me" },
+        { t: 105.06, text: "Now the center in the beat at 6'8" },
+        { t: 106.97, text: "On my mother on the shit on February" },
+        { t: 108.55, text: "Livin' my dream, I'm free mentally" },
+        { t: 110.66, text: "Smokin' weed 'cause it's a brand new day" },
+        { t: 112.5,  text: "I'll never ever give it back to 'em" },
+        { t: 113.97, text: "Just give 'em the platform" },
+        { t: 115.03, text: "Who mad? You just ask someone" },
+        { t: 116.1,  text: "These bitches just us whom" },
+        { t: 117.27, text: "I'ma leave like a nasty bathroom" },
+        { t: 118.85, text: "Since the back of the classroom" },
+        { t: 119.92, text: "I was tactical, scammers just get us to me or room" },
+        { t: 121.9,  text: "My nigga fucked him up for baggin' him" },
+        { t: 123.35, text: "So what do we get to the dude?" },
+        { t: 124.41, text: "And my bag is big, my pencil loose" },
+        { t: 125.97, text: "Get so much done, don't pay you loose" },
+        { t: 127.41, text: "Ultra resident, riddle too" },
+        { t: 128.56, text: "Sicko on my pink today" },
+        { t: 129.98, text: "And my bars are subliminal messages in my music" },
+        { t: 132.19, text: "Smoke a blunt and fade away, it's too therapeutic" },
+        { t: 136.29, music: true },
+        { t: 140.07, text: "I'ma fall for you, oh, when the stars on the roof" },
+        { t: 143.7,  text: "Give it all to you, I know what I gotta do" },
+        { t: 147.53, text: "I'ma fall for you, oh, when the stars on the roof" },
+        { t: 150.61, text: "Give it all to you, I know what I gotta do" },
+        { t: 150.62, text: "I'ma fall for you, oh, when the stars on the roof" },
+        { t: 155.28, text: "Give it all to you, I know what I gotta do" },
+        { t: 163.41, text: "I'ma fall for you, oh, when the stars on the roof" },
+        { t: 166.35, text: "Give it all to you, I know what I gotta do" },
+        { t: 169.65, text: "It's all because of you" },
+        { t: 172.15, text: "Everything but you" },
+        { t: 178.25, text: "It's all because of you" },
+        { t: 181.78, text: "Everything but you" },
+        { t: 182.02, text: "It's all because of you" },
+        { t: 182.12, text: "Everything but you" },
+        { t: 182.93, text: "It's all because of you" },
+        { t: 183.38, text: "Everything but you" },
+        { t: 187.03, text: "It's all because of you" },
+        { t: 220.1,  text: "Everything but you" },
+        { t: 226.75, music: true }
+    ] },
+
+  { name:"ATLANTA", feat:"",
+    audio:"assets/b3_3.mp3" + AV, bpm:75,
+    lyrics:[
+        { t: 13.18,  text: "Forever, forever" },
+        { t: 14.77,  text: "I'ma love Beretta" },
+        { t: 16.02,  text: "Nigga, meet your greens, stack your cheddar" },
+        { t: 18.43,  text: "We black men, we doin' better than they thought" },
+        { t: 21.72,  text: "Fuck the president and his sentiment, I'm hot" },
+        { t: 24.31,  text: "Let me tell you 'bout my pops" },
+        { t: 27.29,  text: "Forever, forever" },
+        { t: 29.71,  text: "I'ma love Beretta" },
+        { t: 30.93,  text: "Nigga, meet your greens, stack your cheddar" },
+        { t: 33.18,  text: "We black men, we doin' better than they thought" },
+        { t: 36.16,  text: "Fuck the president and his sentiment, I'm hot" },
+        { t: 38.52,  text: "Let me tell you 'bout my pops" },
+        { t: 40.22,  text: "My pops said his first born died when he was nineteen" },
+        { t: 43.98,  text: "Swoomie, you ain't seen what the fuck that I seen" },
+        { t: 47.79,  text: "Man, if a nigga try you, you was fightin'" },
+        { t: 51.4,   text: "You only have yourself 'cause the world is enticin'" },
+        { t: 54.93,  text: "Man, dude, I already told you, your mama just don't like me" },
+        { t: 59.21,  music: true },
+        { t: 78.96,  text: "She gon' hit me when that visa come" },
+        { t: 81.66,  text: "Never had an auto, I can't see one" },
+        { t: 84.29,  text: "I been tryna build a fuckin' kingdom" },
+        { t: 86.52,  text: "Baby, this a shoulder, a shoulder you can lean on, you can lean on" },
+        { t: 89.98,  text: "Yeah, I love to choke my bitch, my bitch, she is a masochist" },
+        { t: 94.08,  text: "I saw the deal, now my mama think that I'm the bafflement, uh" },
+        { t: 97.26,  text: "Natural born, a natural killer with a natural talent" },
+        { t: 100.13, text: "I'm heavy smokin', this blunt I roll could win a beauty pageant" },
+        { t: 103.53, text: "This is America" },
+        { t: 105.34, text: "This is the place where they shootin' on my area" },
+        { t: 107.57, text: "Off the cells just like malaria" },
+        { t: 111.09, music: true },
+        { t: 120.75, text: "You think you know me" },
+        { t: 135.0,  music: true }
+    ] },
+
+  { name:"ALL YOU'LL HEAR IS MY SONG IN YOUR HEAD", feat:"ft. JUSQ",
+    audio:"assets/b3_4.mp3" + AV, bpm:101,
+    lyrics:[
+        { t: 1.19,   text: "2 AM, I can't sleep" },
+        { t: 3.59,   text: "Cut her wrists, the sky's deep" },
+        { t: 5.82,   text: "Stab my wrist, watch me bleed" },
+        { t: 10.83,  text: "2 AM, I can't sleep" },
+        { t: 12.98,  text: "Fans always knockin' at my door" },
+        { t: 15.35,  text: "Too paranoid, I can't snore" },
+        { t: 17.64,  text: "Suicidal thoughts I ignore" },
+        { t: 22.3,   text: "Let it be" },
+        { t: 22.59,  text: "Not a lover girl, you a fuckin' whore" },
+        { t: 24.82,  text: "Talk to the devil, he want more" },
+        { t: 27.28,  text: "Out every night, so much handcuffs" },
+        { t: 32.25,  text: "Want me to see" },
+        { t: 36.73,  text: "Up all the things" },
+        { t: 38.41,  text: "I got some problems, my brain over" },
+        { t: 40.82,  text: "I gotta get out of the way" },
+        { t: 43.39,  text: "I ain't got nowhere to stay" },
+        { t: 45.57,  text: "Can't see, come play on my face" },
+        { t: 47.75,  text: "Up all the things" },
+        { t: 47.84,  text: "All your theories" },
+        { t: 50.11,  text: "My song in your head" },
+        { t: 52.95,  text: "Handcuffs" },
+        { t: 57.3,   text: "All your theories" },
+        { t: 59.68,  text: "My song in your head" },
+        { t: 62.36,  text: "Handcuffs" },
+        { t: 75.62,  music: true }
+    ] },
+
+  { name:"MISERY", feat:"",
+    audio:"assets/b3_5.mp3" + AV, bpm:78,
+    lyrics:[
+        { t: 5.78,   text: "Darling, I'm not blaming you for all of my misery" },
+        { t: 20.82,  text: "Darling, I'm not blaming you for all of my misery" },
+        { t: 23.05,  text: "Darling, I'm not blaming you for all of my misery" },
+        { t: 24.56,  text: "Darling, I'm not blaming you for all of my misery" },
+        { t: 25.11,  text: "Where the fuck you go? I don't know" },
+        { t: 27.75,  text: "Black poles, dad in prison, feeling close" },
+        { t: 30.85,  text: "Distance isn't a problem for me anymore" },
+        { t: 36.23,  text: "Yeah, can't get in my feelings, no limit, can't have those" },
+        { t: 39.88,  text: "In boxes with the blank card, nigga, a John Doe" },
+        { t: 43.14,  text: "Uh, if you see my vision, then listen with eyes closed" },
+        { t: 45.89,  text: "Ain't no life you could be living that could be like yours" },
+        { t: 49.42,  text: "I mess up so often, I'm idle" },
+        { t: 52.04,  text: "Uh, hide my face, disguise like I'm Michael" },
+        { t: 54.98,  text: "The way my baby look me in the eyes, can tell she vital" },
+        { t: 58.55,  text: "To me, one minute could turn in my final" },
+        { t: 63.43,  music: true },
+        { t: 65.73,  text: "Darling, I'm not blaming you for all of my misery" },
+        { t: 87.9,   music: true },
+        { t: 90.33,  text: "Darling, I'm not blaming you for all of my misery" },
+        { t: 259.02, music: true }
+    ] },
+
+  { name:"NEW SOLUTION", feat:"with Grimes",
+    audio:"assets/b3_6.mp3" + AV, bpm:71,
+    lyrics:[
+        { t: 54.39,  text: "It's an institution" },
+        { t: 55.39,  text: "Cut off my hair, found a new solution" },
+        { t: 57.19,  text: "I'm not late 'cause I paid my dues" },
+        { t: 58.46,  text: "I work out every night, I could never lose" },
+        { t: 60.26,  text: "So I puff my chest up, put my neck up" },
+        { t: 62.13,  text: "Matthew Price is the geek professor" },
+        { t: 63.44,  text: "Ayo, I'm not late 'cause I paid my dues" },
+        { t: 65.35,  text: "I don't fuck with none of the niggas that I knew in school" },
+        { t: 66.82,  text: "I make my bed up, smoke my blunt up" },
+        { t: 68.87,  text: "Matthew Price, he a rich motherfucker" },
+        { t: 70.28,  text: "Ayo, and they watch when I make a move" },
+        { t: 72.3,   text: "If I was you, I would hate me too" },
+        { t: 74.04,  text: "And my bitch, she is faithful" },
+        { t: 75.2,   text: "Now I'm all on the screen like the cable, oh" },
+        { t: 77.47,  text: "Matt Price, I'm the drip professor, ah" },
+        { t: 79.07,  text: "Bad bitch and her name Vanessa, ah" },
+        { t: 80.78,  text: "I'm up next, so I gotta focus" },
+        { t: 82.47,  text: "Like a medal, I'm on a roll" },
+        { t: 84.13,  text: "Homie, we a god, I'ma get all my niggas and we jump like Geronimo" },
+        { t: 87.2,   text: "Bitch, I hopped out the car with your .45" },
+        { t: 89.23,  text: "I came up out a nigga, got my tie" },
+        { t: 90.9,   text: "Popped out on this shit, got 'em horrified" },
+        { t: 92.52,  text: "My partner ain't be short, but he four-five" },
+        { t: 94.33,  text: "Bust down with the blue like Mordecai" },
+        { t: 96.14,  text: "Got this rich, got 'em mortified" },
+        { t: 97.74,  text: "She like a doll like she Coraline" },
+        { t: 99.41,  text: "Baby couldn't tell me four more lies" },
+        { t: 101.16, text: "After this song, I'm immortalized" },
+        { t: 102.88, text: "After this song, I'm a problem" },
+        { t: 104.46, text: "I put that shit on my mom, yeah" },
+        { t: 108.09, text: "It's an institution" },
+        { t: 109.27, text: "And my niggas, we breakin' through it" },
+        { t: 110.85, text: "Sell my soul, you can't pay me dues" },
+        { t: 112.68, text: "All these niggas is paid to lose" },
+        { t: 114.24, text: "Bitch, I keep my paper loose" },
+        { t: 115.52, text: "And I swerve twice when I make a move" },
+        { t: 117.32, text: "You spent more than you made, dude" },
+        { t: 118.88, text: "To the paper, I'm faithful, I'm faithful, I'm faithful" },
+        { t: 122.77, text: "To the, to the, to the eyes closed" },
+        { t: 124.44, text: "I swear I pass all my idols" },
+        { t: 126.36, text: "I just stay by those in white clothes" },
+        { t: 128.16, text: "It's an institution" },
+        { t: 129.24, text: "Privacy is Windows key" },
+        { t: 130.8,  text: "When I say they watchin' you, they watch you" },
+        { t: 133.17, text: "I'm not playin' no games" },
+        { t: 147.51, music: true }
+    ] },
+
+  { name:"BLUE", feat:"",
+    audio:"assets/b3_7.mp3" + AV, bpm:89,
+    lyrics:[
+        { t: 1.23,   text: "Car erase, world it dies" },
+        { t: 7.8,    text: "I can feel you in my eyes" },
+        { t: 14.02,  text: "Try to say I can't lie" },
+        { t: 20.43,  text: "Didn't want you to leave" },
+        { t: 31.44,  text: "Na-na-na-na-na-na-na-na" },
+        { t: 36.04,  text: "What you know, you're a joke" },
+        { t: 41.41,  text: "I just want it all to" },
+        { t: 45.26,  text: "Ayy, and she know there's something up with all these bucks I'm facing" },
+        { t: 48.38,  text: "Got her panties laced, dirty changes I've been making" },
+        { t: 50.96,  text: "Laying in the bed, I'm laying down before I make it" },
+        { t: 53.59,  text: "And I gotta keep it real, can't, can't fake it" },
+        { t: 56.17,  text: "Tears here be the tears, see yous or I face it" },
+        { t: 58.85,  text: "Matthew paid the rent, he did it off a placement" },
+        { t: 61.18,  text: "When it come to me, I promise there ain't no replacement" },
+        { t: 63.54,  text: "I'm looking at the clock, out of class, I'm so impatient" },
+        { t: 66.32,  text: "Did it with my will, all these labels got me in entanglements" },
+        { t: 68.92,  text: "All these pussy ass niggas babies, I'm acquitted" },
+        { t: 71.18,  text: "And my promise when you talking to me, talking to an angel" },
+        { t: 73.87,  text: "And a heathen in disguise, I'm not too perfect, I'm a human" },
+        { t: 76.84,  text: "Life is too good that it started feeling like a Truman" },
+        { t: 79.36,  text: "Can't lose myself, so all my friends that I'm losing" },
+        { t: 82.05,  text: "Haven't been blue for a long time, bruising" },
+        { t: 84.64,  text: "They used to think I was a fool, but I was a true" },
+        { t: 88.8,   text: "Rest in peace, my sister" },
+        { t: 107.46, text: "Rest in peace, my sister" },
+        { t: 113.11, text: "Rest in peace, my sister" },
+        { t: 180.29, music: true }
+    ] },
+
+  { name:"NEVER KILL YOURSELF", feat:"with never goodbye",
+    audio:"assets/b3_8.mp3" + AV, bpm:134,
+    lyrics:[
+        { t: 0.79,   text: "You and me" },
+        { t: 7.71,   music: true },
+        { t: 10.12,  text: "Come on" },
+        { t: 44.66,  text: "She said, \"Don't be retarded" },
+        { t: 46.97,  text: "Don't kill yourself yet, it's not even that bad\"" },
+        { t: 51.65,  text: "But since the moment I started" },
+        { t: 53.66,  text: "It's been a life full of garbage from the only attack" },
+        { t: 58.7,   text: "Every morning I wake up to my stupid life" },
+        { t: 61.77,  text: "When I'm meeting people, I'm so nervous I wanna die" },
+        { t: 65.13,  text: "If I tried to be honest, I get scared and I hide" },
+        { t: 68.8,   text: "I tell half of the truth and it looks like a lie" },
+        { t: 72.37,  text: "Oh my, oh my, did it all end up like this?" },
+        { t: 75.15,  text: "The girl I miss, my friends are pissed" },
+        { t: 76.92,  text: "I've got an itch to do something that'd be remiss" },
+        { t: 79.7,   text: "Add a name to my hit list, I wish I didn't feel like this" },
+        { t: 83.25,  text: "But every time I try to get better, I have to call it quits" },
+        { t: 87.81,  text: "She said, \"Don't be retarded" },
+        { t: 90.07,  text: "Don't kill yourself yet, it's not even that bad\"" },
+        { t: 94.81,  text: "But since the moment I started" },
+        { t: 96.86,  text: "I've been bleeding and starving, what more do I have?" },
+        { t: 102.18, text: "She said, \"Don't be retarded" },
+        { t: 104.49, text: "Don't kill yourself yet, it's not even that bad\"" },
+        { t: 109.17, text: "But since the moment I started" },
+        { t: 110.9,  text: "It's been a life full of garbage from the only attack" },
+        { t: 114.45, music: true }
+    ] },
+
+  { name:"MEANT2B", feat:"",
+    audio:"assets/b3_9.mp3" + AV, bpm:74,
+    lyrics:[
+        { t: 1.18,   text: "I can't deal with all this, all this" },
+        { t: 13.02,  music: true },
+        { t: 20.15,  text: "God, I got the message that was sent to me" },
+        { t: 23.56,  text: "Everything that played out, it's like this shit meant to be" },
+        { t: 26.3,   text: "And I know I feel it when you vent to me" },
+        { t: 28.47,  text: "I'm prayin' on my enemies" },
+        { t: 30.03,  text: "'Cause baby, you know that's just how it's meant to be" },
+        { t: 34.39,  music: true },
+        { t: 37.8,   text: "I got the answer why they mention me" },
+        { t: 39.77,  text: "'Cause they know that I'm out there for the century" },
+        { t: 42.35,  text: "In my Chewy jeans, this shit not common, got some testimony" },
+        { t: 45.62,  text: "Do not know my destiny, but God, you know my story" },
+        { t: 47.8,   text: "Man, we gon' play my man Matt Proxy real quick" },
+        { t: 52.4,   music: true },
+        { t: 55.15,  text: "Why you do the shit you do? You know how I get about you" },
+        { t: 58.51,  text: "Why you tellin' niggas that I'm tryna forget about you?" },
+        { t: 61.77,  text: "Why you try to cross me up? You movin' hella shifty" },
+        { t: 65.01,  text: "Why you in my face but really you ain't fuckin' with me?" },
+        { t: 68.36,  text: "When you start actin' this way, just like I'm such a bother" },
+        { t: 71.78,  text: "When you start all this bullshit, I wanna blame your father" },
+        { t: 74.89,  text: "He never liked me anyway, man, what the fuck his problem?" },
+        { t: 78.17,  text: "This a trauma, yeah, I'm tryna laugh through all the drama" },
+        { t: 83.2,   text: "You don't gotta worry 'bout me, baby" },
+        { t: 88.63,  text: "I'm learnin' all our conversations" },
+        { t: 94.21,  text: "Why you lyin', say you with it when you really not?" },
+        { t: 97.61,  text: "I been locked up in the stu', ain't got my city hot" },
+        { t: 100.88, text: "Goin' up, baby, I know you see me winnin' now" },
+        { t: 104.1,  text: "And the last time that I saw you was that restaurant" },
+        { t: 106.95, text: "I could do anything" },
+        { t: 108.05, text: "I'm one of those people that I could" },
+        { t: 109.25, text: "Do anything that I, um, read and study" },
+        { t: 115.15, text: "You know, I, I, I, right now, I focus" },
+        { t: 118.28, text: "On my transportation business, but" },
+        { t: 120.52, text: "You have a transportation business?" },
+        { t: 122.18, music: true }
+    ] },
+
+  { name:"LOVE&ADDICTION", feat:"",
+    audio:"assets/b3_10.mp3" + AV, bpm:123,
+    lyrics:[
+        { t: 22.36,  text: "Do you see the vision? Tell me, are you with it?" },
+        { t: 25.2,   text: "Tell me who you are, do you wanna visit?" },
+        { t: 28.1,   text: "Do you want to date?" },
+        { t: 29.06,  text: "Islamic tradition, I feel it in my face like the air condition" },
+        { t: 33.48,  text: "Love and addiction, hustlin' the women" },
+        { t: 36.09,  text: "I've been fuckin' with it" },
+        { t: 38.96,  text: "Though I keep my distance, I got tunnel vision" },
+        { t: 41.54,  text: "Feel it in my veins and ribs and heart" },
+        { t: 43.74,  text: "I took my bones and ripped through a mental prison" },
+        { t: 46.65,  text: "I know that I'm chosen, so they meant to listen" },
+        { t: 49.45,  text: "I know I was glowin' in the red glisten" },
+        { t: 52.49,  text: "I'm up as the Lord when the rent is risen" },
+        { t: 57.55,  text: "It's not a bad habit, just a bad tradition" },
+        { t: 60.62,  text: "You wonder why shawty with the fancy niggas" },
+        { t: 63.38,  text: "Play my music, I'm playing anthem, niggas" },
+        { t: 66.02,  text: "My stance is the best, I'm enhancing thesе niggas" },
+        { t: 68.62,  text: "With pain in my chest, I'm just dancing on niggas" },
+        { t: 71.55,  text: "I cannot reflect, I'm not a vanity nigga" },
+        { t: 74.26,  text: "I gavе away my time and my sanity, nigga" },
+        { t: 79.68,  text: "Do you see the vision? Tell me, are you with it?" },
+        { t: 82.5,   text: "Tell me who you are, do you wanna visit?" },
+        { t: 85.28,  text: "Do you want to date?" },
+        { t: 86.62,  text: "Islamic tradition, I feel it in my face like the air condition" },
+        { t: 90.62,  text: "Love and addiction, hustlin' the women" },
+        { t: 93.68,  text: "I've been fuckin' with it" },
+        { t: 96.18,  text: "Love and addiction" },
+        { t: 97.91,  music: true }
+    ] },
+
+  { name:"SORRY", feat:"",
+    audio:"assets/b3_11.mp3" + AV, bpm:124,
+    lyrics:[
+        { t: 0.76,   text: "This remind me of when I first, first met you" },
+        { t: 5.42,   text: "I made this beat in 2023" },
+        { t: 7.53,   text: "We gon' play my man Matt Proxy real quick" },
+        { t: 10.24,  text: "I had to bring that shit back, you know?" },
+        { t: 11.82,  text: "Just gotta a reminder, here we go" },
+        { t: 15.08,  text: "Yeah, sorry, baby, I just got it, baby, I've been flipping around like a starter, baby" },
+        { t: 19.02,  text: "Yeah, I love it when you call me baby, I just want you to consolidate me (phew)" },
+        { t: 23.24,  text: "Hit the wrist like you called lately, and I swear you've been looking like a doll lately" },
+        { t: 26.64,  text: "Shit, if I'm crazy, then we all crazy, I could never, ever, ever, ever fall, baby" },
+        { t: 30.78,  text: "Give you all, baby, give you all of me, I'm in the sky like astronomy" },
+        { t: 35.06,  text: "Why is they saying they proud of me? I'm just being me, I'm always being me" },
+        { t: 38.29,  text: "I'ma flex on niggas in my Truey jeans and my lifestyle, this a movie scene" },
+        { t: 42.25,  text: "So, why is you saying you through with me? (Tell the world I'm sorry)" },
+        { t: 46.49,  text: "Shawty, I'm sorry, I didn't mean to hurt you" },
+        { t: 50.08,  text: "I'm loving your body, and I'll make it work too" },
+        { t: 54.18,  text: "I'm off the molly, and she keep on calling" },
+        { t: 57.89,  text: "'Cause I'm at the party that she couldn't come to" },
+        { t: 62.01,  text: "Shawty, I'm sorry, I didn't mean to hurt you" },
+        { t: 65.44,  text: "I'm loving your body, and I'll make it work too" },
+        { t: 69.67,  text: "I'm off the molly, and she keep on calling" },
+        { t: 73.26,  text: "'Cause I'm at the party that she couldn't come to" },
+        { t: 77.86,  text: "I just really gotta think about it, out my head, my mind don't just think about it, uh" },
+        { t: 81.31,  text: "I just really gotta think about it, out my head, my mind don't just think about it, uh" },
+        { t: 85.55,  text: "I just really gotta think about-" },
+        { t: 87.33,  text: "I just really gotta think it out" },
+        { t: 89.27,  text: "I just really gotta think about-" },
+        { t: 91.12,  text: "I just really gotta think it out" },
+        { t: 92.66,  text: "Gotta think it out-, I just really gotta think it out" },
+        { t: 98.89,  text: "I just really gotta think it out" },
+        { t: 109.83, text: "Yeah, baby, you know that you're all that I got" },
+        { t: 113.7,  text: "Yeah, baby, you know that you're all that I got" },
+        { t: 117.65, text: "Yeah, baby, you know that you're all that I got" },
+        { t: 122.27, text: "Baby you know that you're all that I got" },
+        { t: 124.92, text: "Yeah, baby, you know that you're all that I got" },
+        { t: 130.08, text: "Baby, you know that you're all that I" },
+        { t: 133.77, text: "Baby, you know that you're all that I got" },
+        { t: 137.79, text: "Baby you know that you're all that I got" },
+        { t: 139.22, text: "We gon' play my man Matt Proxy real quick (all I got, all I got)" },
+        { t: 143.21, text: "Shawty, I'm sorry, I didn't mean to hurt you" },
+        { t: 146.82, text: "I'm loving your body, and I'll make it work too" },
+        { t: 150.89, text: "I'm off the molly, and she keep on calling" },
+        { t: 154.36, text: "'Cause I'm at the party that she couldn't come to" },
+        { t: 158.62, text: "Shawty, I'm sorry, I didn't mean to hurt you" },
+        { t: 162.44, text: "I'm loving your body, and I'll make it work too" },
+        { t: 166.45, text: "I'm off the molly, and she keep on calling" },
+        { t: 169.91, text: "'Cause I'm at the party that she couldn't come to" },
+        { t: 174.92, music: true }
+    ] },
+
+  { name:"God", feat:"with Current Joys & never goodbye",
+    audio:"assets/b3_12.mp3" + AV, bpm:89,
+    lyrics:[
+        { t: 27.32,  text: "Baby fall back, let me kiss you on the lips, ayy" },
+        { t: 29.81,  text: "I been myself, delusional optimist, ayy" },
+        { t: 32.5,   text: "When I was a kid, my dad said he was pharmacist" },
+        { t: 34.61,  text: "My mom working after hours just to put food to my lips, ayy" },
+        { t: 37.93,  text: "I can't come in last and yeah, I put that on my kid, ayy" },
+        { t: 40.67,  text: "Couldn't get this far without my bro, without my sis, uh" },
+        { t: 43.35,  text: "I'm in London golden, I'm just taking the piss, uh" },
+        { t: 45.82,  text: "Listen to my words and to the music, to the bliss, uh" },
+        { t: 48.62,  text: "Post stacks of Magnums and different poles with my fit, ayy" },
+        { t: 51.48,  text: "Niggas can't fathom I did what I just did, ayy" },
+        { t: 53.79,  text: "My little brother here so I'm not worried 'bout him" },
+        { t: 56.7,   text: "Gotta eat my chicken, drink my water, go to gym, ayy" },
+        { t: 59.43,  text: "I been lost so long that I don't know where I have been" },
+        { t: 62.16,  text: "Dad always flashy, passed me by with the rims, ayy" },
+        { t: 64.86,  text: "Passed my time with tasks, I wish I ain't did, uh" },
+        { t: 67.69,  text: "My show was golden, now she wanna take a picture" },
+        { t: 70.23,  text: "Gotta celebrate, I'm taking trips to my liver" },
+        { t: 72.68,  text: "Not even in my prime but anywhere I deliver" },
+        { t: 75.38,  text: "I used to buy fake J's to feel like a winner" },
+        { t: 78.36,  text: "I was just a kid and I was tryna get my fit up" },
+        { t: 80.93,  text: "Push up with my dog, that's interrupting like a hiccup" },
+        { t: 83.73,  text: "Pants stay sag on my shoulder, it's on bishop" },
+        { t: 86.44,  text: "Write down my vision and hammer it like a Philip" },
+        { t: 89.07,  text: "I like a leather jacket with the straps like" },
+        { t: 96.03,  music: true },
+        { t: 178.75, text: "Picture me inside" },
+        { t: 181.89, text: "Hold you close to keep me alive" },
+        { t: 187.48, text: "Brown-eyed beauty, leave my side" },
+        { t: 192.63, text: "And I'll be fine through the fucked up night" },
+        { t: 197.26, text: "The devil was right" },
+        { t: 200.2,  text: "Picture me in blue" },
+        { t: 203.57, text: "Follow the stars to keep me true" },
+        { t: 208.18, text: "I think I'm still in love with you" },
+        { t: 214.31, text: "Lizzie, all I feel is God inside you" },
+        { t: 220.63, music: true }
+    ] }
+];
 
 var ALBUMS = [
   { title:'Unmusique', by:'Lucy Bedroque', theme:'paper',
@@ -1792,8 +2242,7 @@ var ALBUMS = [
   { title:'Trojan Horse', by:'matt proxy', theme:'sepia',
     disc:'assets/disc3.webp', cover:'assets/cover3.jpg', thumb:'assets/alb3.jpg',
     art:'assets/trk3.jpg', artFill:true,
-    silent:true,
-    start:0,
+    start:0,                                  /* la piste nommee 5 ouvre l album */
     tracks: A3 }
 ];
 
@@ -2225,6 +2674,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   /* ---- mode reglage : on pose les temps en tapant sur la barre d espace ---- */
   var tuning = false, cursor = 0, stamps = [];
 
+  /* la lecture doit savoir si le reglage tient la barre d espace */
+  window.__lyricsTuning = function(){ return tuning; };
+
   window.addEventListener('keydown', function(e){
     var k = e.key.toLowerCase();
 
@@ -2456,9 +2908,12 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     paintBtn();
   };
 
+  var demarre_a = -1e9;                  // instant ou l intro a ete armee
+
   function startIntro(){
     if (started) return;
     started = true;
+    demarre_a = performance.now();
     body.classList.add('is-armed');          // le disque part du centre de l ecran
 
     /* sur telephone il n y a pas de platine : le signe s efface, tout arrive
@@ -2526,6 +2981,41 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }
     evts.forEach(function(e){ window.addEventListener(e, go, {passive:true}); });
   }
+
+  /* La barre d espace met en pause et relance.
+
+     Trois pieges, tous evites ici.
+     Le premier : le tout premier geste de la page arme l intro. Si ce geste
+     est justement l espace, il doit lancer la musique et surtout pas la
+     couper dans la foulee — d ou l instant du demarrage, compare a celui de
+     la touche. Le poser avant waitForGesture ne suffisait pas : l ordre des
+     ecouteurs n est pas une garantie qu on veut avoir a tenir.
+     Le deuxieme : le mode reglage des paroles se sert deja de l espace pour
+     poser les temps.
+     Le troisieme : quand le bouton ou le curseur de volume ont le clavier,
+     l espace leur appartient, et le navigateur en fera lui meme un clic ;
+     agir en plus reviendrait a basculer deux fois. */
+  window.addEventListener('keydown', function(e){
+    if (e.code !== 'Space' && e.key !== ' ') return;
+    if (e.repeat) return;
+    if (window.__lyricsTuning && window.__lyricsTuning()) return;
+
+    var cible = e.target;
+    if (cible && cible !== document.body){
+      var t = (cible.tagName || '').toLowerCase();
+      if (t === 'button' || t === 'input' || t === 'select' || t === 'textarea' ||
+          cible.isContentEditable) return;
+    }
+    e.preventDefault();                       // sinon la page saute d un ecran
+
+    if (!started){ startIntro(); paintBtn(); return; }
+    if (performance.now() - demarre_a < 500) return;   // cette touche vient de tout lancer
+    if (!audio.getAttribute('src')) return;            // album sans fichiers
+
+    if (audio.paused){ wanted = true; tryPlay(); }
+    else { wanted = false; audio.pause(); }
+    paintBtn();
+  });
 
   waitForGesture();
   window.__startIntro = startIntro;
