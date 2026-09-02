@@ -748,10 +748,10 @@ body.is-stage .swoosh{opacity:1}
    ================================================================== */
 
 body.alb-red{
-  --paper:#c6360d;
+  --paper:#c6290d;
   --ink:#0b0505;
   background:
-    radial-gradient(120% 90% at 50% 8%, #e24e20 0%, #c0320b 42%, #7d1c04 100%);
+    radial-gradient(120% 90% at 50% 8%, #e23e20 0%, #c0260b 42%, #7d1604 100%);
   color:#0b0505;
 }
 
@@ -773,7 +773,7 @@ body.alb-red .deco{
   display:block;
   position:absolute;inset:0;z-index:0;
   overflow:hidden;
-  background:url("assets/bg2.jpg?v=2") center center / cover no-repeat;
+  background:url("assets/bg2.jpg?v=3") center center / cover no-repeat;
   pointer-events:none;
   opacity:0;transition:opacity 1.4s ease .3s;
   /* La derive se fait en pourcentage de position : avec cover, cela ne joue
@@ -798,7 +798,7 @@ body.alb-red .deco{
 body.alb-red .fl{
   position:absolute;display:block;
   filter:drop-shadow(0 0 7px rgba(255,255,255,.85))
-         drop-shadow(0 0 22px rgba(255,182,150,.5));
+         drop-shadow(0 0 22px rgba(255,167,150,.5));
   opacity:.2;
   animation:twinkle 6s ease-in-out infinite;
 }
@@ -841,7 +841,7 @@ body.alb-red .ember{
   position:absolute;display:block;
   width:3px;height:3px;border-radius:50%;
   background:rgba(255,196,150,.95);
-  box-shadow:0 0 7px rgba(255,200,90,.9);
+  box-shadow:0 0 7px rgba(255,133,90,.9);
   opacity:0;
   animation:rise 15s linear infinite;
 }
@@ -930,7 +930,7 @@ body.alb-red .trk-name,
 body.alb-red .alb-name{
   color:rgba(255,255,255,.76);font-weight:700;
   text-shadow:0 0 10px rgba(255,255,255,.42),
-              0 0 24px rgba(255,154,110,.34),
+              0 0 24px rgba(255,133,110,.34),
               0 1px 2px rgba(11,5,5,.6);
 }
 body.alb-red .trk.is-current .trk-name,
@@ -963,7 +963,7 @@ body.alb-red .sleeve{
 /* ---- la platine se met au noir pour ne pas trancher sur le rouge ---- */
 
 body.alb-red .deck-plinth{
-  background:linear-gradient(168deg,#140704 0%,#080201 48%,#020100 100%);
+  background:linear-gradient(168deg,#140604 0%,#080201 48%,#020100 100%);
   box-shadow:
     0 30px 46px rgba(0,0,0,.58),
     0 6px 12px rgba(0,0,0,.42),
@@ -987,7 +987,7 @@ body.alb-red .arm-pivot{
 }
 body.alb-red .spindle{background:linear-gradient(180deg,#c9c5bf,#59564f)}
 body.alb-red .deck-knob{
-  background:linear-gradient(180deg,#d85226,#8b270a);
+  background:linear-gradient(180deg,#d84226,#8b1e0a);
   box-shadow:0 2px 4px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.4);
 }
 
@@ -1013,7 +1013,7 @@ body.alb-red .lyr.is-now{
   text-shadow:
     0 0 7px rgba(255,255,255,.95),
     0 0 24px rgba(255,255,255,.7),
-    0 0 52px rgba(255,144,96,.6),
+    0 0 52px rgba(255,121,96,.6),
     0 2px 3px rgba(11,5,5,.6);
 }
 body.alb-red .lyr-echo{
@@ -1028,7 +1028,7 @@ body.alb-red .lyr.is-now .lyr-echo{
 body.alb-red .lyr-note{
   color:rgba(255,255,255,.78);
   filter:drop-shadow(0 0 9px rgba(255,255,255,.65))
-         drop-shadow(0 0 26px rgba(255,154,110,.5));
+         drop-shadow(0 0 26px rgba(255,133,110,.5));
 }
 body.alb-red .lyrics.is-tuning{box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
 
@@ -1036,7 +1036,7 @@ body.alb-red .lyrics.is-tuning{box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
 
 body.alb-red .sound{
   border-color:rgba(255,255,255,.22);
-  background:linear-gradient(180deg,#2a100a,#080302);
+  background:linear-gradient(180deg,#2a0e0a,#080302);
   box-shadow:0 0 0 2px #0b0505,0 12px 20px rgba(0,0,0,.45),inset 0 2px 3px rgba(255,255,255,.24);
 }
 body.alb-red .sound:hover{box-shadow:0 0 0 2px #0b0505,0 18px 26px rgba(0,0,0,.55)}
@@ -1053,12 +1053,12 @@ body.alb-red #vol{
 }
 body.alb-red #vol::-webkit-slider-thumb{
   border-color:rgba(255,255,255,.28);
-  background:linear-gradient(180deg,#3a1810,#080302);
+  background:linear-gradient(180deg,#3a1610,#080302);
   box-shadow:0 4px 8px rgba(0,0,0,.5),inset 0 1px 2px rgba(255,255,255,.3);
 }
 body.alb-red #vol::-moz-range-thumb{
   border-color:rgba(255,255,255,.28);
-  background:linear-gradient(180deg,#3a1810,#080302);
+  background:linear-gradient(180deg,#3a1610,#080302);
 }
 body.alb-red #vol:focus-visible{outline-color:#fff}
 
@@ -1154,7 +1154,7 @@ body.alb-sepia .alb-t-paper.is-current .bub{
 }
 body.alb-sepia .alb-t-red.is-current .bub{
   box-shadow:
-    0 0 0 3px #7d1c04,
+    0 0 0 3px #7d1604,
     0 0 0 5px rgba(247,235,208,.7),
     0 16px 26px rgba(40,28,14,.5);
 }
