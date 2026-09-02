@@ -1089,70 +1089,14 @@ body.alb-sepia .glow,
 body.alb-sepia .swoosh,
 body.alb-sepia .halftone{display:none}
 
-/* Ici le fond n est plus une image de fond mais une plaque : une feuille
-   posee dans la fenetre comme le ferait `cover`, qui porte le papier et, par
-   dessus, les bijoux a leur place exacte. Une image de fond ne permettait pas
-   de viser un point precis du dessin ; sur la plaque, tout se dit en
-   pourcentage, et les bijoux restent colles au papier a toute taille.
-   La feuille deborde de 3 pour cent : la derive joue dans cette marge et ne
-   decouvre jamais un bord. */
 body.alb-sepia .deco{
   display:block;
   position:absolute;inset:0;z-index:0;
   overflow:hidden;
-  background:none;
+  background:url("assets/bg3.jpg?v=7") center center / cover no-repeat;
   pointer-events:none;
   opacity:0;transition:opacity 1.4s ease .3s;
-}
-.deco-plate{display:none}
-body.alb-sepia .deco-plate{
-  display:block;
-  position:absolute;left:50%;top:50%;
-  width:max(103vw, calc(103vh * 2.28193));
-  aspect-ratio:1894 / 830;
-  transform:translate(-50%,-50%);
-  animation:platederive 84s ease-in-out infinite alternate;
-}
-@keyframes platederive{
-  from{transform:translate(-50%,-50%) translateX(-1.1%)}
-  to  {transform:translate(-50%,-50%) translateX(1.1%)}
-}
-.deco-paper{
-  position:absolute;inset:0;
-  width:100%;height:100%;
-  display:block;
-  user-select:none;-webkit-user-drag:none;
-}
-
-/* ---- les bijoux, que la main peut pousser un peu ----
-   Au repos ils sont exactement la ou la photo les avait poses : leur ombre
-   est restee sur le papier, et rien ne signale qu ils sont detachables. Le
-   survol les souleve d un cheveu et leur donne une ombre propre ; la main
-   les emmene ensuite de trente pixels au plus, de quoi sentir qu on y touche
-   sans jamais defaire la composition. Un double clic les rend a leur place. */
-.bijou{
-  position:absolute;
-  display:block;
-  z-index:2;
-  pointer-events:auto;
-  cursor:grab;
-  touch-action:none;
-  user-select:none;-webkit-user-drag:none;
-  transform:translate3d(var(--dx,0px), var(--dy,0px), 0);
-  transition:transform .55s cubic-bezier(.22,.72,.16,1),
-             filter .35s ease;
-}
-.bijou:hover{
-  filter:drop-shadow(3px 5px 6px rgba(40,26,10,.34));
-}
-.bijou.is-held{
-  cursor:grabbing;
-  transition:filter .2s ease;                 /* le doigt mene, sans retard */
-  filter:drop-shadow(7px 11px 13px rgba(40,26,10,.44));
-}
-@media (prefers-reduced-motion:reduce){
-  body.alb-sepia .deco-plate{animation:none}
-  .bijou{transition:none}
+  animation:bgdrift 84s ease-in-out infinite alternate;
 }
 body.alb-sepia.is-stage .deco,
 body.alb-sepia.is-lighten .deco{opacity:1}
