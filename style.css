@@ -748,11 +748,11 @@ body.is-stage .swoosh{opacity:1}
    ================================================================== */
 
 body.alb-red{
-  --paper:#c60d1c;
-  --ink:#0b0507;
+  --paper:#c6360d;
+  --ink:#0b0505;
   background:
-    radial-gradient(120% 90% at 50% 8%, #e2202c 0%, #c00b1a 42%, #7d0410 100%);
-  color:#0b0507;
+    radial-gradient(120% 90% at 50% 8%, #e24e20 0%, #c0320b 42%, #7d1c04 100%);
+  color:#0b0505;
 }
 
 /* l image porte deja sa lumiere et ses angles sombres : les taches pastel
@@ -773,7 +773,7 @@ body.alb-red .deco{
   display:block;
   position:absolute;inset:0;z-index:0;
   overflow:hidden;
-  background:url("assets/bg2.jpg") center center / cover no-repeat;
+  background:url("assets/bg2.jpg?v=2") center center / cover no-repeat;
   pointer-events:none;
   opacity:0;transition:opacity 1.4s ease .3s;
   /* La derive se fait en pourcentage de position : avec cover, cela ne joue
@@ -798,7 +798,7 @@ body.alb-red .deco{
 body.alb-red .fl{
   position:absolute;display:block;
   filter:drop-shadow(0 0 7px rgba(255,255,255,.85))
-         drop-shadow(0 0 22px rgba(255,150,150,.5));
+         drop-shadow(0 0 22px rgba(255,182,150,.5));
   opacity:.2;
   animation:twinkle 6s ease-in-out infinite;
 }
@@ -841,7 +841,7 @@ body.alb-red .ember{
   position:absolute;display:block;
   width:3px;height:3px;border-radius:50%;
   background:rgba(255,196,150,.95);
-  box-shadow:0 0 7px rgba(255,150,90,.9);
+  box-shadow:0 0 7px rgba(255,200,90,.9);
   opacity:0;
   animation:rise 15s linear infinite;
 }
@@ -874,7 +874,7 @@ body.alb-red .halftone{display:none}
 body.alb-red .scan{opacity:.04}
 body.alb-red .noise{opacity:.14}
 body.alb-red .vignette{
-  background:radial-gradient(ellipse at 50% 46%,rgba(11,5,7,0) 52%,rgba(11,5,7,.3) 100%);
+  background:radial-gradient(ellipse at 50% 46%,rgba(11,5,5,0) 52%,rgba(11,5,5,.3) 100%);
 }
 /* les courbes fines du fond clair jureraient sur le rouge */
 body.alb-red .swoosh{display:none}
@@ -887,9 +887,9 @@ body.alb-red .swoosh{display:none}
 body.alb-red .trk .bub,
 body.alb-red .alb-t-red .bub{
   border-color:rgba(0,0,0,.55);
-  background:#0b0507;
+  background:#0b0505;
   box-shadow:
-    0 0 0 2px rgba(11,5,7,.85),
+    0 0 0 2px rgba(11,5,5,.85),
     0 16px 26px rgba(0,0,0,.5);
 }
 body.alb-red .trk .bub-glass,
@@ -922,7 +922,7 @@ body.alb-red .alb-t-red.is-current .bub{
 /* sur verre clair un lisere blanc ne se verrait pas : le sien reste sombre */
 body.alb-red .alb-t-paper.is-current .bub{
   box-shadow:
-    0 0 0 3px #0b0507,
+    0 0 0 3px #0b0505,
     0 16px 26px rgba(0,0,0,.5),
     inset 0 2px 3px rgba(255,255,255,.9);
 }
@@ -930,15 +930,15 @@ body.alb-red .trk-name,
 body.alb-red .alb-name{
   color:rgba(255,255,255,.76);font-weight:700;
   text-shadow:0 0 10px rgba(255,255,255,.42),
-              0 0 24px rgba(255,110,110,.34),
-              0 1px 2px rgba(11,5,7,.6);
+              0 0 24px rgba(255,154,110,.34),
+              0 1px 2px rgba(11,5,5,.6);
 }
 body.alb-red .trk.is-current .trk-name,
 body.alb-red .alb.is-current .alb-name{
   color:#fff;
   text-shadow:0 0 8px rgba(255,255,255,.95),
               0 0 26px rgba(255,255,255,.7),
-              0 1px 2px rgba(11,5,7,.5);
+              0 1px 2px rgba(11,5,5,.5);
 }
 body.alb-red .trk .bub:focus-visible,
 body.alb-red .alb-t-red:focus-visible .bub{outline-color:#fff}
@@ -957,13 +957,13 @@ body.alb-red .alb-t-red:focus-visible .bub{outline-color:#fff}
 
 body.alb-red .sleeve{
   filter:none;
-  box-shadow:14px 16px 0 #0b0507;
+  box-shadow:14px 16px 0 #0b0505;
 }
 
 /* ---- la platine se met au noir pour ne pas trancher sur le rouge ---- */
 
 body.alb-red .deck-plinth{
-  background:linear-gradient(168deg,#140406 0%,#080102 48%,#020000 100%);
+  background:linear-gradient(168deg,#140704 0%,#080201 48%,#020100 100%);
   box-shadow:
     0 30px 46px rgba(0,0,0,.58),
     0 6px 12px rgba(0,0,0,.42),
@@ -987,7 +987,7 @@ body.alb-red .arm-pivot{
 }
 body.alb-red .spindle{background:linear-gradient(180deg,#c9c5bf,#59564f)}
 body.alb-red .deck-knob{
-  background:linear-gradient(180deg,#d8262f,#8b0a14);
+  background:linear-gradient(180deg,#d85226,#8b270a);
   box-shadow:0 2px 4px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.4);
 }
 
@@ -998,37 +998,37 @@ body.alb-red .deck-knob{
 
 body.alb-red .lyr{
   color:rgba(255,255,255,.46);
-  text-shadow:0 0 12px rgba(255,255,255,.3),0 1px 2px rgba(11,5,7,.5);
+  text-shadow:0 0 12px rgba(255,255,255,.3),0 1px 2px rgba(11,5,5,.5);
 }
 body.alb-red .lyr:hover{
   color:rgba(255,255,255,.8);
-  text-shadow:0 0 16px rgba(255,255,255,.55),0 1px 2px rgba(11,5,7,.5);
+  text-shadow:0 0 16px rgba(255,255,255,.55),0 1px 2px rgba(11,5,5,.5);
 }
 body.alb-red .lyr.is-past{
   color:rgba(255,255,255,.3);
-  text-shadow:0 0 10px rgba(255,255,255,.2),0 1px 2px rgba(11,5,7,.45);
+  text-shadow:0 0 10px rgba(255,255,255,.2),0 1px 2px rgba(11,5,5,.45);
 }
 body.alb-red .lyr.is-now{
   color:#fff;
   text-shadow:
     0 0 7px rgba(255,255,255,.95),
     0 0 24px rgba(255,255,255,.7),
-    0 0 52px rgba(255,96,96,.6),
-    0 2px 3px rgba(11,5,7,.6);
+    0 0 52px rgba(255,144,96,.6),
+    0 2px 3px rgba(11,5,5,.6);
 }
 body.alb-red .lyr-echo{
   color:rgba(255,255,255,.4);
-  text-shadow:0 0 10px rgba(255,255,255,.28),0 1px 2px rgba(11,5,7,.45);
+  text-shadow:0 0 10px rgba(255,255,255,.28),0 1px 2px rgba(11,5,5,.45);
 }
 body.alb-red .lyr.is-now .lyr-echo{
   color:rgba(255,255,255,.86);
-  text-shadow:0 0 14px rgba(255,255,255,.6),0 1px 2px rgba(11,5,7,.5);
+  text-shadow:0 0 14px rgba(255,255,255,.6),0 1px 2px rgba(11,5,5,.5);
 }
 /* la note prend le meme halo : c est un dessin, donc drop-shadow et non text-shadow */
 body.alb-red .lyr-note{
   color:rgba(255,255,255,.78);
   filter:drop-shadow(0 0 9px rgba(255,255,255,.65))
-         drop-shadow(0 0 26px rgba(255,110,110,.5));
+         drop-shadow(0 0 26px rgba(255,154,110,.5));
 }
 body.alb-red .lyrics.is-tuning{box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
 
@@ -1036,29 +1036,29 @@ body.alb-red .lyrics.is-tuning{box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
 
 body.alb-red .sound{
   border-color:rgba(255,255,255,.22);
-  background:linear-gradient(180deg,#2a0a0e,#080203);
-  box-shadow:0 0 0 2px #0b0507,0 12px 20px rgba(0,0,0,.45),inset 0 2px 3px rgba(255,255,255,.24);
+  background:linear-gradient(180deg,#2a100a,#080302);
+  box-shadow:0 0 0 2px #0b0505,0 12px 20px rgba(0,0,0,.45),inset 0 2px 3px rgba(255,255,255,.24);
 }
-body.alb-red .sound:hover{box-shadow:0 0 0 2px #0b0507,0 18px 26px rgba(0,0,0,.55)}
+body.alb-red .sound:hover{box-shadow:0 0 0 2px #0b0505,0 18px 26px rgba(0,0,0,.55)}
 body.alb-red .sound:focus-visible{outline-color:#fff}
 body.alb-red .ico-pause i{background:#fff}
 body.alb-red .ico-play{border-left-color:#fff}
 body.alb-red .sound.is-waiting{animation:waitred 1.6s ease-in-out infinite}
 @keyframes waitred{
-  0%,100%{box-shadow:0 0 0 2px #0b0507,0 12px 20px rgba(0,0,0,.45),0 0 0 0 rgba(255,255,255,.3)}
-  50%    {box-shadow:0 0 0 2px #0b0507,0 12px 20px rgba(0,0,0,.45),0 0 0 12px rgba(255,255,255,0)}
+  0%,100%{box-shadow:0 0 0 2px #0b0505,0 12px 20px rgba(0,0,0,.45),0 0 0 0 rgba(255,255,255,.3)}
+  50%    {box-shadow:0 0 0 2px #0b0505,0 12px 20px rgba(0,0,0,.45),0 0 0 12px rgba(255,255,255,0)}
 }
 body.alb-red #vol{
-  background:linear-gradient(90deg,#0b0507 0 var(--v,85%),rgba(11,5,7,.28) var(--v,85%) 100%);
+  background:linear-gradient(90deg,#0b0505 0 var(--v,85%),rgba(11,5,5,.28) var(--v,85%) 100%);
 }
 body.alb-red #vol::-webkit-slider-thumb{
   border-color:rgba(255,255,255,.28);
-  background:linear-gradient(180deg,#3a1015,#080203);
+  background:linear-gradient(180deg,#3a1810,#080302);
   box-shadow:0 4px 8px rgba(0,0,0,.5),inset 0 1px 2px rgba(255,255,255,.3);
 }
 body.alb-red #vol::-moz-range-thumb{
   border-color:rgba(255,255,255,.28);
-  background:linear-gradient(180deg,#3a1015,#080203);
+  background:linear-gradient(180deg,#3a1810,#080302);
 }
 body.alb-red #vol:focus-visible{outline-color:#fff}
 
@@ -1154,7 +1154,7 @@ body.alb-sepia .alb-t-paper.is-current .bub{
 }
 body.alb-sepia .alb-t-red.is-current .bub{
   box-shadow:
-    0 0 0 3px #7d0410,
+    0 0 0 3px #7d1c04,
     0 0 0 5px rgba(247,235,208,.7),
     0 16px 26px rgba(40,28,14,.5);
 }
