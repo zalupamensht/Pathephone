@@ -1362,9 +1362,9 @@ body.alb-paper .blizz{
      blanches ne se voient pas plus que les flocons blancs du premier essai */
   background:repeating-linear-gradient(
       104deg,
-      rgba(126,138,160,0) 0 18px,
-      rgba(126,138,160,.30) 18px 21px,
-      rgba(126,138,160,0) 21px 46px);
+      rgba(104,132,192,0) 0 18px,
+      rgba(104,132,192,.30) 18px 21px,
+      rgba(104,132,192,0) 21px 46px);
   filter:blur(7px);
   opacity:0;
   transition:opacity 2.4s ease 1.4s;
@@ -1377,9 +1377,9 @@ body.alb-paper .blizz.b-b{
   filter:blur(13px);
   background:repeating-linear-gradient(
       98deg,
-      rgba(126,138,160,0) 0 30px,
-      rgba(126,138,160,.22) 30px 35px,
-      rgba(126,138,160,0) 35px 78px);
+      rgba(104,132,192,0) 0 30px,
+      rgba(104,132,192,.22) 30px 35px,
+      rgba(104,132,192,0) 35px 78px);
 }
 body.alb-paper.is-stage .blizz.b-b{opacity:.38}
 @keyframes blizz{
@@ -1429,13 +1429,13 @@ body.alb-paper.is-lighten .snow{opacity:1}
   border-radius:50%;
   /* Le coeur est gris froid, non blanc. Blanc, il recouvrait sa propre ombre
      et il ne restait sur le papier qu un anneau gris de l epaisseur d un
-     cheveu — autant dire rien. Gris, il se lit sur le papier ; le halo blanc
+     cheveu — autant dire rien. Bleute, il se lit sur le papier ; le halo blanc
      qui l entoure, lui, se lit sur la platine noire. Un seul flocon tient
      ainsi les deux moities de la page. */
-  background:rgba(122,134,156,.62);
+  background:rgba(104,132,192,.62);
   box-shadow:0 0 var(--g) rgba(255,255,255,.85),
              0 0 calc(var(--g) * 2) rgba(255,255,255,.5),
-             0 1px 2px rgba(44,52,66,.18);
+             0 1px 2px rgba(34,50,92,.20);
   opacity:var(--o);
   will-change:transform;
   animation:ssway var(--sd) ease-in-out var(--dl) infinite alternate;
