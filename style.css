@@ -1345,6 +1345,120 @@ body.is-silent .lyrics,
 body.is-silent .controls{display:none}
 body.is-silent.is-landed .disc-spin{animation-play-state:running}
 
+
+
+/* La poudrerie : un voile de neige portee par le vent, tres loin derriere.
+   Ce ne sont pas des flocons mais des trainees, parce qu a cette distance
+   l oeil ne separe plus les grains : il ne voit que le vent. Deux voiles de
+   vitesses differentes suffisent a donner l epaisseur ; un seul se serait lu
+   comme un motif qui glisse. */
+.blizz{display:none}
+body.alb-paper .blizz{
+  display:block;
+  position:absolute;left:-60%;top:-40%;
+  width:220%;height:180%;
+  pointer-events:none;
+  /* grises, non blanches : sur ce papier presque blanc, des trainees
+     blanches ne se voient pas plus que les flocons blancs du premier essai */
+  background:repeating-linear-gradient(
+      104deg,
+      rgba(126,138,160,0) 0 18px,
+      rgba(126,138,160,.30) 18px 21px,
+      rgba(126,138,160,0) 21px 46px);
+  filter:blur(7px);
+  opacity:0;
+  transition:opacity 2.4s ease 1.4s;
+}
+body.alb-paper.is-stage .blizz,
+body.alb-paper.is-lighten .blizz{opacity:.5}
+body.alb-paper .blizz.b-a{animation:blizz 26s linear infinite}
+body.alb-paper .blizz.b-b{
+  animation:blizz 41s linear infinite reverse;
+  filter:blur(13px);
+  background:repeating-linear-gradient(
+      98deg,
+      rgba(126,138,160,0) 0 30px,
+      rgba(126,138,160,.22) 30px 35px,
+      rgba(126,138,160,0) 35px 78px);
+}
+body.alb-paper.is-stage .blizz.b-b{opacity:.38}
+@keyframes blizz{
+  from{transform:translate3d(0,0,0)}
+  to  {transform:translate3d(-46px,190px,0)}
+}
+@media (prefers-reduced-motion:reduce){
+  body.alb-paper .blizz{display:none}
+}
+
+/* ==================================================================
+   La neige d Unmusique
+   ------------------------------------------------------------------
+   Elle n existe que sur la page claire : les deux autres albums ont
+   leur propre climat, et rien ici ne doit deborder sur eux.
+
+   Le flocon est blanc et porte une ombre froide. C est ce qui lui
+   permet de tenir partout : sur le papier, presque blanc, l oeil lit
+   l ombre ; sur la platine, noire, il lit le flocon. Un flocon
+   simplement blanc aurait disparu sur la moitie de la page, et un
+   flocon gris sur l autre moitie.
+
+   Chute et derive sont deux animations distinctes, posees sur deux
+   elements imbriques. Reunies en une seule, tous les flocons
+   suivraient la meme courbe et la neige se lirait comme un motif.
+   ================================================================== */
+
+.snow{display:none}
+body.alb-paper .snow{
+  display:block;
+  position:fixed;inset:0;z-index:11;
+  overflow:hidden;pointer-events:none;
+  opacity:0;transition:opacity 2s ease 1.2s;
+}
+/* elle arrive avec le reste de la scene, une fois le disque pose */
+body.alb-paper.is-stage .snow,
+body.alb-paper.is-lighten .snow{opacity:1}
+
+.sf{
+  position:absolute;top:0;left:var(--x);
+  will-change:transform;
+  animation:sfall var(--d) linear var(--dl) infinite;
+}
+.sf b{
+  display:block;
+  width:var(--s);height:var(--s);
+  border-radius:50%;
+  /* Le coeur est gris froid, non blanc. Blanc, il recouvrait sa propre ombre
+     et il ne restait sur le papier qu un anneau gris de l epaisseur d un
+     cheveu — autant dire rien. Gris, il se lit sur le papier ; le halo blanc
+     qui l entoure, lui, se lit sur la platine noire. Un seul flocon tient
+     ainsi les deux moities de la page. */
+  background:rgba(122,134,156,.62);
+  box-shadow:0 0 var(--g) rgba(255,255,255,.85),
+             0 0 calc(var(--g) * 2) rgba(255,255,255,.5),
+             0 1px 2px rgba(44,52,66,.18);
+  opacity:var(--o);
+  will-change:transform;
+  animation:ssway var(--sd) ease-in-out var(--dl) infinite alternate;
+}
+/* les flocons proches : plus gros, flous, et a peine visibles — ce sont eux
+   qui donnent la profondeur, pas le nombre */
+.sf.is-pres b{filter:blur(1.6px)}
+
+@keyframes sfall{
+  from{transform:translate3d(0,-8vh,0)}
+  to  {transform:translate3d(0,110vh,0)}
+}
+@keyframes ssway{
+  from{transform:translateX(calc(var(--sw) * -1))}
+  to  {transform:translateX(var(--sw))}
+}
+
+/* le systeme demande le calme : la neige se pose et ne tombe plus */
+@media (prefers-reduced-motion:reduce){
+  .sf,.sf b{animation:none}
+  body.alb-paper .snow{display:none}
+}
+
 @media (max-width: 820px){
 
   body{display:block;padding:0}
