@@ -2890,10 +2890,12 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var DERIVE = .383;
 
   var en_cours = false, filet = 0, musique = 0;
-  /* la musique part quand le disque a fini de revenir sur la platine :
-     0,5 s de delai et 1,25 s de fondu, la meme regle sur ordinateur et
-     sur telephone. A ce moment la presque toute la page est revenue. */
-  var APRES_RETOUR = 1800;
+  /* La musique part a l instant ou la page commence a revenir, pas apres.
+     Le bouton de lecture ne reapparait qu une seconde plus tard (son delai
+     dans la cascade) : il se montre donc deja dans l etat « en lecture ».
+     Lancer la piste une fois la page revenue le faisait surgir sur l icone
+     de lecture, puis basculer d un coup quand la musique partait. */
+  var APRES_RETOUR = 0;
 
   function caler(){
     var r = deco.getBoundingClientRect();
