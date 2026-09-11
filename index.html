@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=24">
+<link rel="stylesheet" href="style.css?v=25">
 </head>
 <body>
 
@@ -28,6 +28,10 @@
   <!-- collage de la page rouge : cache sur les autres albums -->
   <!-- fond de l album -->
   <div class="deco">
+    <!-- l ouverture filmee de la page de Jane : le papier nu se garnit -->
+    <video class="jr-intro" id="jrIntro" src="assets/jr_intro.mp4"
+           poster="assets/jr_intro_start.jpg" muted playsinline preload="auto"
+           disablepictureinpicture aria-hidden="true"></video>
     <!-- ce qui vit par dessus le fond : fleurs, traits de lumiere, braises -->
     <span class="deco-life" aria-hidden="true">
       <svg class="fl f1" viewBox="0 0 100 100" aria-hidden="true"><g fill="#fff"><path d="M50,50 C44,34 45,17 50,6 C55,17 56,34 50,50 Z" transform="rotate(0 50 50)"/><path d="M50,50 C44,34 45,17 50,6 C55,17 56,34 50,50 Z" transform="rotate(72 50 50)"/><path d="M50,50 C44,34 45,17 50,6 C55,17 56,34 50,50 Z" transform="rotate(144 50 50)"/><path d="M50,50 C44,34 45,17 50,6 C55,17 56,34 50,50 Z" transform="rotate(216 50 50)"/><path d="M50,50 C44,34 45,17 50,6 C55,17 56,34 50,50 Z" transform="rotate(288 50 50)"/></g><circle cx="50" cy="50" r="4.5" fill="#fff"/></svg>
@@ -58,6 +62,8 @@
 <div class="veil"></div>
 <!-- la nappe claire : au contact du disque elle s ouvre en cercle depuis lui -->
 <div class="veil-open" id="veilOpen"></div>
+<!-- pour passer l ouverture filmee de la page de Jane -->
+<button type="button" class="skip-intro" id="skipIntro">skip</button>
 
 <div class="fit" id="fit">
 <div class="stage" id="stageBox">
@@ -2315,6 +2321,7 @@ var ALBUMS = [
     disc:'assets/disc2.png?v=3', cover:'assets/cover2.jpg', thumb:'assets/alb2.jpg',
     art:'assets/trk2.jpg', artFill:true,
     start:7,                                  /* Dancing with your eyes closed */
+    intro:true,                               /* le film d ouverture part avec elle */
     tracks: A2 },
 
   /* Les fichiers de celui ci ne sont pas encore la : silent le dit une fois
@@ -2844,6 +2851,10 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     /* la rangee du haut est refaite avec les pistes du nouvel album, puis
        celle qui l ouvre demarre : c est elle qu on veut entendre en arrivant */
     if (window.__dockBuild) window.__dockBuild();
+    /* le film d ouverture et la premiere piste partent ensemble */
+    if (window.__intro){
+      if (a.intro) window.__intro.jouer(); else window.__intro.couper();
+    }
     if (window.__playTrack) window.__playTrack(a.start, true);
   }
 
@@ -2854,6 +2865,94 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   window.__albumState = function(){
     return {current: CUR_ALBUM, total: ALBUMS.length, track: ALB().start};
   };
+})();
+
+/* ---------------- l ouverture filmee de la page de Jane ---------------- */
+(function(){
+  /* Le film se pose exactement la ou est le fond : meme echelle que cover,
+     meme position de derive. Sa derniere image tombe alors pile sur le fond,
+     et le fondu qui la remplace ne montre aucun decalage. */
+  var body = document.body;
+  var deco = document.querySelector('.deco');
+  var vid  = document.getElementById('jrIntro');
+  var skip = document.getElementById('skipIntro');
+  if (!deco || !vid || !skip) return;
+
+  var W = 1895, H = 830;     // le fond de la page
+  var HV = 812;              // la bande 21:9 que le film en garde, centree
+  /* la derive du fond repart de 38 % a chaque arrivee sur l album ; au bout
+     des cinq secondes du film, sur une courbe ease-in-out de 64 secondes,
+     elle en est a 38,3 %. Le film se cale sur cette valeur, celle du raccord. */
+  var DERIVE = .383;
+
+  var en_cours = false, filet = 0;
+
+  function caler(){
+    var r = deco.getBoundingClientRect();
+    var k = Math.max(r.width / W, r.height / H);      // la regle de cover
+    var w = W * k, hv = HV * k;
+    vid.style.width  = w.toFixed(1) + 'px';
+    vid.style.height = hv.toFixed(1) + 'px';
+    vid.style.left   = ((r.width - w) * DERIVE).toFixed(1) + 'px';
+    vid.style.top    = ((r.height - hv) / 2).toFixed(1) + 'px';
+  }
+
+  /* la page renait : is-stage rendu, chaque piece reprend ses propres delais,
+     exactement comme a la premiere visite */
+  function finir(){
+    if (!en_cours) return;
+    en_cours = false;
+    clearTimeout(filet);
+    body.classList.remove('is-intro');
+    body.classList.add('is-stage');
+  }
+
+  function jouer(){
+    /* le systeme demande le calme : pas de film, la page arrive directement */
+    if (REDUCED) return;
+    en_cours = true;
+    caler();
+    body.classList.remove('is-stage');     // l interface rentre dans le fond
+    body.classList.add('is-intro');
+    try { vid.currentTime = 0; } catch (e) {}
+    var p = vid.play();
+    /* si le navigateur refuse la lecture, on ne laisse pas la page vide */
+    if (p && p.catch) p.catch(finir);
+    clearTimeout(filet);
+    filet = setTimeout(finir, 9000);       // filet, si la fin n est jamais signalee
+  }
+
+  /* on quitte l album pendant le film : il s arrete et la page revient */
+  function couper(){
+    if (!en_cours) return;
+    vid.pause();
+    finir();
+  }
+
+  function passer(e){
+    if (e) e.stopPropagation();
+    vid.pause();
+    finir();
+  }
+
+  vid.addEventListener('ended', finir);
+  /* Le filet de neuf secondes part au clic, pour le cas ou le film ne
+     demarrerait jamais. Mais sur un reseau lent le film peut commencer avec
+     du retard, et le filet couperait alors sa fin : des que la lecture
+     commence vraiment, on le recale sur ce qui reste a jouer. */
+  vid.addEventListener('playing', function(){
+    if (!en_cours) return;
+    clearTimeout(filet);
+    var reste = (vid.duration || 5.04) - vid.currentTime;
+    filet = setTimeout(finir, (reste + 2) * 1000);
+  });
+  skip.addEventListener('click', passer);
+  window.addEventListener('keydown', function(e){
+    if (en_cours && e.key === 'Escape') passer();
+  });
+  window.addEventListener('resize', function(){ if (en_cours) caler(); });
+
+  window.__intro = { jouer: jouer, couper: couper };
 })();
 
 /* ---------------- arrivee du disque, impact, puis lecture en boucle ---------------- */

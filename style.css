@@ -1599,3 +1599,82 @@ body.alb-paper.is-lighten .snow{opacity:1}
   body.alb-red.is-stage .deco,
   body.alb-red.is-lighten .deco{opacity:.8}
 }
+
+
+/* ==================================================================
+   Jane : l ouverture filmee
+   ------------------------------------------------------------------
+   En arrivant sur l album, un film de cinq secondes garnit le papier nu
+   piece par piece. L interface rentre dans le fond pendant ce temps,
+   puis en remonte avec la cascade de la premiere visite.
+   ================================================================== */
+
+/* le film : place par le script a la meme echelle et au meme endroit que
+   le fond, pour que sa derniere image se confonde avec lui */
+.jr-intro{display:none}
+body.alb-red .jr-intro{
+  display:block;
+  position:absolute;left:0;top:0;
+  object-fit:fill;                 /* la boite a deja la forme du film */
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .7s ease;     /* a la fin : fondu vers le fond, identique */
+}
+body.alb-red.is-intro .jr-intro{opacity:1;transition:none}
+
+/* sans is-stage le fond s effacerait : il reste la pendant le film */
+body.alb-red.is-intro .deco{opacity:1}
+
+/* fleurs, lumieres et braises attendent la fin du film */
+body.alb-red .deco-life{transition:opacity 1.4s ease .8s}
+body.is-intro .deco-life{opacity:0;transition:opacity .3s ease}
+
+/* On entre dans le film : tout plonge vite, sans les delais de la cascade.
+   On en sort : ces regles tombent, et chaque piece reprend ses delais a
+   elle — la page renait comme a la premiere visite. */
+body.is-intro .dock,
+body.is-intro .lyrics,
+body.is-intro .controls,
+body.is-intro .albums,
+body.is-intro .sleeve,
+body.is-intro .deck{transition:opacity .35s ease,transform .45s ease}
+body.is-intro .deck-plinth,
+body.is-intro .deck-face,
+body.is-intro .platter-mat,
+body.is-intro .spindle,
+body.is-intro .arm,
+body.is-intro .deck-knob,
+body.is-intro .platter::before{transition:opacity .35s ease}
+
+/* le disque ne reste pas seul a tourner sur un plateau disparu */
+body.is-intro .disc-spin{opacity:0;transition:opacity .35s ease}
+body.alb-red .disc-spin{transition:opacity 1.25s ease .5s}
+
+/* ---- le bouton pour passer ---- */
+.skip-intro{display:none}
+body.is-intro .skip-intro{
+  display:block;
+  position:fixed;right:34px;bottom:32px;z-index:40;
+  padding:10px 20px;
+  border:1px solid rgba(255,255,255,.34);border-radius:999px;
+  background:rgba(11,5,5,.42);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  font:700 11px/1 "Arial Narrow","Helvetica Neue",Helvetica,Arial,sans-serif;
+  letter-spacing:.24em;text-transform:uppercase;
+  color:#fff;
+  text-shadow:0 0 8px rgba(255,255,255,.6);
+  cursor:pointer;
+  animation:skipin .6s ease .5s both;
+}
+body.is-intro .skip-intro:hover{background:rgba(11,5,5,.62);border-color:rgba(255,255,255,.6)}
+body.is-intro .skip-intro:focus-visible{outline:2px solid #fff;outline-offset:4px}
+@keyframes skipin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+@media (max-width: 820px){
+  /* sur telephone le fond est un peu voile : le film l est autant */
+  body.alb-red.is-intro .deco{opacity:.8}
+  body.is-intro .skip-intro{right:16px;bottom:18px}
+}
+@media (prefers-reduced-motion:reduce){
+  body.alb-red .jr-intro{display:none}
+}
