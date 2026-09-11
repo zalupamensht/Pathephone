@@ -1627,7 +1627,7 @@ body.alb-red.is-intro .deco{opacity:1}
 
 /* fleurs, lumieres et braises attendent la fin du film */
 body.alb-red .deco-life{transition:opacity 1.4s ease .8s}
-body.is-intro .deco-life{opacity:0;transition:opacity .3s ease}
+body.alb-red.is-intro .deco-life{opacity:0;transition:opacity .3s ease}
 
 /* On entre dans le film : tout plonge vite, sans les delais de la cascade.
    On en sort : ces regles tombent, et chaque piece reprend ses delais a
@@ -1637,18 +1637,23 @@ body.is-intro .lyrics,
 body.is-intro .controls,
 body.is-intro .albums,
 body.is-intro .sleeve,
-body.is-intro .deck{transition:opacity .35s ease,transform .45s ease}
+body.is-intro .deck{transition:opacity .3s ease,transform .4s ease}
 body.is-intro .deck-plinth,
 body.is-intro .deck-face,
 body.is-intro .platter-mat,
 body.is-intro .spindle,
 body.is-intro .arm,
 body.is-intro .deck-knob,
-body.is-intro .platter::before{transition:opacity .35s ease}
+body.is-intro .platter::before{transition:opacity .3s ease}
 
-/* le disque ne reste pas seul a tourner sur un plateau disparu */
-body.is-intro .disc-spin{opacity:0;transition:opacity .35s ease}
+/* Le disque ne reste pas seul a tourner sur un plateau disparu.
+   La regle du retour (lente, avec delai) et celle de la sortie (rapide)
+   pesaient le meme poids, et le retour etait ecrit apres : il imposait sa
+   lenteur des l entree dans le film, et le disque s attardait seul pres de
+   deux secondes apres tout le reste. La sortie est desormais plus specifique
+   et ecrite apres : elle gagne pendant le film, le retour reprend a la fin. */
 body.alb-red .disc-spin{transition:opacity 1.25s ease .5s}
+body.alb-red.is-intro .disc-spin{opacity:0;transition:opacity .3s ease}
 
 /* ---- le bouton pour passer ---- */
 .skip-intro{display:none}

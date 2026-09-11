@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=25">
+<link rel="stylesheet" href="style.css?v=26">
 </head>
 <body>
 
@@ -2851,11 +2851,15 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     /* la rangee du haut est refaite avec les pistes du nouvel album, puis
        celle qui l ouvre demarre : c est elle qu on veut entendre en arrivant */
     if (window.__dockBuild) window.__dockBuild();
-    /* le film d ouverture et la premiere piste partent ensemble */
+    /* Le film d ouverture se joue en silence : la premiere piste est
+       chargee tout de suite, mais elle ne part qu une fois la page revenue.
+       Si le film n a pas lieu (animations reduites), elle part aussitot. */
+    var enFilm = false;
     if (window.__intro){
-      if (a.intro) window.__intro.jouer(); else window.__intro.couper();
+      if (a.intro) enFilm = window.__intro.jouer();
+      else window.__intro.couper();
     }
-    if (window.__playTrack) window.__playTrack(a.start, true);
+    if (window.__playTrack) window.__playTrack(a.start, true, enFilm);
   }
 
   items[0].classList.add('is-current');
@@ -2885,7 +2889,11 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
      elle en est a 38,3 %. Le film se cale sur cette valeur, celle du raccord. */
   var DERIVE = .383;
 
-  var en_cours = false, filet = 0;
+  var en_cours = false, filet = 0, musique = 0;
+  /* la musique part quand le disque a fini de revenir sur la platine :
+     0,5 s de delai et 1,25 s de fondu, la meme regle sur ordinateur et
+     sur telephone. A ce moment la presque toute la page est revenue. */
+  var APRES_RETOUR = 1800;
 
   function caler(){
     var r = deco.getBoundingClientRect();
@@ -2899,17 +2907,27 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* la page renait : is-stage rendu, chaque piece reprend ses propres delais,
      exactement comme a la premiere visite */
-  function finir(){
+  function finir(avecMusique){
     if (!en_cours) return;
     en_cours = false;
     clearTimeout(filet);
     body.classList.remove('is-intro');
     body.classList.add('is-stage');
+    clearTimeout(musique);
+    if (avecMusique === true){
+      musique = setTimeout(function(){
+        /* seulement si l on est toujours sur l album du film */
+        if (ALB().intro && window.__playNow) window.__playNow();
+      }, APRES_RETOUR);
+    }
   }
+  function finirEnMusique(){ finir(true); }
 
+  /* rend vrai si le film a bien lieu : la musique attendra alors sa fin */
   function jouer(){
+    clearTimeout(musique);
     /* le systeme demande le calme : pas de film, la page arrive directement */
-    if (REDUCED) return;
+    if (REDUCED) return false;
     en_cours = true;
     caler();
     body.classList.remove('is-stage');     // l interface rentre dans le fond
@@ -2917,25 +2935,29 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     try { vid.currentTime = 0; } catch (e) {}
     var p = vid.play();
     /* si le navigateur refuse la lecture, on ne laisse pas la page vide */
-    if (p && p.catch) p.catch(finir);
+    if (p && p.catch) p.catch(finirEnMusique);
     clearTimeout(filet);
-    filet = setTimeout(finir, 9000);       // filet, si la fin n est jamais signalee
+    filet = setTimeout(finirEnMusique, 9000);   // filet, si la fin n est jamais signalee
+    return true;
   }
 
-  /* on quitte l album pendant le film : il s arrete et la page revient */
+  /* on quitte l album pendant le film, ou juste apres : il s arrete, la page
+     revient, et la musique attendue n est plus lancee — c est le nouvel
+     album qui choisit la sienne */
   function couper(){
+    clearTimeout(musique);
     if (!en_cours) return;
     vid.pause();
-    finir();
+    finir(false);
   }
 
   function passer(e){
     if (e) e.stopPropagation();
     vid.pause();
-    finir();
+    finir(true);
   }
 
-  vid.addEventListener('ended', finir);
+  vid.addEventListener('ended', finirEnMusique);
   /* Le filet de neuf secondes part au clic, pour le cas ou le film ne
      demarrerait jamais. Mais sur un reseau lent le film peut commencer avec
      du retard, et le filet couperait alors sa fin : des que la lecture
@@ -2944,7 +2966,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!en_cours) return;
     clearTimeout(filet);
     var reste = (vid.duration || 5.04) - vid.currentTime;
-    filet = setTimeout(finir, (reste + 2) * 1000);
+    filet = setTimeout(finirEnMusique, (reste + 2) * 1000);
   });
   skip.addEventListener('click', passer);
   window.addEventListener('keydown', function(e){
@@ -3056,8 +3078,11 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var trackIdx = ALB().start;
 
   /* force : on vient de changer d album, la piste demandee doit repartir
-     meme si elle porte le meme numero que celle qu on ecoutait avant */
-  window.__playTrack = function(idx, force){
+     meme si elle porte le meme numero que celle qu on ecoutait avant.
+     attendre : la piste est chargee et marquee, mais elle ne part pas ;
+     c est l ouverture filmee de la page qui la lancera, une fois la page
+     entierement revenue */
+  window.__playTrack = function(idx, force, attendre){
     var t = ALB().tracks[idx];
     if (!t || (idx === trackIdx && !force)) return;
     trackIdx = idx;
@@ -3083,9 +3108,13 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (window.__setLyricsTrack) window.__setLyricsTrack(idx);
     if (window.__dockMark) window.__dockMark(idx);
 
+    if (attendre){ paintBtn(); return; }
     if (wasPlaying || force){ wanted = true; tryPlay(); }
     paintBtn();
   };
+
+  /* lancer la piste chargee : l aiguille se pose */
+  window.__playNow = function(){ wanted = true; tryPlay(); paintBtn(); };
 
   var demarre_a = -1e9;                  // instant ou l intro a ete armee
 
