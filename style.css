@@ -719,8 +719,6 @@ body.is-stage .swoosh{opacity:1}
   .lyr-note{animation:none}
   /* le fond reste pose, sans derive ni scintillement */
   body.alb-red .deco{animation:none}
-  body.alb-red .jr-plate,
-  body.alb-red .jr-el{animation:none}
   .fl,.ray,.ember,.tear{animation:none}
   .tear{display:none}
   .fl{opacity:.5}
@@ -775,106 +773,18 @@ body.alb-red .deco{
   display:block;
   position:absolute;inset:0;z-index:0;
   overflow:hidden;
+  background:url("assets/bg2.jpg?v=3") center center / cover no-repeat;
   pointer-events:none;
   opacity:0;transition:opacity 1.4s ease .3s;
+  /* La derive se fait en pourcentage de position : avec cover, cela ne joue
+     que sur la marge dont l image dispose deja hors cadre. Elle ne rogne donc
+     rien de plus, et sur une fenetre exactement a sa forme elle ne bouge pas. */
+  animation:bgdrift 64s ease-in-out infinite alternate;
 }
 @keyframes bgdrift{
   from{background-position:38% 50%}
   to  {background-position:62% 50%}
 }
-
-/* ==================================================================
-   Le collage qui bat la mesure
-   ------------------------------------------------------------------
-   Le papier n est plus un fond CSS mais une image dans une plaque, et
-   les pieces detachees sont posees dans la meme plaque. Un fond et un
-   calque derivent chacun de leur cote et finissent par se decoller ;
-   dans une plaque commune ils ne le peuvent pas.
-
-   La plaque reproduit ce que faisait `cover` : elle prend la plus
-   grande des deux dimensions necessaires pour couvrir la fenetre, et
-   se centre. Les quatre pour cent de plus lui donnent le jeu dont la
-   derive a besoin, sinon celle ci decouvrirait un bord.
-
-   Les positions des pieces sont en pourcentage de la plaque, donc
-   elles restent en place a toutes les tailles d ecran.
-   ================================================================== */
-
-.jr-plate{display:none}
-body.alb-red .jr-plate{
-  display:block;
-  position:absolute;left:50%;top:50%;
-  width:max(104vw, calc(104vh * 2.3337));
-  aspect-ratio:1895 / 812;
-  transform:translate(-50%,-50%);
-  animation:jrderive 64s ease-in-out infinite alternate;
-}
-@keyframes jrderive{
-  from{transform:translate(calc(-50% - 1.1%), -50%)}
-  to  {transform:translate(calc(-50% + 1.1%), -50%)}
-}
-
-.jr-paper{position:absolute;inset:0;width:100%;height:100%;display:block}
-.jr-el{position:absolute;display:block;height:auto}
-
-/* mesures relevees sur la plaque de 1895 x 812 */
-.jr-etoile1{left:46.44%;top:11.08%;width:19.00%}
-.jr-etoile2{left:74.67%;top: 0.62%;width:16.09%}
-.jr-notes  {left:38.52%;top:38.79%;width:12.66%}
-.jr-herbe  {left:58.36%;top:37.68%;width:17.84%}
-
-/* --- le battement ---
-   --pulse est pose par le script : c est la moitie d un temps de la piste
-   qui joue, donc le double de son tempo. Sur la piste d ouverture a 76, cela
-   fait les 152 demandes. Sans script, une valeur de repli tient la page. */
-body.alb-red{--pulse:.395s}
-
-/* Les etoiles tournent sans fin et se gonflent sur chaque temps. Rotation et
-   echelle sont deux proprietes distinctes, non un seul transform : sinon la
-   seconde animation ecraserait la premiere. */
-body.alb-red .jr-etoile1{
-  transform-origin:50% 50%;
-  animation:jrtourne 34s linear infinite,
-            jrbat var(--pulse) cubic-bezier(.2,.9,.3,1) infinite;
-}
-body.alb-red .jr-etoile2{
-  transform-origin:50% 50%;
-  animation:jrtourne-inv 27s linear infinite,
-            jrbat var(--pulse) cubic-bezier(.2,.9,.3,1) infinite;
-  animation-delay:0s, calc(var(--pulse) * -.5);
-}
-@keyframes jrtourne    {from{rotate:0deg}   to{rotate:360deg}}
-@keyframes jrtourne-inv{from{rotate:360deg} to{rotate:0deg}}
-@keyframes jrbat{
-  0%  {scale:1.055}
-  30% {scale:1}
-  100%{scale:1}
-}
-
-/* les notes ne font que respirer : elles sont petites, un gonflement franc
-   les ferait sauter */
-body.alb-red .jr-notes{
-  transform-origin:50% 50%;
-  animation:jrbat-doux var(--pulse) cubic-bezier(.2,.9,.3,1) infinite;
-}
-@keyframes jrbat-doux{
-  0%  {scale:1.022}
-  34% {scale:1}
-  100%{scale:1}
-}
-
-/* les tiges du premier plan se balancent depuis leur pied, un aller-retour
-   tous les deux temps */
-body.alb-red .jr-herbe{
-  transform-origin:46% 100%;
-  animation:jrbalance calc(var(--pulse) * 2) ease-in-out infinite;
-}
-@keyframes jrbalance{
-  0%  {rotate:-.55deg}
-  50% {rotate:.55deg}
-  100%{rotate:-.55deg}
-}
-
 
 /* ---- ce qui vit par dessus le fond ---- */
 

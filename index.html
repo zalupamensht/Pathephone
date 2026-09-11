@@ -28,15 +28,6 @@
   <!-- collage de la page rouge : cache sur les autres albums -->
   <!-- fond de l album -->
   <div class="deco">
-    <!-- Le collage de Jane : le papier et les pieces qui bougent tiennent dans
-         une meme plaque, pour qu ils ne se decollent jamais l un de l autre. -->
-    <div class="jr-plate" aria-hidden="true">
-      <img class="jr-paper" src="assets/bg2_sans.jpg" alt="">
-      <img class="jr-el jr-herbe"   src="assets/jr_herbe.png" alt="">
-      <img class="jr-el jr-notes"   src="assets/jr_notes.png" alt="">
-      <img class="jr-el jr-etoile1" src="assets/jr_etoile1.png" alt="">
-      <img class="jr-el jr-etoile2" src="assets/jr_etoile2.png" alt="">
-    </div>
     <!-- ce qui vit par dessus le fond : fleurs, traits de lumiere, braises -->
     <span class="deco-life" aria-hidden="true">
       <svg class="fl f1" viewBox="0 0 100 100" aria-hidden="true"><g fill="#fff"><path d="M50,50 C44,34 45,17 50,6 C55,17 56,34 50,50 Z" transform="rotate(0 50 50)"/><path d="M50,50 C44,34 45,17 50,6 C55,17 56,34 50,50 Z" transform="rotate(72 50 50)"/><path d="M50,50 C44,34 45,17 50,6 C55,17 56,34 50,50 Z" transform="rotate(144 50 50)"/><path d="M50,50 C44,34 45,17 50,6 C55,17 56,34 50,50 Z" transform="rotate(216 50 50)"/><path d="M50,50 C44,34 45,17 50,6 C55,17 56,34 50,50 Z" transform="rotate(288 50 50)"/></g><circle cx="50" cy="50" r="4.5" fill="#fff"/></svg>
@@ -2602,9 +2593,6 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     /* le petit rond de musique danse sur le tempo de la piste active */
     var bpm = t.bpm || 100;
     box.style.setProperty('--beat', (60 / bpm).toFixed(3) + 's');
-    /* le decor bat au double du tempo : la piste qui ouvre l album fait 76,
-       ce qui donne les 152 demandes, et le pouls suit ensuite chaque piste */
-    document.body.style.setProperty('--pulse', (30 / bpm).toFixed(3) + 's');
 
     LYRICS.forEach(function(l, i){
       if (!l.text){ lines[i] = null; return; }
