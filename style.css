@@ -302,16 +302,20 @@ body.is-stage .sleeve{
 
 /* ---------- la platine ---------- */
 
-/* La platine ne se deplace plus en apparaissant : elle se contente de sortir
-   du noir en opacite. Avant, elle remontait de 46px pendant que le disque
-   tombait dessus — deux mouvements superposes, et la trajectoire du disque
-   se pliait en route. Immobile, la cible est fixe et la chute est une seule
-   ligne franche. */
+/* La platine attend le disque a sa place definitive, et n en bouge plus.
+   Elle se tenait auparavant « en profondeur » jusqu a l atterrissage, 28 px
+   plus bas et reduite a 95,5 % : le disque, qui vit dans la platine, se
+   posait donc la, puis au moment ou la page apparaissait la platine
+   rejoignait sa place d un coup — le petit choc de l impact partant de la
+   position finale — et emportait le disque avec elle : 27 px vers le haut,
+   8 px vers la gauche, 4,7 % plus grand, en une seule image.
+   Immobile, elle ne fait plus que sortir du noir en opacite, et le disque
+   finit sa chute exactement la ou il reste. La montee depuis la profondeur
+   ne sert plus qu a l ouverture filmee de Jane, plus bas. */
 .deck{
   position:absolute;left:340px;top:318px;z-index:5;
   width:660px;height:396px;
-  /* elle monte du fond : un peu plus petite et plus basse, puis elle se pose */
-  transform:rotate(-6deg) translateY(28px) scale(.955);
+  transform:rotate(-6deg);
   transition:transform 1.3s cubic-bezier(.2,.72,.2,1) .5s;
 }
 body.is-stage .deck{transform:rotate(-6deg)}
@@ -1645,6 +1649,13 @@ body.is-intro .spindle,
 body.is-intro .arm,
 body.is-intro .deck-knob,
 body.is-intro .platter::before{transition:opacity .3s ease}
+
+/* pendant le film la platine replonge en profondeur, pour en remonter a la
+   fin comme a la premiere visite ; sur telephone elle a sa propre echelle,
+   deja geree par la feuille mobile */
+@media (min-width: 821px){
+  body.is-intro .deck{transform:rotate(-6deg) translateY(28px) scale(.955)}
+}
 
 /* Le disque ne reste pas seul a tourner sur un plateau disparu.
    La regle du retour (lente, avec delai) et celle de la sortie (rapide)
