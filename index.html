@@ -2415,11 +2415,18 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (!window.__playTrack) return;
         window.__playTrack(i);
       });
-      /* seulement quand c est la souris qui vient a la pastille : si c est
-         le manege qui la fait passer sous un curseur immobile, le tic de
-         passage sonne deja, on n en veut pas un second */
+      /* Un seul son par piste survolee, et seulement quand c est la main qui
+         y mene la souris. Tant que le manege bouge (molette, elan, recalage)
+         c est lui qui fait passer les pastilles sous le curseur : le tic de
+         passage sonne deja, on n en ajoute pas un second par dessus. La loupe
+         deplace un peu la pastille sous le curseur et la fait parfois
+         re-survoler : la meme piste ne sonne pas deux fois de suite. */
       bub.addEventListener('mouseenter', function(){
-        if (Math.abs(vel) > 1 || performance.now() - bouge > 120) return;
+        var deja = survolee === i;
+        survolee = i;
+        if (deja) return;
+        var now = performance.now();
+        if (now - roule < 250 || now - bouge > 120) return;
         if (window.__ui) window.__ui('hover');
       });
 
@@ -2431,6 +2438,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     pos   = a.start * STEP;      // la piste qui ouvre l album est au centre
     vel   = 0;
     centre = a.start;            // la reconstruction ne fait pas de bruit
+    survolee = -1;
     mark(a.start);
   }
 
@@ -2447,6 +2455,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var idle   = 0;
   var centre = -1;       // la piste au centre, pour le tic de passage
   var bouge  = -1e9;     // dernier mouvement reel de la souris
+  var roule  = -1e9;     // dernier instant ou le manege a bouge
+  var survolee = -1;     // la pastille sous le curseur, pour ne sonner qu une fois
 
   function wrap(v){
     v = (v + TOTAL / 2) % TOTAL;
@@ -2513,6 +2523,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       hAmt += (0 - hAmt) * 0.07;
     }
 
+    var avant = pos;
     if (Math.abs(vel) > 0.02){
       pos += vel;
       vel *= 0.945;                          // glisse plus longtemps, s arrete plus doucement
@@ -2530,6 +2541,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     // on garde le decalage dans une plage raisonnable : la liste boucle de toute facon
     if (pos >  TOTAL) pos -= TOTAL;
     if (pos < -TOTAL) pos += TOTAL;
+    if (Math.abs(pos - avant) > 0.05) roule = performance.now();
 
     /* une piste passe au centre : petit tic, comme d une case a l autre */
     var c = ((Math.round(pos / STEP) % N) + N) % N;
@@ -2558,8 +2570,10 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
   /* sur toute la fenetre : le survol d une pastille arrive avant le
      mouvement qui l a cause, il faut connaitre celui d avant */
-  window.addEventListener('mousemove', function(){ bouge = performance.now(); }, {passive:true});
-  win.addEventListener('mouseleave', function(){ hover = null; });
+  window.addEventListener('mousemove', function(e){
+    if (e.movementX || e.movementY) bouge = performance.now();   // un vrai deplacement
+  }, {passive:true});
+  win.addEventListener('mouseleave', function(){ hover = null; survolee = -1; });
   window.addEventListener('blur', function(){ hover = null; });
 
   window.addEventListener('keydown', function(e){
@@ -2606,8 +2620,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 (function(){
   var SONS = {
     scroll:     'assets/ui_scroll.mp3?v=2',        // une piste passe au centre du manege
-    hover:      'assets/ui_hover.mp3',             // la souris passe sur une pastille
-    select:     'assets/ui_select.mp3?v=2',        // on choisit une piste
+    hover:      'assets/ui_hover.mp3?v=2',         // la souris passe sur une pastille
+    select:     'assets/ui_select.mp3?v=3',        // on choisit une piste
     album:      'assets/ui_album.mp3?v=2',         // on change d album
     albumHover: 'assets/ui_album_hover.mp3'        // la souris passe sur un album
   };
