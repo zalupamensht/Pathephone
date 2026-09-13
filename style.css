@@ -97,17 +97,50 @@ body.is-lit .veil-open{opacity:0}
 .intro-logo{
   position:absolute;left:50%;top:50%;z-index:12;
   width:104px;height:104px;margin:-52px 0 0 -52px;
-  display:block;pointer-events:none;
+  display:block;
+  /* c est le bouton de depart : on clique dessus, ou on appuie sur espace */
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  -webkit-user-select:none;user-select:none;
   animation:logobreath 5s ease-in-out infinite alternate;
+  /* scale se compose avec la respiration, qui tient deja transform */
+  transition:scale .16s cubic-bezier(.3,.7,.3,1),filter .16s ease;
+}
+/* l appui : le signe s enfonce et s assombrit, et reste ainsi tant qu on
+   appuie ; au relachement il remonte pendant que l eclipse commence */
+.intro-logo.is-pressed{
+  scale:.92;filter:brightness(.72);
+  transition-duration:.09s;
 }
 /* le disque prend le relais : son etiquette porte deja le meme signe */
 body.is-armed .intro-logo{
-  animation:logohandoff 3.5s both;
+  pointer-events:none;
+  animation:logohandoff 4s both;
 }
 @keyframes logohandoff{
   0%   {opacity:1}
-  24%  {opacity:1}
-  46%  {opacity:0}
+  35%  {opacity:1}
+  52%  {opacity:0}
+  100% {opacity:0}
+}
+
+/* L eclipse : un film carre, cale sur le disque (640 px de film pour 400 de
+   scene, le disque y faisant 480 px pour 300). Il passe SOUS le disque : en
+   se revelant, le disque couvre l anneau, qui se fond dans sa tranche. Ses
+   bords se perdent dans le noir, son noir est celui du voile. */
+.eclipse{
+  position:absolute;left:50%;top:50%;z-index:3;
+  width:400px;height:400px;margin:-200px 0 0 -200px;
+  opacity:0;pointer-events:none;
+  -webkit-mask-image:radial-gradient(closest-side,#000 80%,transparent 100%);
+          mask-image:radial-gradient(closest-side,#000 80%,transparent 100%);
+}
+body.is-armed .eclipse{animation:eclipsefilm 4s both}
+body.sans-eclipse .eclipse{display:none}
+@keyframes eclipsefilm{
+  0%   {opacity:0}
+  5%   {opacity:1}
+  40%  {opacity:1}
+  56%  {opacity:0}
   100% {opacity:0}
 }
 @keyframes logobreath{
@@ -397,7 +430,7 @@ body.is-stage .platter::before{opacity:1}
   animation:spin 1.9s linear infinite;
   animation-play-state:paused;
 }
-body.is-armed .disc-fly{animation:flyin 3.5s both}
+body.is-armed .disc-fly{animation:flyin 4s both}
 body.is-landed.is-playing .disc-spin{animation-play-state:running}
 .disc{
   width:100%;height:100%;display:block;
@@ -409,19 +442,20 @@ body.is-landed.is-playing .disc-spin{animation-play-state:running}
    d un seul geste sur le plateau (~1.5s). */
 @keyframes flyin{
   /* le disque est deja en place, a sa taille definitive, autour du signe :
-     il ne grandit pas et ne monte pas, il se revele par la lumiere */
+     il ne grandit pas et ne monte pas, il se revele par la lumiere. Il
+     attend que l eclipse ait fait le tour (1 s), puis nait dans l anneau. */
   0%   {opacity:0;
         transform:translate(var(--fx,0px),var(--fy,0px)) scale(1);
         filter:blur(9px) brightness(3.4)}
-  12%  {opacity:0;
+  25%  {opacity:0;
         filter:blur(9px) brightness(3.4)}
-  30%  {opacity:.5;
+  40%  {opacity:.5;
         filter:blur(4px) brightness(2.4)}
-  46%  {opacity:1;
+  52%  {opacity:1;
         filter:blur(1.2px) brightness(1.9)}
   /* toute la lumiere est retombee AVANT la chute : sinon le grain clair du
      disque, pousse par brightness, crame en petits points blancs */
-  57%  {opacity:1;
+  61%  {opacity:1;
         transform:translate(var(--fx,0px),var(--fy,0px)) scale(1);
         filter:blur(0) brightness(1);
         animation-timing-function:cubic-bezier(.22,.7,.2,1)}
@@ -439,7 +473,8 @@ body.is-landed.is-playing .disc-spin{animation-play-state:running}
   box-shadow:0 0 34px rgba(255,255,255,.5),inset 0 0 26px rgba(255,255,255,.16);
   opacity:0;pointer-events:none;
 }
-body.is-armed .disc-fly::after{animation:discring 3.5s both}
+/* le simple trait de lumiere ne sert plus que si le film n a pas pu partir */
+body.is-armed.sans-eclipse .disc-fly::after{animation:discring 3.5s both}
 @keyframes discring{
   0%   {opacity:0;transform:scale(.965)}
   10%  {opacity:0;transform:scale(.975)}
@@ -1653,3 +1688,8 @@ body.is-intro .skip-intro:focus-visible{outline:2px solid #fff;outline-offset:4p
 @media (prefers-reduced-motion:reduce){
   body.alb-red .jr-intro{display:none}
 }
+
+/* l eclipse ne joue que sur ordinateur, et pas quand le systeme demande le
+   calme : sur telephone il n y a pas de vol, tout arrive d un coup */
+@media (max-width: 820px){ .eclipse{display:none} }
+@media (prefers-reduced-motion:reduce){ .eclipse{display:none} }

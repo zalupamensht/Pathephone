@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=28">
+<link rel="stylesheet" href="style.css?v=29">
 </head>
 <body>
 
@@ -68,7 +68,11 @@
 <div class="fit" id="fit">
 <div class="stage" id="stageBox">
 
-  <img class="intro-logo" src="assets/logo_light.png" alt="">
+  <!-- l eclipse : un anneau de lumiere fait le tour du disque a venir -->
+  <video class="eclipse" id="eclipse" src="assets/eclipse.mp4" muted playsinline
+         preload="auto" disablepictureinpicture aria-hidden="true"></video>
+  <img class="intro-logo" id="introLogo" src="assets/logo_light.png" alt="Play"
+       role="button" draggable="false">
 
 
   <div class="dock">
@@ -3272,7 +3276,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------------- arrivee du disque, impact, puis lecture en boucle ---------------- */
 (function(){
-  var LAND = 3500;                       // instant ou le disque touche le plateau, ms
+  var LAND = 4000;                       // instant ou le disque touche le plateau, ms
+  var ECLIPSE_FIN = 1.4;                 // on quitte le film avant qu il ne remplisse le disque, s
 
   var body  = document.body;
   var fly   = document.getElementById('discFly');
@@ -3344,10 +3349,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.addEventListener('resize', aim);
   }
 
-  /* L arrivee du disque et la musique doivent partir ensemble. Or un navigateur
-     refuse le son tant que la page n a recu aucun geste : on teste d abord, sans
-     bruit, si le son est autorise. Si oui on lance tout de suite ; sinon on garde
-     le disque en l air et on demarre les deux au premier geste. */
+  /* Rien ne part tout seul : on attend un clic sur le signe, ou la barre
+     d espace. Ce geste ouvre aussi le son, que le navigateur refuse tant que
+     la page n en a recu aucun. */
 
   var wanted  = true;
   var started = false;
@@ -3517,6 +3521,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (REDUCED){
       setTimeout(land, LAND);                // sans vol, il n y a rien a attendre
     } else {
+      eclipse();
       fly.addEventListener('animationend', function(e){
         if (e.animationName === 'flyin') land();
       });
@@ -3524,14 +3529,51 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }
   }
 
-  function waitForGesture(){
-    var evts = ['pointerdown','keydown','wheel','touchstart'];
-    function go(){
-      evts.forEach(function(e){ window.removeEventListener(e, go); });
-      startIntro();
-    }
-    evts.forEach(function(e){ window.addEventListener(e, go, {passive:true}); });
+  /* L eclipse : le film fait naitre l anneau et l eclat qui en fait le
+     tour, sous le disque. On l arrete avant la fin : au dela il remplit le
+     disque lui meme, alors que c est au vrai disque de se reveler, par la
+     lumiere. Si le film n est pas pret, le disque se revele seul, cerne de
+     son simple trait de lumiere, comme avant. */
+  var film = document.getElementById('eclipse');
+  function eclipse(){
+    if (!film || film.readyState < 3){ body.classList.add('sans-eclipse'); return; }
+    try { film.currentTime = 0; } catch (e) {}
+    var p = film.play();
+    /* un vrai refus seulement : une lecture interrompue (AbortError) n en
+       est pas un */
+    if (p && p.catch) p.catch(function(err){
+      if (!err || err.name !== 'AbortError') body.classList.add('sans-eclipse');
+    });
+    (function guetter(){
+      if (film.currentTime >= ECLIPSE_FIN){ film.pause(); return; }
+      requestAnimationFrame(guetter);
+    })();
   }
+
+  /* Le depart : un clic sur le signe, ou la barre d espace. Rien d autre.
+     Le signe s enfonce a l appui et reste enfonce tant qu on appuie ; la
+     sequence part au relachement, comme sous le doigt un vrai bouton. */
+  var signe = document.getElementById('introLogo');
+  function enfoncer(){ if (!started && signe) signe.classList.add('is-pressed'); }
+  function relacher(){ signe.classList.remove('is-pressed'); }
+  function waitForGesture(){
+    if (!signe) return;
+    signe.addEventListener('pointerdown', function(e){ e.preventDefault(); enfoncer(); });
+    signe.addEventListener('pointerleave', relacher);
+    window.addEventListener('pointerup', relacher);
+    window.addEventListener('pointercancel', relacher);
+    signe.addEventListener('click', function(){
+      relacher();
+      if (!started){ startIntro(); paintBtn(); }
+    });
+  }
+  /* la barre d espace avant le depart : appui, puis depart au relachement */
+  window.addEventListener('keyup', function(e){
+    if (e.code !== 'Space' && e.key !== ' ') return;
+    if (started || !signe || !signe.classList.contains('is-pressed')) return;
+    relacher();
+    startIntro(); paintBtn();
+  });
 
   /* La barre d espace met en pause et relance.
 
@@ -3559,7 +3601,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }
     e.preventDefault();                       // sinon la page saute d un ecran
 
-    if (!started){ startIntro(); paintBtn(); return; }
+    if (!started){ enfoncer(); return; }             // le depart se fait au relachement
     if (performance.now() - demarre_a < 500) return;   // cette touche vient de tout lancer
     if (!audio.getAttribute('src')) return;            // album sans fichiers
 
@@ -3574,7 +3616,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   btn.addEventListener('click', function(e){
     e.stopPropagation();
-    if (!started){ startIntro(); paintBtn(); return; }
+    if (!started) return;                  // on part du signe, pas d ici
     annulerApresSon();
     if (audio.paused){ wanted = true; tryPlay(); }
     else { wanted = false; audio.pause(); }
