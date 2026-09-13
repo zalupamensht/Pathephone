@@ -2414,7 +2414,6 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       var bub = el.querySelector('.bub');
       bub.addEventListener('click', function(){
-        if (window.__ui) window.__ui('select');
         var son = window.__ui ? window.__ui('select') : 0;
         if (window.__pickTrack) window.__pickTrack(i, son);
       });
@@ -2630,7 +2629,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   };
   /* ecart minimal entre deux memes sons, en ms : un coup de molette rapide
      fait passer plusieurs pistes par image, on n en garde qu un tic net */
-  var ECART = { scroll: 45, hover: 70, select: 0, album: 0, albumHover: 70 };
+  var ECART = { scroll: 45, hover: 70, select: 150, album: 150, albumHover: 70 };
 
   var AC = window.AudioContext || window.webkitAudioContext;
   if (!AC || !window.fetch) return;
