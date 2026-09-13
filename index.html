@@ -30,7 +30,7 @@
   <div class="deco">
     <!-- l ouverture filmee de la page de Jane : le papier nu se garnit -->
     <video class="jr-intro" id="jrIntro" src="assets/jr_intro.mp4"
-           poster="assets/jr_intro_start.jpg" muted playsinline preload="auto"
+           poster="assets/jr_intro_start.jpg" muted playsinline preload="none"
            disablepictureinpicture aria-hidden="true"></video>
     <!-- ce qui vit par dessus le fond : fleurs, traits de lumiere, braises -->
     <span class="deco-life" aria-hidden="true">
@@ -2321,7 +2321,10 @@ var ALBUMS = [
     disc:'assets/disc2.png?v=3', cover:'assets/cover2.jpg', thumb:'assets/alb2.jpg',
     art:'assets/trk2.jpg', artFill:true,
     start:7,                                  /* Dancing with your eyes closed */
-    intro:true,                               /* le film d ouverture part avec elle */
+    /* le film d ouverture est coupe pour l instant : tout son code reste en
+       place. Pour le rendre, remettre intro:true et preload="auto" sur la
+       video #jrIntro. */
+    intro:false,
     tracks: A2 },
 
   /* Les fichiers de celui ci ne sont pas encore la : silent le dit une fois
@@ -2412,8 +2415,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var bub = el.querySelector('.bub');
       bub.addEventListener('click', function(){
         if (window.__ui) window.__ui('select');
-        if (!window.__playTrack) return;
-        window.__playTrack(i);
+        if (window.__pickTrack) window.__pickTrack(i);
       });
       /* Un seul son par piste survolee, et seulement quand c est la main qui
          y mene la souris. Tant que le manege bouge (molette, elan, recalage)
@@ -3228,6 +3230,16 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* lancer la piste chargee : l aiguille se pose */
   window.__playNow = function(){ wanted = true; tryPlay(); paintBtn(); };
+
+  /* on choisit une piste dans le dock : elle part, meme si la musique etait
+     arretee — la choisir, c est vouloir l entendre. Avant l arrivee du disque
+     ou pendant le film de Jane, c est la page qui lancera la musique. */
+  window.__pickTrack = function(idx){
+    window.__playTrack(idx);
+    if (!started || !body.classList.contains('is-landed') ||
+        body.classList.contains('is-intro')) return;
+    if (audio.paused){ wanted = true; tryPlay(); paintBtn(); }
+  };
 
   /* la musique est arretee, et la page est bien la : les sons d interface
      ont le droit de jouer. Pas avant l arrivee du disque, pas pendant le
