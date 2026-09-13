@@ -2409,9 +2409,14 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         '</span>';
       rail.appendChild(el);
 
-      el.querySelector('.bub').addEventListener('click', function(){
+      var bub = el.querySelector('.bub');
+      bub.addEventListener('click', function(){
+        if (window.__ui) window.__ui('select');
         if (!window.__playTrack) return;
         window.__playTrack(i);
+      });
+      bub.addEventListener('mouseenter', function(){
+        if (window.__ui) window.__ui('hover');
       });
 
       return el;
@@ -2421,6 +2426,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     TOTAL = N * STEP;
     pos   = a.start * STEP;      // la piste qui ouvre l album est au centre
     vel   = 0;
+    centre = a.start;            // la reconstruction ne fait pas de bruit
     mark(a.start);
   }
 
@@ -2435,6 +2441,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var hx     = 0;        // position lissee : la loupe rattrape la souris
   var hAmt   = 0;        // force de la loupe : monte a l entree, retombe a la sortie
   var idle   = 0;
+  var centre = -1;       // la piste au centre, pour le tic de passage
 
   function wrap(v){
     v = (v + TOTAL / 2) % TOTAL;
@@ -2519,6 +2526,13 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (pos >  TOTAL) pos -= TOTAL;
     if (pos < -TOTAL) pos += TOTAL;
 
+    /* une piste passe au centre : petit tic, comme d une case a l autre */
+    var c = ((Math.round(pos / STEP) % N) + N) % N;
+    if (c !== centre){
+      centre = c;
+      if (window.__ui) window.__ui('scroll');
+    }
+
     render();
   }
 
@@ -2573,6 +2587,74 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   render();
   requestAnimationFrame(frame);
+})();
+
+
+/* ---------------- les sons d interface, facon XMB ---------------- */
+/* Petits sons de navigation, faits pour le site. Ils ne jouent que musique
+   arretee : pendant l ecoute, l interface se tait et laisse la place au
+   morceau. Ils passent par Web Audio : latence nulle, et plusieurs tics
+   peuvent se chevaucher quand on fait defiler vite. */
+(function(){
+  var SONS = {
+    scroll: 'assets/ui_scroll.mp3',   // une piste passe au centre du manege
+    hover:  'assets/ui_hover.mp3',    // la souris passe sur une pastille
+    select: 'assets/ui_select.mp3',   // on choisit une piste
+    album:  'assets/ui_album.mp3'     // on change d album
+  };
+  /* ecart minimal entre deux memes sons, en ms : un coup de molette rapide
+     fait passer plusieurs pistes par image, on n en garde qu un tic net */
+  var ECART = { scroll: 45, hover: 70, select: 0, album: 0 };
+
+  var AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC || !window.fetch) return;
+
+  var music = document.getElementById('theme');
+  var ctx = null, sortie = null;
+  var octets = {}, tampons = {}, dernier = {};
+
+  /* les fichiers sont recuperes tout de suite, decodes des que le son
+     est permis : le premier clic a deja de quoi sonner */
+  Object.keys(SONS).forEach(function(nom){
+    octets[nom] = fetch(SONS[nom])
+      .then(function(r){ return r.ok ? r.arrayBuffer() : null; })
+      .catch(function(){ return null; });
+  });
+
+  function decoder(nom){
+    octets[nom].then(function(b){
+      if (!b) return;
+      ctx.decodeAudioData(b, function(t){ tampons[nom] = t; }, function(){});
+    });
+  }
+
+  /* un navigateur n ouvre le son qu apres un geste */
+  function eveiller(){
+    if (!ctx){
+      try { ctx = new AC(); } catch (e) { return; }
+      sortie = ctx.createGain();
+      sortie.connect(ctx.destination);
+      Object.keys(SONS).forEach(decoder);
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+  }
+  ['pointerdown', 'keydown', 'touchend'].forEach(function(e){
+    window.addEventListener(e, eveiller, {passive: true, capture: true});
+  });
+
+  window.__ui = function(nom){
+    if (!ctx || !tampons[nom]) return;
+    if (!window.__musicPaused || !window.__musicPaused()) return;
+    var now = performance.now();
+    if (now - (dernier[nom] || -1e9) < ECART[nom]) return;
+    dernier[nom] = now;
+    /* le curseur de volume du site regle aussi l interface */
+    sortie.gain.value = music && !music.muted ? music.volume : 0;
+    var s = ctx.createBufferSource();
+    s.buffer = tampons[nom];
+    s.connect(sortie);
+    s.start();
+  };
 })();
 
 
@@ -2826,7 +2908,10 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         '<img class="bub-art" src="' + a.thumb + '" alt="">' +
       '</span>' +
       '<span class="alb-name">' + a.title + '</span>';
-    el.addEventListener('click', function(){ pick(i); });
+    el.addEventListener('click', function(){
+      if (i !== CUR_ALBUM && window.__ui) window.__ui('album');
+      pick(i);
+    });
     box.appendChild(el);
     return el;
   });
@@ -3117,6 +3202,14 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* lancer la piste chargee : l aiguille se pose */
   window.__playNow = function(){ wanted = true; tryPlay(); paintBtn(); };
+
+  /* la musique est arretee, et la page est bien la : les sons d interface
+     ont le droit de jouer. Pas avant l arrivee du disque, pas pendant le
+     film d ouverture de Jane. */
+  window.__musicPaused = function(){
+    return started && audio.paused &&
+      body.classList.contains('is-landed') && !body.classList.contains('is-intro');
+  };
 
   var demarre_a = -1e9;                  // instant ou l intro a ete armee
 
