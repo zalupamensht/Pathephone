@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=29">
+<link rel="stylesheet" href="style.css?v=30">
 </head>
 <body>
 
@@ -69,7 +69,7 @@
 <div class="stage" id="stageBox">
 
   <!-- l eclipse : un anneau de lumiere fait le tour du disque a venir -->
-  <video class="eclipse" id="eclipse" src="assets/eclipse.mp4" muted playsinline
+  <video class="eclipse" id="eclipse" src="assets/eclipse.mp4?v=2" muted playsinline
          preload="auto" disablepictureinpicture aria-hidden="true"></video>
   <img class="intro-logo" id="introLogo" src="assets/logo_light.png" alt="Play"
        role="button" draggable="false">
@@ -3276,8 +3276,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------------- arrivee du disque, impact, puis lecture en boucle ---------------- */
 (function(){
-  var LAND = 4000;                       // instant ou le disque touche le plateau, ms
-  var ECLIPSE_FIN = 1.4;                 // on quitte le film avant qu il ne remplisse le disque, s
+  var LAND = 4200;                       // instant ou le disque touche le plateau, ms
 
   var body  = document.body;
   var fly   = document.getElementById('discFly');
@@ -3523,16 +3522,16 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     } else {
       eclipse();
       fly.addEventListener('animationend', function(e){
-        if (e.animationName === 'flyin') land();
+        if (e.animationName === 'flyin' || e.animationName === 'flyinsolo') land();
       });
       setTimeout(land, LAND + 700);          // filet, si l evenement ne vient pas
     }
   }
 
-  /* L eclipse : le film fait naitre l anneau et l eclat qui en fait le
-     tour, sous le disque. On l arrete avant la fin : au dela il remplit le
-     disque lui meme, alors que c est au vrai disque de se reveler, par la
-     lumiere. Si le film n est pas pret, le disque se revele seul, cerne de
+  /* L eclipse : le film fait naitre l anneau, l eclat qui en fait le tour,
+     puis le disque qui sort de l obscurite ; il s acheve sur le disque tel
+     que la page le montre, et le vrai disque prend le relais (feuille de
+     style). Si le film n est pas pret, le disque se revele seul, cerne de
      son simple trait de lumiere, comme avant. */
   var film = document.getElementById('eclipse');
   function eclipse(){
@@ -3544,10 +3543,6 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (p && p.catch) p.catch(function(err){
       if (!err || err.name !== 'AbortError') body.classList.add('sans-eclipse');
     });
-    (function guetter(){
-      if (film.currentTime >= ECLIPSE_FIN){ film.pause(); return; }
-      requestAnimationFrame(guetter);
-    })();
   }
 
   /* Le depart : un clic sur le signe, ou la barre d espace. Rien d autre.
