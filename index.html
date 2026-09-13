@@ -2743,17 +2743,20 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var TEMPS_RAFALE = 8;       // une rafale tous les huit temps
   var CALME  = .3;            // part de la tempete qui reste musique arretee
 
-  /* le flocon : coeur bleute qui se fond en blanc vers le bord. Le coeur se
-     lit sur le papier clair, le blanc sur la platine noire. L opacite ne fait
-     que decroitre du centre au bord : pas d anneau, juste une tache douce. */
+  /* le flocon : un seul ton gris neutre qui se fond vers le bord, comme la
+     neige vue contre un ciel clair. Sur le papier presque blanc il se lit en
+     gris doux, sur la platine noire en clair. Un seul ton et une opacite qui
+     ne fait que decroitre : aucun anneau ni contour possible (l ancien coeur
+     bleu cerne de blanc faisait un liseré sur le noir). Le blanc pur, lui,
+     disparaissait sur le papier. */
   function sprite(dur){
     var s = document.createElement('canvas'); s.width = s.height = 64;
     var c = s.getContext('2d');
     var gr = c.createRadialGradient(32, 32, 0, 32, 32, 32);
-    gr.addColorStop(0,          'rgba(118,142,198,.85)');
-    gr.addColorStop(dur ? .32 : .2, 'rgba(160,178,218,.55)');
-    gr.addColorStop(dur ? .6 : .55, 'rgba(255,255,255,.45)');
-    gr.addColorStop(1,          'rgba(255,255,255,0)');
+    gr.addColorStop(0,          'rgba(188,191,197,.92)');
+    gr.addColorStop(dur ? .35 : .22, 'rgba(188,191,197,.6)');
+    gr.addColorStop(dur ? .7 : .6, 'rgba(188,191,197,.18)');
+    gr.addColorStop(1,          'rgba(188,191,197,0)');
     c.fillStyle = gr; c.fillRect(0, 0, 64, 64);
     return s;
   }
