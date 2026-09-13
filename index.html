@@ -2415,7 +2415,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var bub = el.querySelector('.bub');
       bub.addEventListener('click', function(){
         if (window.__ui) window.__ui('select');
-        if (window.__pickTrack) window.__pickTrack(i);
+        var son = window.__ui ? window.__ui('select') : 0;
+        if (window.__pickTrack) window.__pickTrack(i, son);
       });
       /* Un seul son par piste survolee, et seulement quand c est la main qui
          y mene la souris. Tant que le manege bouge (molette, elan, recalage)
@@ -2636,7 +2637,19 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   var music = document.getElementById('theme');
   var ctx = null, sortie = null;
-  var octets = {}, tampons = {}, dernier = {};
+  var octets = {}, tampons = {}, dernier = {}, finit = {};
+
+  /* l instant ou le son s est tu, en secondes : la ou il passe sous -30 dB
+     de sa crete. Au dela il ne reste qu une traine qu on n entend plus sous
+     la musique. Mesure sur le son lui meme : un autre fichier, une autre
+     duree, sans rien regler a la main. */
+  function tu(t){
+    var d = t.getChannelData(0), crete = 0, i;
+    for (i = 0; i < d.length; i++) if (Math.abs(d[i]) > crete) crete = Math.abs(d[i]);
+    var seuil = crete * .0316;
+    for (i = d.length - 1; i > 0 && Math.abs(d[i]) < seuil; i--);
+    return i / t.sampleRate;
+  }
 
   /* les fichiers sont recuperes tout de suite, decodes des que le son
      est permis : le premier clic a deja de quoi sonner */
@@ -2649,7 +2662,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function decoder(nom){
     octets[nom].then(function(b){
       if (!b) return;
-      ctx.decodeAudioData(b, function(t){ tampons[nom] = t; }, function(){});
+      ctx.decodeAudioData(b, function(t){ tampons[nom] = t; finit[nom] = tu(t); }, function(){});
     });
   }
 
@@ -2667,11 +2680,13 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.addEventListener(e, eveiller, {passive: true, capture: true});
   });
 
+  /* rend le temps, en secondes, au bout duquel le son s est tu ; 0 s il
+     n a pas sonne */
   window.__ui = function(nom){
-    if (!ctx || !tampons[nom]) return;
-    if (!window.__musicPaused || !window.__musicPaused()) return;
+    if (!ctx || !tampons[nom]) return 0;
+    if (!window.__musicPaused || !window.__musicPaused()) return 0;
     var now = performance.now();
-    if (now - (dernier[nom] || -1e9) < ECART[nom]) return;
+    if (now - (dernier[nom] || -1e9) < ECART[nom]) return 0;
     dernier[nom] = now;
     /* le curseur de volume du site regle aussi l interface */
     sortie.gain.value = music && !music.muted ? music.volume : 0;
@@ -2679,6 +2694,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     s.buffer = tampons[nom];
     s.connect(sortie);
     s.start();
+    return finit[nom] || 0;
   };
 })();
 
@@ -3192,12 +3208,18 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
      de tourner sans repasser par l intro */
   var trackIdx = ALB().start;
 
+  /* la piste choisie attend la fin du son de choix pour partir ; tout autre
+     geste sur la lecture entre temps annule ce depart differe */
+  var apresSon = 0;
+  function annulerApresSon(){ clearTimeout(apresSon); apresSon = 0; }
+
   /* force : on vient de changer d album, la piste demandee doit repartir
      meme si elle porte le meme numero que celle qu on ecoutait avant.
      attendre : la piste est chargee et marquee, mais elle ne part pas ;
      c est l ouverture filmee de la page qui la lancera, une fois la page
      entierement revenue */
   window.__playTrack = function(idx, force, attendre){
+    annulerApresSon();                   // un autre choix remplace celui qui attendait
     var t = ALB().tracks[idx];
     if (!t || (idx === trackIdx && !force)) return;
     trackIdx = idx;
@@ -3233,12 +3255,23 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* on choisit une piste dans le dock : elle part, meme si la musique etait
      arretee — la choisir, c est vouloir l entendre. Avant l arrivee du disque
-     ou pendant le film de Jane, c est la page qui lancera la musique. */
-  window.__pickTrack = function(idx){
+     ou pendant le film de Jane, c est la page qui lancera la musique.
+     son : le temps que met le son de choix a se taire. La piste attend ce
+     temps la pour partir, les deux ne se melangent pas : d abord le son,
+     aussitot apres la musique. */
+  window.__pickTrack = function(idx, son){
     window.__playTrack(idx);
     if (!started || !body.classList.contains('is-landed') ||
         body.classList.contains('is-intro')) return;
-    if (audio.paused){ wanted = true; tryPlay(); paintBtn(); }
+    if (!audio.paused) return;
+    if (son > 0){
+      apresSon = setTimeout(function(){
+        apresSon = 0;
+        wanted = true; tryPlay(); paintBtn();
+      }, son * 1000);
+    } else {
+      wanted = true; tryPlay(); paintBtn();
+    }
   };
 
   /* la musique est arretee, et la page est bien la : les sons d interface
@@ -3353,6 +3386,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (performance.now() - demarre_a < 500) return;   // cette touche vient de tout lancer
     if (!audio.getAttribute('src')) return;            // album sans fichiers
 
+    annulerApresSon();
     if (audio.paused){ wanted = true; tryPlay(); }
     else { wanted = false; audio.pause(); }
     paintBtn();
@@ -3364,6 +3398,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   btn.addEventListener('click', function(e){
     e.stopPropagation();
     if (!started){ startIntro(); paintBtn(); return; }
+    annulerApresSon();
     if (audio.paused){ wanted = true; tryPlay(); }
     else { wanted = false; audio.pause(); }
     paintBtn();
