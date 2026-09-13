@@ -2415,7 +2415,11 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (!window.__playTrack) return;
         window.__playTrack(i);
       });
+      /* seulement quand c est la souris qui vient a la pastille : si c est
+         le manege qui la fait passer sous un curseur immobile, le tic de
+         passage sonne deja, on n en veut pas un second */
       bub.addEventListener('mouseenter', function(){
+        if (Math.abs(vel) > 1 || performance.now() - bouge > 120) return;
         if (window.__ui) window.__ui('hover');
       });
 
@@ -2442,6 +2446,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var hAmt   = 0;        // force de la loupe : monte a l entree, retombe a la sortie
   var idle   = 0;
   var centre = -1;       // la piste au centre, pour le tic de passage
+  var bouge  = -1e9;     // dernier mouvement reel de la souris
 
   function wrap(v){
     v = (v + TOTAL / 2) % TOTAL;
@@ -2551,6 +2556,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var k = r.width / win.clientWidth || 1;      // la scene est mise a l echelle
     hover = (e.clientX - r.left) / k;
   });
+  /* sur toute la fenetre : le survol d une pastille arrive avant le
+     mouvement qui l a cause, il faut connaitre celui d avant */
+  window.addEventListener('mousemove', function(){ bouge = performance.now(); }, {passive:true});
   win.addEventListener('mouseleave', function(){ hover = null; });
   window.addEventListener('blur', function(){ hover = null; });
 
@@ -2597,14 +2605,15 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
    peuvent se chevaucher quand on fait defiler vite. */
 (function(){
   var SONS = {
-    scroll: 'assets/ui_scroll.mp3',   // une piste passe au centre du manege
-    hover:  'assets/ui_hover.mp3',    // la souris passe sur une pastille
-    select: 'assets/ui_select.mp3',   // on choisit une piste
-    album:  'assets/ui_album.mp3'     // on change d album
+    scroll:     'assets/ui_scroll.mp3?v=2',        // une piste passe au centre du manege
+    hover:      'assets/ui_hover.mp3',             // la souris passe sur une pastille
+    select:     'assets/ui_select.mp3?v=2',        // on choisit une piste
+    album:      'assets/ui_album.mp3?v=2',         // on change d album
+    albumHover: 'assets/ui_album_hover.mp3'        // la souris passe sur un album
   };
   /* ecart minimal entre deux memes sons, en ms : un coup de molette rapide
      fait passer plusieurs pistes par image, on n en garde qu un tic net */
-  var ECART = { scroll: 45, hover: 70, select: 0, album: 0 };
+  var ECART = { scroll: 45, hover: 70, select: 0, album: 0, albumHover: 70 };
 
   var AC = window.AudioContext || window.webkitAudioContext;
   if (!AC || !window.fetch) return;
@@ -2911,6 +2920,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     el.addEventListener('click', function(){
       if (i !== CUR_ALBUM && window.__ui) window.__ui('album');
       pick(i);
+    });
+    el.addEventListener('mouseenter', function(){
+      if (window.__ui) window.__ui('albumHover');
     });
     box.appendChild(el);
     return el;
