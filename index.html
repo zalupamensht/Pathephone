@@ -2766,7 +2766,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function semer(f, enHaut){
     f.z  = Math.pow(Math.random(), 1.7);          // la plupart au loin
-    f.r  = 1.33 + f.z * f.z * 2.52;               // taille : 70 % de celle de l ancienne neige
+    f.r  = 1.064 + f.z * f.z * 2.016;             // taille : 56 % de celle de l ancienne neige
     /* les lointains nets et discrets ; les proches plus gros mais presque
        transparents, flous : ils donnent la profondeur sans rien couvrir */
     f.a  = f.z > .62 ? .36 - (f.z - .62) * .4 : .42 + f.z * .4;
