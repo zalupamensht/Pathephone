@@ -1395,71 +1395,30 @@ body.alb-paper.is-stage .blizz.b-b{opacity:.38}
 }
 
 /* ==================================================================
-   La neige d Unmusique
+   La tempete de neige d Unmusique
    ------------------------------------------------------------------
    Elle n existe que sur la page claire : les deux autres albums ont
    leur propre climat, et rien ici ne doit deborder sur eux.
 
-   Le flocon est blanc et porte une ombre froide. C est ce qui lui
-   permet de tenir partout : sur le papier, presque blanc, l oeil lit
-   l ombre ; sur la platine, noire, il lit le flocon. Un flocon
-   simplement blanc aurait disparu sur la moitie de la page, et un
-   flocon gris sur l autre moitie.
-
-   Chute et derive sont deux animations distinctes, posees sur deux
-   elements imbriques. Reunies en une seule, tous les flocons
-   suivraient la meme courbe et la neige se lirait comme un motif.
+   Un seul canevas, anime par le script : vitesse, vent et rafales
+   suivent le tempo de la piste qui joue. Le flocon garde son coeur
+   bleute et son halo blanc, pour se lire sur le papier comme sur la
+   platine noire.
    ================================================================== */
 
 .snow{display:none}
 body.alb-paper .snow{
   display:block;
-  position:fixed;inset:0;z-index:11;
-  overflow:hidden;pointer-events:none;
+  position:fixed;left:0;top:0;width:100%;height:100%;z-index:11;
+  pointer-events:none;
   opacity:0;transition:opacity 2s ease 1.2s;
 }
 /* elle arrive avec le reste de la scene, une fois le disque pose */
 body.alb-paper.is-stage .snow,
 body.alb-paper.is-lighten .snow{opacity:1}
 
-.sf{
-  position:absolute;top:0;left:var(--x);
-  will-change:transform;
-  animation:sfall var(--d) linear var(--dl) infinite;
-}
-.sf b{
-  display:block;
-  width:var(--s);height:var(--s);
-  border-radius:50%;
-  /* Le coeur est gris froid, non blanc. Blanc, il recouvrait sa propre ombre
-     et il ne restait sur le papier qu un anneau gris de l epaisseur d un
-     cheveu — autant dire rien. Bleute, il se lit sur le papier ; le halo blanc
-     qui l entoure, lui, se lit sur la platine noire. Un seul flocon tient
-     ainsi les deux moities de la page. */
-  background:rgba(104,132,192,.62);
-  box-shadow:0 0 var(--g) rgba(255,255,255,.85),
-             0 0 calc(var(--g) * 2) rgba(255,255,255,.5),
-             0 1px 2px rgba(34,50,92,.20);
-  opacity:var(--o);
-  will-change:transform;
-  animation:ssway var(--sd) ease-in-out var(--dl) infinite alternate;
-}
-/* les flocons proches : plus gros, flous, et a peine visibles — ce sont eux
-   qui donnent la profondeur, pas le nombre */
-.sf.is-pres b{filter:blur(1.6px)}
-
-@keyframes sfall{
-  from{transform:translate3d(0,-8vh,0)}
-  to  {transform:translate3d(0,110vh,0)}
-}
-@keyframes ssway{
-  from{transform:translateX(calc(var(--sw) * -1))}
-  to  {transform:translateX(var(--sw))}
-}
-
-/* le systeme demande le calme : la neige se pose et ne tombe plus */
+/* le systeme demande le calme : pas de tempete */
 @media (prefers-reduced-motion:reduce){
-  .sf,.sf b{animation:none}
   body.alb-paper .snow{display:none}
 }
 
