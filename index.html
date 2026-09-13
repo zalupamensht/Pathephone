@@ -2387,6 +2387,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var ARRET  = 200;      // temps d arret sur une piste pour qu elle vienne au centre, ms
   var BOUGE_MIN = 14;    // deplacement de souris qui compte pour un nouveau geste, px
 
+  var body = document.body;
   var dock = document.querySelector('.dock');
   var win  = document.querySelector('.dock-win');
   var rail = document.getElementById('dockRail');
@@ -2417,8 +2418,13 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       rail.appendChild(el);
 
       var bub = el.querySelector('.bub');
+      /* un clic de souris ne donne pas le clavier a la pastille : sinon la
+         barre d espace, au lieu de mettre en pause, re-cliquerait la piste */
+      bub.addEventListener('mousedown', function(e){ e.preventDefault(); });
       bub.addEventListener('click', function(){
+        if (!scenePrete()) return;       // la rangee est la mais encore invisible
         var j = choisie(i);
+        designer(j);
         var son = window.__ui ? window.__ui('select') : 0;
         if (window.__pickTrack) window.__pickTrack(j, son);
       });
@@ -2569,7 +2575,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
      immobile passerait pour un choix, et le manege partirait tout seul de
      piste en piste ; de meme apres un coup de molette ou de fleche. */
   function viser(){
-    if (hover === null){ candidat = -1; return; }
+    if (hover === null || !scenePrete()){ candidat = -1; return; }
     var now = performance.now();
     if (cible !== null || Math.abs(vel) > 0.02 || now - roule < 120) return;
     if (Math.abs(mx - ancreX) + Math.abs(my - ancreY) < BOUGE_MIN){ candidat = -1; return; }
@@ -2588,6 +2594,22 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (window.__ui) window.__ui('hover');            // un son par piste designee
     var d = wrap(j * STEP - pos);
     if (Math.abs(d) > 0.3){ cible = pos + d; parSurvol = true; }
+  }
+
+  /* la rangee existe des le chargement, invisible : elle ne reagit qu une
+     fois la page apparue, et pas pendant un film d ouverture */
+  function scenePrete(){
+    return body.classList.contains('is-stage') && !body.classList.contains('is-intro');
+  }
+
+  /* un clic designe sa piste comme le ferait un arret du curseur : elle
+     vient au centre sans son de survol (le son de choix sonne deja), et le
+     survol attend que la souris reparte */
+  function designer(j){
+    visee = j; candidat = -1;
+    ancreX = mx; ancreY = my;
+    var d = wrap(j * STEP - pos);
+    if (Math.abs(d) > 0.3){ vel = 0; cible = pos + d; parSurvol = true; }
   }
 
   /* la piste qu on clique : celle que la main a designee, meme si le manege,
@@ -2746,7 +2768,12 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!ctx || !tampons[nom]) return 0;
     if (!window.__musicPaused || !window.__musicPaused()) return 0;
     var now = performance.now();
-    if (now - (dernier[nom] || -1e9) < ECART[nom]) return 0;
+    /* le meme son vient de partir : il ne repart pas, mais on rend le temps
+       qu il lui reste, pour qu une piste ne demarre pas par dessus lui */
+    if (now - (dernier[nom] || -1e9) < ECART[nom]){
+      var reste = (finit[nom] || 0) - (now - dernier[nom]) / 1000;
+      return reste > 0 ? reste : 0;
+    }
     dernier[nom] = now;
     /* le curseur de volume du site regle aussi l interface */
     sortie.gain.value = music && !music.muted ? music.volume : 0;
@@ -3013,8 +3040,11 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var son = (i !== CUR_ALBUM && window.__ui) ? window.__ui('album') : 0;
       pick(i, son);
     });
-    el.addEventListener('mouseenter', function(){
-      if (window.__ui) window.__ui('albumHover');
+    el.addEventListener('mousedown', function(e){ e.preventDefault(); });   // l espace reste a la lecture
+    /* seulement une vraie souris : un doigt envoie aussi un survol juste
+       avant son clic, et les deux sons partiraient ensemble */
+    el.addEventListener('pointerenter', function(e){
+      if (e.pointerType === 'mouse' && window.__ui) window.__ui('albumHover');
     });
     box.appendChild(el);
     return el;
