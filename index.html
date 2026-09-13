@@ -2716,14 +2716,14 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 
 /* ---------------- la tempete de neige d Unmusique ---------------- */
-/* La neige est poussee par un vent dont tout depend du tempo de la piste :
-   la vitesse de chute et le vent de fond suivent le BPM, les rafales tombent
-   toutes les huit temps (deux mesures), calees sur la position reelle dans
-   le morceau, et chaque temps donne une petite poussee. Musique arretee, la
-   tempete retombe en neige calme, comme le disque s arrete avec elle. Tout
-   change en douceur : une nouvelle piste ne fait pas sauter la neige.
+/* La neige est poussee par un vent qui ne faiblit pas tant que la musique
+   joue, et dont tout depend du tempo de la piste : la vitesse de chute et la
+   force du vent suivent le BPM, et chaque temps, cale sur la position reelle
+   dans le morceau, donne une petite poussee. Musique arretee, la tempete
+   retombe en neige calme, comme le disque s arrete avec elle. Tout change
+   en douceur : une nouvelle piste ne fait pas sauter la neige.
    Les flocons ont trois epaisseurs de profondeur : loin, petits, lents et
-   pales ; pres, gros, flous, rapides, etires par le vent dans les rafales. */
+   pales ; pres, gros, flous, rapides, un peu etires par le vent. */
 (function(){
   var cv = document.getElementById('blizzard');
   if (!cv || !cv.getContext || REDUCED) return;
@@ -2733,14 +2733,14 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var DPR = Math.min(window.devicePixelRatio || 1, 1.5);
   /* discrete : la tempete se lit au mouvement (vent, rafales, obliques),
      pas a la quantite ni a la taille des flocons */
-  var DENSITE = 420;          // flocons pour un ecran de 1440 x 900
-  var MAX = MOBILE ? 160 : 700;
+  var DENSITE = 294;          // flocons pour un ecran de 1440 x 900
+  var MAX = MOBILE ? 112 : 490;
 
   var CHUTE  = 42;            // chute d un flocon lointain a 100 BPM, px/s
   var CHUTE_PRES = 150;       // en plus pour un flocon tout proche
   var VENT   = 70;            // vent de fond a 100 BPM, px/s
-  var RAFALE = 300;           // force d une rafale a 100 BPM, px/s
-  var TEMPS_RAFALE = 8;       // une rafale tous les huit temps
+  var RAFALE = 300;           // vent de tempete en plus a 100 BPM, px/s...
+  var SOUFFLE = .55;          // ...dont il souffle en permanence cette part
   var CALME  = .3;            // part de la tempete qui reste musique arretee
 
   /* le flocon : un seul ton gris neutre qui se fond vers le bord, comme la
@@ -2807,15 +2807,13 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     bpm = lisser(bpm, info ? info.bpm : 100, dt, .9);
     var k = Math.max(.7, Math.min(1.6, bpm / 100));
     /* musique en cours : on compte les temps sur la position de la piste,
-       les rafales tombent donc toujours au meme endroit du morceau */
+       la poussee tombe donc toujours sur le temps du morceau */
     horloge = joue ? info.temps * bpm / 60 : horloge + dt * bpm / 60;
-    var cycle = (horloge / TEMPS_RAFALE) % 1;
-    var r = Math.pow(Math.sin(Math.PI * cycle), 2);           // monte, culmine, retombe
     var temps = horloge % 1;
     var p = Math.exp(-temps * 6);                             // la poussee du temps
 
     force  = lisser(force, joue ? 1 : CALME, dt, 1.2);
-    rafale = lisser(rafale, joue ? r : 0, dt, .35);
+    rafale = lisser(rafale, joue ? SOUFFLE : 0, dt, 1.2);    // la tempete souffle sans relache
     pouls  = lisser(pouls, joue ? p : 0, dt, .06);
 
     var vent  = (VENT + RAFALE * rafale) * k * force;
