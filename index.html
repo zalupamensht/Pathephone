@@ -2382,6 +2382,10 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var MAXMAG = .26;      // grossissement maximum sous le curseur
   var SPREAD = 26;       // ecartement des voisines
   var SENS   = .17;      // sensibilite de la molette
+  var DOUX   = .13;      // approche d une piste qu on vient poser au centre
+  var VMAX   = 24;       // vitesse bornee de cette approche, en px par image
+  var ARRET  = 200;      // temps d arret sur une piste pour qu elle vienne au centre, ms
+  var BOUGE_MIN = 14;    // deplacement de souris qui compte pour un nouveau geste, px
 
   var dock = document.querySelector('.dock');
   var win  = document.querySelector('.dock-win');
@@ -2414,22 +2418,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       var bub = el.querySelector('.bub');
       bub.addEventListener('click', function(){
+        var j = choisie(i);
         var son = window.__ui ? window.__ui('select') : 0;
-        if (window.__pickTrack) window.__pickTrack(i, son);
-      });
-      /* Un seul son par piste survolee, et seulement quand c est la main qui
-         y mene la souris. Tant que le manege bouge (molette, elan, recalage)
-         c est lui qui fait passer les pastilles sous le curseur : le tic de
-         passage sonne deja, on n en ajoute pas un second par dessus. La loupe
-         deplace un peu la pastille sous le curseur et la fait parfois
-         re-survoler : la meme piste ne sonne pas deux fois de suite. */
-      bub.addEventListener('mouseenter', function(){
-        var deja = survolee === i;
-        survolee = i;
-        if (deja) return;
-        var now = performance.now();
-        if (now - roule < 250 || now - bouge > 120) return;
-        if (window.__ui) window.__ui('hover');
+        if (window.__pickTrack) window.__pickTrack(j, son);
       });
 
       return el;
@@ -2440,7 +2431,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     pos   = a.start * STEP;      // la piste qui ouvre l album est au centre
     vel   = 0;
     centre = a.start;            // la reconstruction ne fait pas de bruit
-    survolee = -1;
+    cible = null; parSurvol = false;
+    visee = -1; candidat = -1;
     mark(a.start);
   }
 
@@ -2456,9 +2448,14 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var hAmt   = 0;        // force de la loupe : monte a l entree, retombe a la sortie
   var idle   = 0;
   var centre = -1;       // la piste au centre, pour le tic de passage
-  var bouge  = -1e9;     // dernier mouvement reel de la souris
   var roule  = -1e9;     // dernier instant ou le manege a bouge
-  var survolee = -1;     // la pastille sous le curseur, pour ne sonner qu une fois
+  var cible  = null;     // position ou le manege va se poser (fleches, survol), ou null
+  var parSurvol = false; // ce trajet vient du survol : pas de tic de passage en route
+  var visee  = -1;       // la piste que la main a designee en s y arretant
+  var candidat = -1;     // la piste sous le curseur immobile...
+  var depuis = 0;        // ...et depuis quand
+  var mx = 0, my = 0;    // le curseur, en coordonnees de la fenetre
+  var ancreX = -1e9, ancreY = -1e9;   // le curseur au dernier geste pris en compte
 
   function wrap(v){
     v = (v + TOTAL / 2) % TOTAL;
@@ -2526,7 +2523,16 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }
 
     var avant = pos;
-    if (Math.abs(vel) > 0.02){
+    if (cible !== null){
+      /* une piste vient se poser au centre : approche douce, a vitesse bornee.
+         Des appuis rapproches se parcourent a allure reguliere, ils ne
+         s additionnent pas en elan comme la molette. */
+      var reste = cible - pos;
+      if (Math.abs(reste) < 0.3){ pos = cible; cible = null; parSurvol = false; }
+      else pos += Math.max(-VMAX, Math.min(VMAX, reste * DOUX));
+      vel = 0;
+      idle = 0;
+    } else if (Math.abs(vel) > 0.02){
       pos += vel;
       vel *= 0.945;                          // glisse plus longtemps, s arrete plus doucement
       idle = 0;
@@ -2541,18 +2547,63 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       }
     }
     // on garde le decalage dans une plage raisonnable : la liste boucle de toute facon
-    if (pos >  TOTAL) pos -= TOTAL;
-    if (pos < -TOTAL) pos += TOTAL;
+    if (pos >  TOTAL){ pos -= TOTAL; if (cible !== null) cible -= TOTAL; }
+    if (pos < -TOTAL){ pos += TOTAL; if (cible !== null) cible += TOTAL; }
     if (Math.abs(pos - avant) > 0.05) roule = performance.now();
 
-    /* une piste passe au centre : petit tic, comme d une case a l autre */
+    /* une piste passe au centre : petit tic, comme d une case a l autre.
+       Pas quand c est le survol qui amene sa piste : son son a deja sonne. */
     var c = ((Math.round(pos / STEP) % N) + N) % N;
     if (c !== centre){
       centre = c;
-      if (window.__ui) window.__ui('scroll');
+      if (window.__ui && !parSurvol) window.__ui('scroll');
     }
 
     render();
+    viser();
+  }
+
+  /* Le survol amene sa piste au centre. On ne suit que la main : il faut que
+     le curseur ait vraiment bouge depuis le dernier geste, puis qu il s arrete
+     un instant sur une piste. Sans cela, la voisine qui glisse sous un curseur
+     immobile passerait pour un choix, et le manege partirait tout seul de
+     piste en piste ; de meme apres un coup de molette ou de fleche. */
+  function viser(){
+    if (hover === null){ candidat = -1; return; }
+    var now = performance.now();
+    if (cible !== null || Math.abs(vel) > 0.02 || now - roule < 120) return;
+    if (Math.abs(mx - ancreX) + Math.abs(my - ancreY) < BOUGE_MIN){ candidat = -1; return; }
+
+    var el  = document.elementFromPoint(mx, my);
+    var trk = el && el.closest ? el.closest('.trk') : null;
+    var j   = trk ? items.indexOf(trk) : -1;
+    if (j < 0){ candidat = -1; return; }
+    if (j !== candidat){ candidat = j; depuis = now; return; }
+    if (now - depuis < ARRET) return;
+
+    candidat = -1;
+    ancreX = mx; ancreY = my;
+    if (j === visee && j === centre) return;
+    visee = j;
+    if (window.__ui) window.__ui('hover');            // un son par piste designee
+    var d = wrap(j * STEP - pos);
+    if (Math.abs(d) > 0.3){ cible = pos + d; parSurvol = true; }
+  }
+
+  /* la piste qu on clique : celle que la main a designee, meme si le manege,
+     en l amenant au centre, a fait glisser une voisine sous le curseur. Des
+     que la souris a bouge, c est de nouveau la piste sous le curseur. */
+  function choisie(i){
+    if (visee >= 0 && Math.abs(mx - ancreX) + Math.abs(my - ancreY) < BOUGE_MIN) return visee;
+    return i;
+  }
+
+  /* un geste qui fait tourner le manege (molette, fleches) reprend la main :
+     plus de piste designee, et le survol attend que la souris bouge */
+  function reprendre(){
+    cible = null; parSurvol = false;
+    visee = -1; candidat = -1;
+    ancreX = mx; ancreY = my;
   }
 
   function frame(){ step(); requestAnimationFrame(frame); }
@@ -2560,6 +2611,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   win.addEventListener('wheel', function(e){
     var d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
     e.preventDefault();
+    reprendre();
     vel += d * SENS;                          // defilement libre, pas cran par cran
     vel = Math.max(-26, Math.min(26, vel));
     idle = 0;
@@ -2570,17 +2622,26 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var k = r.width / win.clientWidth || 1;      // la scene est mise a l echelle
     hover = (e.clientX - r.left) / k;
   });
-  /* sur toute la fenetre : le survol d une pastille arrive avant le
-     mouvement qui l a cause, il faut connaitre celui d avant */
-  window.addEventListener('mousemove', function(e){
-    if (e.movementX || e.movementY) bouge = performance.now();   // un vrai deplacement
-  }, {passive:true});
-  win.addEventListener('mouseleave', function(){ hover = null; survolee = -1; });
+  window.addEventListener('mousemove', function(e){ mx = e.clientX; my = e.clientY; }, {passive:true});
+  /* en revenant dans le cadre, la souris a forcement bouge : le survol repart */
+  win.addEventListener('mouseleave', function(){ hover = null; candidat = -1; ancreX = ancreY = -1e9; });
   window.addEventListener('blur', function(){ hover = null; });
 
+  /* Fleches : exactement une piste par appui. On vise la piste suivante au
+     lieu d ajouter de l elan : trois appuis rapides font trois pistes, pas une
+     glissade qui en saute. Touche maintenue : jamais plus de deux pistes
+     d avance. Le curseur de volume garde ses fleches pour lui. */
   window.addEventListener('keydown', function(e){
-    if (e.key === 'ArrowRight') vel += 14;
-    if (e.key === 'ArrowLeft')  vel -= 14;
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    var t = e.target, tag = t && t.tagName;
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || (t && t.isContentEditable)) return;
+    var dir  = e.key === 'ArrowRight' ? 1 : -1;
+    var base = cible !== null ? cible : Math.round(pos / STEP) * STEP;
+    var but  = base + dir * STEP;
+    if (Math.abs(but - pos) > 2 * STEP + 1) return;
+    reprendre();
+    vel = 0;
+    cible = but;
   });
 
   window.addEventListener('resize', render);
@@ -2588,7 +2649,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   window.__dockRender = render;
   window.__dockStep = step;
   window.__dockState = function(){ return {pos:pos, vel:vel, hover:hover}; };
-  window.__dockPush  = function(d){ vel += d; };
+  window.__dockPush  = function(d){ reprendre(); vel += d; };
 
   /* sur telephone la rangee est une simple bande qui glisse au doigt :
      pas de manege en 3D, pas de boucle d animation, rien a calculer */
@@ -2949,8 +3010,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       '</span>' +
       '<span class="alb-name">' + a.title + '</span>';
     el.addEventListener('click', function(){
-      if (i !== CUR_ALBUM && window.__ui) window.__ui('album');
-      pick(i);
+      var son = (i !== CUR_ALBUM && window.__ui) ? window.__ui('album') : 0;
+      pick(i, son);
     });
     el.addEventListener('mouseenter', function(){
       if (window.__ui) window.__ui('albumHover');
@@ -2959,7 +3020,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     return el;
   });
 
-  function pick(i){
+  /* son : le temps que met le son de changement d album a se taire ; la
+     premiere piste part juste apres lui, pas en meme temps */
+  function pick(i, son){
     if (i === CUR_ALBUM || !ALBUMS[i]) return;
     CUR_ALBUM = i;
     var a = ALBUMS[i];
@@ -2987,7 +3050,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (a.intro) enFilm = window.__intro.jouer();
       else window.__intro.couper();
     }
-    if (window.__playTrack) window.__playTrack(a.start, true, enFilm);
+    if (window.__playTrack) window.__playTrack(a.start, true, enFilm, son);
   }
 
   items[0].classList.add('is-current');
@@ -3211,13 +3274,20 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
      geste sur la lecture entre temps annule ce depart differe */
   var apresSon = 0;
   function annulerApresSon(){ clearTimeout(apresSon); apresSon = 0; }
+  function partirApres(sec){
+    annulerApresSon();
+    apresSon = setTimeout(function(){
+      apresSon = 0;
+      wanted = true; tryPlay(); paintBtn();
+    }, sec * 1000);
+  }
 
   /* force : on vient de changer d album, la piste demandee doit repartir
      meme si elle porte le meme numero que celle qu on ecoutait avant.
      attendre : la piste est chargee et marquee, mais elle ne part pas ;
      c est l ouverture filmee de la page qui la lancera, une fois la page
      entierement revenue */
-  window.__playTrack = function(idx, force, attendre){
+  window.__playTrack = function(idx, force, attendre, delai){
     annulerApresSon();                   // un autre choix remplace celui qui attendait
     var t = ALB().tracks[idx];
     if (!t || (idx === trackIdx && !force)) return;
@@ -3245,7 +3315,11 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (window.__dockMark) window.__dockMark(idx);
 
     if (attendre){ paintBtn(); return; }
-    if (wasPlaying || force){ wanted = true; tryPlay(); }
+    /* delai : un son d interface est en train de sonner, la musique arretee
+       ne repart qu une fois qu il s est tu. Si elle jouait deja, aucun son
+       n a sonne et elle enchaine tout de suite. */
+    if (!wasPlaying && force && delai > 0){ partirApres(delai); }
+    else if (wasPlaying || force){ wanted = true; tryPlay(); }
     paintBtn();
   };
 
@@ -3264,10 +3338,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         body.classList.contains('is-intro')) return;
     if (!audio.paused) return;
     if (son > 0){
-      apresSon = setTimeout(function(){
-        apresSon = 0;
-        wanted = true; tryPlay(); paintBtn();
-      }, son * 1000);
+      partirApres(son);
     } else {
       wanted = true; tryPlay(); paintBtn();
     }
