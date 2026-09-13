@@ -2384,7 +2384,10 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var SENS   = .17;      // sensibilite de la molette
   var DOUX   = .13;      // approche d une piste qu on vient poser au centre
   var VMAX   = 24;       // vitesse bornee de cette approche, en px par image
-  var ARRET  = 200;      // temps d arret sur une piste pour qu elle vienne au centre, ms
+  var DOUX_CLIC = .085;  // la piste cliquee vient au centre plus posement...
+  var VMAX_CLIC = 15;    // ...surtout depuis le bord, ou le trajet est long
+  var ARRET  = 40;       // le curseur doit rester ce temps sur une piste pour qu elle sonne, ms
+                         // (la loupe fait parfois trembler la limite entre deux pastilles)
   var BOUGE_MIN = 14;    // deplacement de souris qui compte pour un nouveau geste, px
 
   var body = document.body;
@@ -2438,7 +2441,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     vel   = 0;
     centre = a.start;            // la reconstruction ne fait pas de bruit
     cible = null; parSurvol = false;
-    visee = -1; candidat = -1;
+    visee = -1; candidat = -1; survolee = -1;
     mark(a.start);
   }
 
@@ -2455,10 +2458,11 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var idle   = 0;
   var centre = -1;       // la piste au centre, pour le tic de passage
   var roule  = -1e9;     // dernier instant ou le manege a bouge
-  var cible  = null;     // position ou le manege va se poser (fleches, survol), ou null
-  var parSurvol = false; // ce trajet vient du survol : pas de tic de passage en route
-  var visee  = -1;       // la piste que la main a designee en s y arretant
-  var candidat = -1;     // la piste sous le curseur immobile...
+  var cible  = null;     // position ou le manege va se poser (fleches, clic), ou null
+  var parSurvol = false; // ce trajet vient d un clic : pas de tic de passage en route
+  var visee  = -1;       // la piste qu on vient de cliquer, en route vers le centre
+  var survolee = -1;     // la derniere piste qui a sonne au survol
+  var candidat = -1;     // la piste sous le curseur...
   var depuis = 0;        // ...et depuis quand
   var mx = 0, my = 0;    // le curseur, en coordonnees de la fenetre
   var ancreX = -1e9, ancreY = -1e9;   // le curseur au dernier geste pris en compte
@@ -2534,8 +2538,10 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
          Des appuis rapproches se parcourent a allure reguliere, ils ne
          s additionnent pas en elan comme la molette. */
       var reste = cible - pos;
+      var vmax  = parSurvol ? VMAX_CLIC : VMAX;
+      var doux  = parSurvol ? DOUX_CLIC : DOUX;
       if (Math.abs(reste) < 0.3){ pos = cible; cible = null; parSurvol = false; }
-      else pos += Math.max(-VMAX, Math.min(VMAX, reste * DOUX));
+      else pos += Math.max(-vmax, Math.min(vmax, reste * doux));
       vel = 0;
       idle = 0;
     } else if (Math.abs(vel) > 0.02){
@@ -2558,7 +2564,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (Math.abs(pos - avant) > 0.05) roule = performance.now();
 
     /* une piste passe au centre : petit tic, comme d une case a l autre.
-       Pas quand c est le survol qui amene sa piste : son son a deja sonne. */
+       Pas quand c est un clic qui amene sa piste : le son de choix sonne deja. */
     var c = ((Math.round(pos / STEP) % N) + N) % N;
     if (c !== centre){
       centre = c;
@@ -2566,15 +2572,15 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }
 
     render();
-    viser();
+    survol();
   }
 
-  /* Le survol amene sa piste au centre. On ne suit que la main : il faut que
-     le curseur ait vraiment bouge depuis le dernier geste, puis qu il s arrete
-     un instant sur une piste. Sans cela, la voisine qui glisse sous un curseur
-     immobile passerait pour un choix, et le manege partirait tout seul de
-     piste en piste ; de meme apres un coup de molette ou de fleche. */
-  function viser(){
+  /* Le survol ne deplace rien : la loupe grossit la piste, et elle sonne une
+     fois. On ne suit que la main : il faut que le curseur ait vraiment bouge
+     depuis le dernier geste. Sans cela, la voisine qui glisse sous un curseur
+     immobile (molette, fleches, piste cliquee qui file au centre) sonnerait
+     aussi, par dessus le tic de passage ou le son de choix. */
+  function survol(){
     if (hover === null || !scenePrete()){ candidat = -1; return; }
     var now = performance.now();
     if (cible !== null || Math.abs(vel) > 0.02 || now - roule < 120) return;
@@ -2583,17 +2589,14 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var el  = document.elementFromPoint(mx, my);
     var trk = el && el.closest ? el.closest('.trk') : null;
     var j   = trk ? items.indexOf(trk) : -1;
-    if (j < 0){ candidat = -1; return; }
+    if (j < 0 || j === survolee){ candidat = -1; return; }
     if (j !== candidat){ candidat = j; depuis = now; return; }
     if (now - depuis < ARRET) return;
 
     candidat = -1;
     ancreX = mx; ancreY = my;
-    if (j === visee && j === centre) return;
-    visee = j;
-    if (window.__ui) window.__ui('hover');            // un son par piste designee
-    var d = wrap(j * STEP - pos);
-    if (Math.abs(d) > 0.3){ cible = pos + d; parSurvol = true; }
+    survolee = j;
+    if (window.__ui) window.__ui('hover');            // un son par piste survolee
   }
 
   /* la rangee existe des le chargement, invisible : elle ne reagit qu une
@@ -2602,17 +2605,17 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     return body.classList.contains('is-stage') && !body.classList.contains('is-intro');
   }
 
-  /* un clic designe sa piste comme le ferait un arret du curseur : elle
-     vient au centre sans son de survol (le son de choix sonne deja), et le
-     survol attend que la souris reparte */
+  /* un clic amene sa piste au centre, en glissant doucement, sans son de
+     survol ni tic de passage (le son de choix sonne deja) ; le survol attend
+     ensuite que la souris reparte */
   function designer(j){
-    visee = j; candidat = -1;
+    visee = j; candidat = -1; survolee = j;
     ancreX = mx; ancreY = my;
     var d = wrap(j * STEP - pos);
     if (Math.abs(d) > 0.3){ vel = 0; cible = pos + d; parSurvol = true; }
   }
 
-  /* la piste qu on clique : celle que la main a designee, meme si le manege,
+  /* la piste qu on clique : celle qu on vient de cliquer, meme si le manege,
      en l amenant au centre, a fait glisser une voisine sous le curseur. Des
      que la souris a bouge, c est de nouveau la piste sous le curseur. */
   function choisie(i){
@@ -2646,7 +2649,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
   window.addEventListener('mousemove', function(e){ mx = e.clientX; my = e.clientY; }, {passive:true});
   /* en revenant dans le cadre, la souris a forcement bouge : le survol repart */
-  win.addEventListener('mouseleave', function(){ hover = null; candidat = -1; ancreX = ancreY = -1e9; });
+  win.addEventListener('mouseleave', function(){ hover = null; candidat = -1; survolee = -1; ancreX = ancreY = -1e9; });
   window.addEventListener('blur', function(){ hover = null; });
 
   /* Fleches : exactement une piste par appui. On vise la piste suivante au
@@ -2706,7 +2709,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var SONS = {
     scroll:     'assets/ui_scroll.mp3?v=2',        // une piste passe au centre du manege
     hover:      'assets/ui_hover.mp3?v=2',         // la souris passe sur une pastille
-    select:     'assets/ui_select.mp3?v=4',        // on choisit une piste
+    select:     'assets/ui_select.mp3?v=5',        // on choisit une piste
     album:      'assets/ui_album.mp3?v=2',         // on change d album
     albumHover: 'assets/ui_album_hover.mp3'        // la souris passe sur un album
   };
