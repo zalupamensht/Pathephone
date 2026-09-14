@@ -2763,10 +2763,10 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var s = document.createElement('canvas'); s.width = s.height = 64;
     var c = s.getContext('2d');
     var gr = c.createRadialGradient(32, 32, 0, 32, 32, 32);
-    gr.addColorStop(0,          'rgba(188,191,197,.92)');
-    gr.addColorStop(dur ? .35 : .22, 'rgba(188,191,197,.6)');
-    gr.addColorStop(dur ? .7 : .6, 'rgba(188,191,197,.18)');
-    gr.addColorStop(1,          'rgba(188,191,197,0)');
+    gr.addColorStop(0,          'rgba(176,180,187,.95)');
+    gr.addColorStop(dur ? .35 : .22, 'rgba(176,180,187,.64)');
+    gr.addColorStop(dur ? .7 : .6, 'rgba(176,180,187,.2)');
+    gr.addColorStop(1,          'rgba(176,180,187,0)');
     c.fillStyle = gr; c.fillRect(0, 0, 64, 64);
     return s;
   }
@@ -2779,7 +2779,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     f.r  = 1.064 + f.z * f.z * 2.016;             // taille : 56 % de celle de l ancienne neige
     /* les lointains nets et discrets ; les proches plus gros mais presque
        transparents, flous : ils donnent la profondeur sans rien couvrir */
-    f.a  = f.z > .62 ? .36 - (f.z - .62) * .4 : .42 + f.z * .4;
+    f.a  = Math.min(1, 1.22 * (f.z > .62 ? .36 - (f.z - .62) * .4 : .42 + f.z * .4));   // un peu plus lisible
     f.x  = Math.random() * (W + 240) - 120;
     f.y  = enHaut ? -12 - Math.random() * 60 : Math.random() * H;
     f.v  = .8 + Math.random() * .45;             // chaque flocon a son poids
