@@ -174,7 +174,7 @@ body.is-armed .intro-hint{opacity:0;visibility:hidden}
    fait blanchir. Le signe de la page s efface donc tout de suite dessous. */
 body.is-armed .intro-logo{
   pointer-events:none;
-  animation:logohandoff 4.2s both;
+  animation:logohandoff 4s both;
 }
 @keyframes logohandoff{
   0%     {opacity:1}
@@ -206,7 +206,7 @@ body.is-armed.sans-eclipse .intro-logo{animation-name:logohandoffsolo}
   -webkit-mask-image:radial-gradient(closest-side,#000 86%,transparent 100%);
           mask-image:radial-gradient(closest-side,#000 86%,transparent 100%);
 }
-body.is-armed .eclipse{animation:eclipsefilm 4.2s both}
+body.is-armed .eclipse{animation:eclipsefilm 4s both}
 body.sans-eclipse .eclipse{display:none}
 @keyframes eclipsefilm{
   0%     {opacity:0}
@@ -506,7 +506,7 @@ body.is-stage .platter::before{opacity:1}
   animation:spin 1.9s linear infinite;
   animation-play-state:paused;
 }
-body.is-armed .disc-fly{animation:flyin 4.2s both}
+body.is-armed .disc-fly{animation:flyin 4s both}
 /* sans film, le disque se revele seul, par la lumiere, comme avant */
 body.is-armed.sans-eclipse .disc-fly{animation-name:flyinsolo}
 body.is-landed.is-playing .disc-spin{animation-play-state:running}

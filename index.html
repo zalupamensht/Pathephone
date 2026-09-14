@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=34">
+<link rel="stylesheet" href="style.css?v=35">
 </head>
 <body>
 
@@ -179,6 +179,9 @@ var TRACK_BPM = {
   1: 94, 2: 82, 3: 136, 4: 139, 5: 82, 6: 77, 7: 76, 8: 81, 9: 150,
   10: 82, 11: 136, 12: 101, 13: 136, 14: 153, 15: 95, 16: 120
 };
+/* le drop, en secondes, des pistes qui peuvent ouvrir l album : l intro
+   fait tomber le disque dessus (voir startIntro) */
+var TRACK_DROP = { 16: 5.05 };
 
 /* ================= les deux albums =================
    Un album porte tout ce qui le distingue : son disque, sa pochette, ses
@@ -2249,7 +2252,7 @@ var ALBUMS = [
     start:16,                                 /* Yes, You May ouvre l album : il s enchaine avec l intro */
     tracks: A1_NAMES.map(function(name, i){
       return { name:name, audio:TRACK_AUDIO[i], bpm:TRACK_BPM[i] || 100,
-               lyrics:A1_LYRICS[i] || [] };
+               drop:TRACK_DROP[i], lyrics:A1_LYRICS[i] || [] };
     }) },
 
   { title:'Revengeseekerz', by:'Jane Remover', theme:'red',
@@ -3349,7 +3352,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------------- arrivee du disque, impact, puis lecture en boucle ---------------- */
 (function(){
-  var LAND = 4200;                       // instant ou le disque touche le plateau, ms
+  var LAND = 4000;                       // instant ou le disque touche le plateau, ms (= duree des animations d intro)
 
   var body  = document.body;
   var fly   = document.getElementById('discFly');
@@ -3551,9 +3554,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   sonSurvolSigne.preload = 'auto';
   /* et celui de l eclipse (PS2, « Bootup ») : il accompagne l apparition du
      disque et s efface de lui meme sous la musique, a l atterrissage */
-  var sonEclipse = new Audio('assets/ui_boot.mp3?v=3');
+  var sonEclipse = new Audio('assets/ui_boot.mp3?v=4');
   sonEclipse.preload = 'auto';
-  var BOUM = 1.5;                        // le coup sourd du « Bootup », s apres le clic
+  var BOUM = 1.05;                       // le coup sourd du « Bootup », s apres le clic (un temps de Yes, You May)
 
   /* L ambiance de l ecran d accueil (PS4, « Main ») : elle monte doucement
      tant qu on n est pas parti, puis s eteint en douceur au clic sur le
@@ -3657,14 +3660,27 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }
 
     /* Le signe reste tel quel pendant le son du clic ; l animation part sur
-       le coup sourd du « Bootup », qui tombe a la fin de ce son. On suit la
-       position reelle du son, pas une minuterie : s il a demarre en retard,
-       l image l attend. S il ne joue pas du tout, un filet part a l heure. */
+       le coup sourd du « Bootup ». On suit la position reelle du son, pas
+       une minuterie : s il a demarre en retard, l image l attend. S il ne
+       joue pas du tout, un filet part a l heure.
+       Si la piste d ouverture a un drop, elle part des le clic, entiere,
+       depuis son debut : le coup du Bootup tombe alors sur un temps de la
+       piste (drop - LAND), et le disque se pose pile sur le drop — l onde
+       claire et la scene naissent avec les basses. C est alors la piste
+       qu on suit pour lancer l animation. */
+    var piste = ALB().tracks[trackIdx];
+    var synchro = !!(piste && piste.drop && piste.audio && piste.drop * 1000 > LAND);
+    var coup = synchro ? piste.drop - LAND / 1000 : BOUM;    // s apres le clic
+    if (synchro){
+      try { audio.currentTime = 0; } catch (e) {}
+      wanted = true; tryPlay(); paintBtn();
+    }
     var lance = false;
     function lancer(){
       if (lance) return;
       lance = true;
       body.classList.add('is-armed');        // le disque part du centre de l ecran
+      caler_drop();
       if (REDUCED){
         setTimeout(land, LAND);              // sans vol, il n y a rien a attendre
       } else {
@@ -3675,11 +3691,30 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         setTimeout(land, LAND + 700);        // filet, si l evenement ne vient pas
       }
     }
-    var filet = setTimeout(lancer, BOUM * 1000 + 400);
+    /* L animation a sa propre horloge, la piste la sienne ; jusqu a
+       l atterrissage on garde la piste calee sur l image, en la faisant
+       jouer a peine plus vite ou plus lentement (sans toucher a la
+       hauteur) ; on ne saute que si l ecart est grand. */
+    function caler_drop(){
+      if (!synchro) return;
+      var arme = performance.now();
+      function attendu(){ return piste.drop - (arme + LAND - performance.now()) / 1000; }
+      var suivi = setInterval(function(){
+        if (landed || audio.paused || ALB().tracks[trackIdx] !== piste){
+          audio.playbackRate = 1; clearInterval(suivi); return;
+        }
+        var ecart = audio.currentTime - attendu();         // > 0 : le son est en avance
+        if (Math.abs(ecart) > .25){ try { audio.currentTime = attendu(); } catch (e) {} return; }
+        audio.playbackRate = Math.max(.97, Math.min(1.03, 1 - ecart * .8));
+      }, 100);
+    }
+
+    var filet = setTimeout(lancer, coup * 1000 + 400);
+    var guide = synchro ? audio : sonEclipse;
     (function guetter(){
       if (lance) return;
       /* une image d avance : le premier dessin tombe ainsi sur le coup */
-      if (!sonEclipse.paused && sonEclipse.currentTime >= BOUM - .016){ clearTimeout(filet); lancer(); return; }
+      if (!guide.paused && guide.currentTime >= coup - .016){ clearTimeout(filet); lancer(); return; }
       requestAnimationFrame(guetter);
     })();
   }
@@ -3697,6 +3732,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       body.classList.add('sans-eclipse'); return;
     }
     try { film.currentTime = 0; } catch (e) {}
+    /* le film a ete monte pour une intro de 4,2 s : on le joue au pas de LAND */
+    film.playbackRate = film.defaultPlaybackRate = 4200 / LAND;
     var p = film.play();
     /* un vrai refus seulement : une lecture interrompue (AbortError) n en
        est pas un */
