@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -3545,8 +3545,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   sonSurvolSigne.preload = 'auto';
   /* et celui de l eclipse (PS2, « Bootup ») : il accompagne l apparition du
      disque et s efface de lui meme sous la musique, a l atterrissage */
-  var sonEclipse = new Audio('assets/ui_boot.mp3');
+  var sonEclipse = new Audio('assets/ui_boot.mp3?v=3');
   sonEclipse.preload = 'auto';
+  var BOUM = 1.5;                        // le coup sourd du « Bootup », s apres le clic
 
   /* L ambiance de l ecran d accueil (PS4, « Main ») : elle monte doucement
      tant qu on n est pas parti, puis s eteint en douceur au clic sur le
@@ -3599,11 +3600,11 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       try { sonEclipse.currentTime = 0; sonEclipse.volume = audio.volume; sonEclipse.play().catch(function(){}); } catch (e) {}
     }
     if (amb){ amb.fini = true; amb.aller(0, 1500); }
-    body.classList.add('is-armed');          // le disque part du centre de l ecran
 
     /* sur telephone il n y a pas de platine : le signe s efface, tout arrive
        d un coup et la musique part tout de suite */
     if (MOBILE){
+      body.classList.add('is-armed');
       body.classList.add('sans-eclipse');        // pas de film sur telephone
       body.classList.add('is-lighten');
       body.classList.add('is-stage');
@@ -3649,15 +3650,32 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       setTimeout(function(){ body.classList.add('is-lit'); }, 1000);
     }
 
-    if (REDUCED){
-      setTimeout(land, LAND);                // sans vol, il n y a rien a attendre
-    } else {
-      eclipse();
-      fly.addEventListener('animationend', function(e){
-        if (e.animationName === 'flyin' || e.animationName === 'flyinsolo') land();
-      });
-      setTimeout(land, LAND + 700);          // filet, si l evenement ne vient pas
+    /* Le signe reste tel quel pendant le son du clic ; l animation part sur
+       le coup sourd du « Bootup », qui tombe a la fin de ce son. On suit la
+       position reelle du son, pas une minuterie : s il a demarre en retard,
+       l image l attend. S il ne joue pas du tout, un filet part a l heure. */
+    var lance = false;
+    function lancer(){
+      if (lance) return;
+      lance = true;
+      body.classList.add('is-armed');        // le disque part du centre de l ecran
+      if (REDUCED){
+        setTimeout(land, LAND);              // sans vol, il n y a rien a attendre
+      } else {
+        eclipse();
+        fly.addEventListener('animationend', function(e){
+          if (e.animationName === 'flyin' || e.animationName === 'flyinsolo') land();
+        });
+        setTimeout(land, LAND + 700);        // filet, si l evenement ne vient pas
+      }
     }
+    var filet = setTimeout(lancer, BOUM * 1000 + 400);
+    (function guetter(){
+      if (lance) return;
+      /* une image d avance : le premier dessin tombe ainsi sur le coup */
+      if (!sonEclipse.paused && sonEclipse.currentTime >= BOUM - .016){ clearTimeout(filet); lancer(); return; }
+      requestAnimationFrame(guetter);
+    })();
   }
 
   /* L eclipse : le film fait naitre l anneau, l eclat qui en fait le tour,
@@ -3747,6 +3765,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (!started){ enfoncer(); return; }             // le depart se fait au relachement
     if (performance.now() - demarre_a < 500) return;   // cette touche vient de tout lancer
+    if (!body.classList.contains('is-landed')) return; // le disque n est pas encore pose
     if (!audio.getAttribute('src')) return;            // album sans fichiers
 
     annulerApresSon();
