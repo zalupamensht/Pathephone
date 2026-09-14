@@ -182,6 +182,9 @@ var TRACK_BPM = {
 /* le drop, en secondes, des pistes qui peuvent ouvrir l album : l intro
    fait tomber le disque dessus (voir startIntro) */
 var TRACK_DROP = { 16: 5.05 };
+/* les pistes ou la tempete de neige se dechaine : sa vitesse, deja tiree
+   du BPM, est multipliee d autant */
+var TRACK_TEMPETE = { 9: 1.5 };                 /* Ouija */
 
 /* ================= les deux albums =================
    Un album porte tout ce qui le distingue : son disque, sa pochette, ses
@@ -2252,7 +2255,8 @@ var ALBUMS = [
     start:16,                                 /* Yes, You May ouvre l album : il s enchaine avec l intro */
     tracks: A1_NAMES.map(function(name, i){
       return { name:name, audio:TRACK_AUDIO[i], bpm:TRACK_BPM[i] || 100,
-               drop:TRACK_DROP[i], lyrics:A1_LYRICS[i] || [] };
+               drop:TRACK_DROP[i], tempete:TRACK_TEMPETE[i] || 1,
+               lyrics:A1_LYRICS[i] || [] };
     }) },
 
   { title:'Revengeseekerz', by:'Jane Remover', theme:'red',
@@ -2830,6 +2834,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var force = CALME, rafale = 0, pouls = 0;       // valeurs lissees
   var ALLURE = 2;             // la musique joue : la tempete va deux fois plus vite
   var allure = 1;
+  var fureur = 1;             // en plus, sur les pistes dechainees (TRACK_TEMPETE)
   var bpm = 100, horloge = 0, avant = performance.now();
 
   function lisser(v, but, dt, tau){ return v + (but - v) * (1 - Math.exp(-dt / tau)); }
@@ -2855,11 +2860,12 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     force  = lisser(force, joue ? 1 : CALME, dt, 1.2);
     allure = lisser(allure, joue ? ALLURE : 1, dt, 1.2);   // a l arret, la neige calme d avant
+    fureur = lisser(fureur, joue ? (info.tempete || 1) : 1, dt, 1.2);
     rafale = lisser(rafale, joue ? SOUFFLE : 0, dt, 1.2);    // la tempete souffle sans relache
     pouls  = lisser(pouls, joue ? p : 0, dt, .06);
 
-    var vent  = (VENT + RAFALE * rafale) * k * force * allure;
-    var elan  = k * (.45 + .55 * force) * (1 + .45 * rafale + .12 * pouls) * allure;
+    var vent  = (VENT + RAFALE * rafale) * k * force * allure * fureur;
+    var elan  = k * (.45 + .55 * force) * (1 + .45 * rafale + .12 * pouls) * allure * fureur;
     var t = now / 1000;
 
     g.setTransform(1, 0, 0, 1, 0, 0);
@@ -2885,14 +2891,14 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var vit = Math.sqrt(f.vx * f.vx + f.vy * f.vy);
       /* a peine etire, et pas davantage quand la tempete accelere : trop
          etire, on lirait de la pluie */
-      var etire = 1 + Math.min(1.1, vit / (380 * allure)) * f.z * f.z;
+      var etire = 1 + Math.min(1.1, vit / (380 * allure * fureur)) * f.z * f.z;
       var ang = Math.atan2(f.vy, f.vx);
       var co = Math.cos(ang), si = Math.sin(ang), d = f.r * 2;
       g.globalAlpha = f.a;
       g.setTransform(co * etire * DPR, si * etire * DPR, -si * DPR, co * DPR, f.x * DPR, f.y * DPR);
       g.drawImage(f.z > .62 ? FLOU : NET, -d, -d, d * 2, d * 2);
     }
-    etat = { bpm: bpm, force: force, rafale: rafale, vent: vent, flocons: flocons.length };
+    etat = { bpm: bpm, force: force, rafale: rafale, vent: vent, fureur: fureur, flocons: flocons.length };
   }
   var etat = null;
   requestAnimationFrame(image);
@@ -3536,7 +3542,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
      ou on en est dedans, et si elle joue */
   window.__trackInfo = function(){
     var t = ALB().tracks[trackIdx];
-    return { bpm: (t && t.bpm) || 100, temps: audio.currentTime || 0, joue: !audio.paused };
+    return { bpm: (t && t.bpm) || 100, temps: audio.currentTime || 0, joue: !audio.paused,
+             tempete: (t && t.tempete) || 1 };
   };
 
   window.__musicPaused = function(){
