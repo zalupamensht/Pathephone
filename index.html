@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=32">
+<link rel="stylesheet" href="style.css?v=33">
 </head>
 <body>
 
@@ -64,6 +64,11 @@
 <div class="veil-open" id="veilOpen"></div>
 <!-- pour passer l ouverture filmee de la page de Jane -->
 <button type="button" class="skip-intro" id="skipIntro">skip</button>
+<!-- l invitation, en bas de l ecran : elle s efface des qu on part -->
+<p class="intro-hint" aria-hidden="true">
+  <span class="hint-desk">click the icon</span>
+  <span class="hint-touch">tap the icon</span>
+</p>
 
 <div class="fit" id="fit">
 <div class="stage" id="stageBox">
@@ -73,11 +78,6 @@
          preload="auto" disablepictureinpicture aria-hidden="true"></video>
   <img class="intro-logo" id="introLogo" src="assets/logo_light.png" alt="Play"
        role="button" draggable="false">
-  <!-- l invitation, sous le signe : elle s efface des qu on part -->
-  <p class="intro-hint" aria-hidden="true">
-    <span class="hint-desk">click the icon</span>
-    <span class="hint-touch">tap the icon</span>
-  </p>
 
 
   <div class="dock">
