@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=33">
+<link rel="stylesheet" href="style.css?v=34">
 </head>
 <body>
 
@@ -75,9 +75,9 @@
 
   <!-- l eclipse : un anneau de lumiere fait le tour du disque a venir -->
   <video class="eclipse" id="eclipse" src="assets/eclipse.mp4?v=4" muted playsinline
-         preload="auto" disablepictureinpicture aria-hidden="true"></video>
+         preload="none" disablepictureinpicture aria-hidden="true"></video>
   <img class="intro-logo" id="introLogo" src="assets/logo_light.png" alt="Play"
-       role="button" draggable="false">
+       role="button" tabindex="0" draggable="false">
 
 
   <div class="dock">
@@ -2554,7 +2554,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
      en l amenant au centre, a fait glisser une voisine sous le curseur. Des
      que la souris a bouge, c est de nouveau la piste sous le curseur. */
   function choisie(i){
-    if (visee >= 0 && Math.abs(mx - ancreX) + Math.abs(my - ancreY) < BOUGE_MIN) return visee;
+    /* la piste sous le curseur, celle que la loupe montre : apres un glissement
+       vers le centre, c est la voisine arrivee sous la souris qu on veut */
     return i;
   }
 
@@ -2811,6 +2812,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var dt = Math.min(.05, (now - avant) / 1000);
     avant = now;
     if (!body.classList.contains('alb-paper')) return;   // les autres albums ont leur climat
+    /* avant l apparition de la page le canevas est transparent : rien a dessiner */
+    if (!body.classList.contains('is-stage') && !body.classList.contains('is-lighten')) return;
 
     /* le tempo et la place dans le morceau */
     var info = window.__trackInfo ? window.__trackInfo() : null;
@@ -3149,6 +3152,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       '</span>' +
       '<span class="alb-name">' + a.title + '</span>';
     el.addEventListener('click', function(){
+      /* avant que la page n apparaisse, la pastille n est pas la (Entree au
+         clavier sur une pastille encore invisible lancait sa musique) */
+      if (!document.body.classList.contains('is-stage')) return;
       var son = (i !== CUR_ALBUM && window.__ui) ? window.__ui('album') : 0;
       pick(i, son);
     });
@@ -3511,6 +3517,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     /* sur telephone il n y a pas de platine : le signe s efface, tout arrive
        d un coup et la musique part tout de suite */
     if (MOBILE){
+      body.classList.add('sans-eclipse');        // pas de film sur telephone
       body.classList.add('is-lighten');
       body.classList.add('is-stage');
       body.classList.add('is-landed');
@@ -3572,8 +3579,12 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
      style). Si le film n est pas pret, le disque se revele seul, cerne de
      son simple trait de lumiere, comme avant. */
   var film = document.getElementById('eclipse');
+  /* telecharge seulement la ou il sert : ordinateur, sans animations reduites */
+  if (film && !MOBILE && !REDUCED){ film.preload = 'auto'; film.load(); }
   function eclipse(){
-    if (!film || film.readyState < 3){ body.classList.add('sans-eclipse'); return; }
+    if (!film || film.readyState < 2 || getComputedStyle(film).display === 'none'){
+      body.classList.add('sans-eclipse'); return;
+    }
     try { film.currentTime = 0; } catch (e) {}
     var p = film.play();
     /* un vrai refus seulement : une lecture interrompue (AbortError) n en
@@ -3600,9 +3611,14 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (!started){ startIntro(); paintBtn(); }
     });
   }
-  /* la barre d espace avant le depart : appui, puis depart au relachement */
+  /* au clavier, le signe a le focus : Entree fait comme la barre d espace */
+  if (signe) signe.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && !e.repeat){ e.preventDefault(); enfoncer(); }
+  });
+  /* la barre d espace (ou Entree sur le signe) avant le depart : appui,
+     puis depart au relachement */
   window.addEventListener('keyup', function(e){
-    if (e.code !== 'Space' && e.key !== ' ') return;
+    if (e.code !== 'Space' && e.key !== ' ' && e.key !== 'Enter') return;
     if (started || !signe || !signe.classList.contains('is-pressed')) return;
     relacher();
     startIntro(); paintBtn();
