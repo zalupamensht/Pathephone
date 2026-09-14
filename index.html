@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=31">
+<link rel="stylesheet" href="style.css?v=32">
 </head>
 <body>
 
@@ -73,6 +73,11 @@
          preload="auto" disablepictureinpicture aria-hidden="true"></video>
   <img class="intro-logo" id="introLogo" src="assets/logo_light.png" alt="Play"
        role="button" draggable="false">
+  <!-- l invitation, sous le signe : elle s efface des qu on part -->
+  <p class="intro-hint" aria-hidden="true">
+    <span class="hint-desk">click the icon</span>
+    <span class="hint-touch">tap the icon</span>
+  </p>
 
 
   <div class="dock">
@@ -2795,6 +2800,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   window.addEventListener('resize', dimensionner);
 
   var force = CALME, rafale = 0, pouls = 0;       // valeurs lissees
+  var ALLURE = 2;             // la musique joue : la tempete va deux fois plus vite
+  var allure = 1;
   var bpm = 100, horloge = 0, avant = performance.now();
 
   function lisser(v, but, dt, tau){ return v + (but - v) * (1 - Math.exp(-dt / tau)); }
@@ -2817,11 +2824,12 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var p = Math.exp(-temps * 6);                             // la poussee du temps
 
     force  = lisser(force, joue ? 1 : CALME, dt, 1.2);
+    allure = lisser(allure, joue ? ALLURE : 1, dt, 1.2);   // a l arret, la neige calme d avant
     rafale = lisser(rafale, joue ? SOUFFLE : 0, dt, 1.2);    // la tempete souffle sans relache
     pouls  = lisser(pouls, joue ? p : 0, dt, .06);
 
-    var vent  = (VENT + RAFALE * rafale) * k * force;
-    var elan  = k * (.45 + .55 * force) * (1 + .45 * rafale + .12 * pouls);
+    var vent  = (VENT + RAFALE * rafale) * k * force * allure;
+    var elan  = k * (.45 + .55 * force) * (1 + .45 * rafale + .12 * pouls) * allure;
     var t = now / 1000;
 
     g.setTransform(1, 0, 0, 1, 0, 0);
@@ -2845,7 +2853,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       /* pres et dans le vent, le flocon s etire dans le sens de sa course */
       var vit = Math.sqrt(f.vx * f.vx + f.vy * f.vy);
-      var etire = 1 + Math.min(1.1, vit / 380) * f.z * f.z;   // a peine : trop etire, on lirait de la pluie
+      /* a peine etire, et pas davantage quand la tempete accelere : trop
+         etire, on lirait de la pluie */
+      var etire = 1 + Math.min(1.1, vit / (380 * allure)) * f.z * f.z;
       var ang = Math.atan2(f.vy, f.vx);
       var co = Math.cos(ang), si = Math.sin(ang), d = f.r * 2;
       g.globalAlpha = f.a;
@@ -2857,6 +2867,37 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var etat = null;
   requestAnimationFrame(image);
   window.__tempete = function(){ return etat; };        // pour verifier le reglage
+})();
+
+
+/* ---------------- le disque tourne au tempo de la piste ---------------- */
+/* Un tour par mesure, soit quatre temps : un morceau lent fait tourner le
+   disque lentement, un morceau rapide vite. Comme une vraie platine, il
+   prend sa vitesse et la quitte avec un peu d inertie : au changement de
+   piste il accelere ou ralentit en douceur, a la pause il s arrete en
+   glissant, et il repart de la ou il s est arrete. */
+(function(){
+  var spin = document.getElementById('discSpin');
+  if (!spin || REDUCED) return;
+  spin.style.animation = 'none';                 // c est le script qui le fait tourner
+  var TEMPS_PAR_TOUR = 4;
+  var body = document.body;
+  var angle = 0, vit = 0, avant = performance.now();
+  function image(now){
+    requestAnimationFrame(image);
+    var dt = Math.min(.05, (now - avant) / 1000); avant = now;
+    var info = window.__trackInfo ? window.__trackInfo() : null;
+    var tourne = body.classList.contains('is-landed') &&
+      (body.classList.contains('is-playing') || body.classList.contains('is-silent'));
+    var cible = tourne ? (info ? info.bpm : 100) / 60 / TEMPS_PAR_TOUR * 360 : 0;   // degres par seconde
+    vit += (cible - vit) * (1 - Math.exp(-dt / (cible > vit ? .35 : .6)));
+    if (cible === 0 && vit < .3) vit = 0;
+    if (!vit) return;
+    angle = (angle + vit * dt) % 360;
+    spin.style.transform = 'rotate(' + angle.toFixed(2) + 'deg)';
+  }
+  requestAnimationFrame(image);
+  window.__platine = function(){ return { degresParSeconde: vit, secondesParTour: vit ? 360 / vit : null }; };
 })();
 
 

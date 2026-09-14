@@ -105,11 +105,51 @@ body.is-lit .veil-open{opacity:0}
   /* scale se compose avec la respiration, qui tient deja transform */
   transition:scale .16s cubic-bezier(.3,.7,.3,1),filter .16s ease;
 }
+/* le survol : le signe se souleve un peu, grandit a peine et s eclaire,
+   comme un bouton qui attend qu on le presse. Seulement avant le depart. */
+@media (hover: hover){
+  body:not(.is-armed) .intro-logo:hover{
+    translate:0 -5px;scale:1.06;
+    filter:brightness(1.18) drop-shadow(0 0 14px rgba(255,255,255,.28));
+    transition:scale .28s cubic-bezier(.3,.7,.3,1),translate .28s cubic-bezier(.3,.7,.3,1),filter .28s ease;
+  }
+}
+@media (hover: hover) and (min-width: 821px){
+  /* sur ordinateur le signe a deja son propre calage : on le garde */
+  body:not(.is-armed) .intro-logo:hover{translate:-.29px -6.15px}
+}
+.intro-logo{transition:scale .28s cubic-bezier(.3,.7,.3,1),translate .28s cubic-bezier(.3,.7,.3,1),filter .28s ease}
+
 /* l appui : le signe s enfonce et s assombrit, et reste ainsi tant qu on
    appuie ; au relachement il remonte pendant que l eclipse commence */
-.intro-logo.is-pressed{
+.intro-logo.is-pressed,
+body:not(.is-armed) .intro-logo.is-pressed:hover{
   scale:.92;filter:brightness(.72);
   transition-duration:.09s;
+}
+
+/* l invitation : discrete, en capitales espacees, sous le signe ; elle
+   arrive un peu apres la page et respire lentement */
+.intro-hint{
+  position:absolute;left:50%;top:50%;z-index:12;
+  width:420px;margin:74px 0 0 -210px;
+  text-align:center;pointer-events:none;
+  font:700 12.5px/1 "Arial Narrow","Helvetica Neue",Helvetica,Arial,sans-serif;
+  letter-spacing:.3em;text-transform:uppercase;
+  color:rgba(255,255,255,.62);
+  animation:hintin 1.2s ease 1.4s both, hintbreath 3.2s ease-in-out 2.6s infinite alternate;
+}
+.intro-hint .hint-touch{display:none}
+@media (hover: none){
+  .intro-hint .hint-desk{display:none}
+  .intro-hint .hint-touch{display:inline}
+}
+body.is-armed .intro-hint{animation:hintout .35s ease both}
+@keyframes hintin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes hintbreath{from{opacity:1}to{opacity:.55}}
+@keyframes hintout{from{opacity:1}to{opacity:0;visibility:hidden}}
+@media (max-width: 820px){
+  .intro-hint{margin-top:122px;font-size:12px}
 }
 /* Sur ordinateur, le signe argent est cale sur le signe blanc de l etiquette :
    meme taille, meme angle, a un demi-pixel pres le long des contours (mesure
