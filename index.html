@@ -3538,8 +3538,11 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var demarre_a = -1e9;                  // instant ou l intro a ete armee
 
   /* le son du depart : il part au clic sur le signe (ou a la barre d espace) */
-  var sonDepart = new Audio('assets/ui_start.mp3');
+  var sonDepart = new Audio('assets/ui_start.mp3?v=2');
   sonDepart.preload = 'auto';
+  /* et celui du survol du signe, a la souris seulement, une fois par entree */
+  var sonSurvolSigne = new Audio('assets/ui_logo_hover.mp3');
+  sonSurvolSigne.preload = 'auto';
 
   /* L ambiance de l ecran d accueil (PS4, « Main ») : elle monte doucement
      tant qu on n est pas parti, puis s eteint en douceur au clic sur le
@@ -3585,6 +3588,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (started) return;
     started = true;
     demarre_a = performance.now();
+    try { sonSurvolSigne.pause(); } catch (e) {}            // le clic prend la place du survol
     try { sonDepart.currentTime = 0; sonDepart.volume = audio.volume; sonDepart.play().catch(function(){}); } catch (e) {}
     if (amb){ amb.fini = true; amb.aller(0, 1500); }
     body.classList.add('is-armed');          // le disque part du centre de l ecran
@@ -3679,6 +3683,14 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!signe) return;
     signe.addEventListener('pointerdown', function(e){ e.preventDefault(); enfoncer(); });
     signe.addEventListener('pointerleave', relacher);
+    var survole_a = -1e9;
+    signe.addEventListener('pointerenter', function(e){
+      if (started || e.pointerType !== 'mouse') return;
+      var now = performance.now();
+      if (now - survole_a < 250) return;     // un passage qui tremble au bord ne rejoue pas
+      survole_a = now;
+      try { sonSurvolSigne.currentTime = 0; sonSurvolSigne.volume = audio.volume; sonSurvolSigne.play().catch(function(){}); } catch (err) {}
+    });
     window.addEventListener('pointerup', relacher);
     window.addEventListener('pointercancel', relacher);
     signe.addEventListener('click', function(){
