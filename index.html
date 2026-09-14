@@ -30,7 +30,7 @@
   <div class="deco">
     <!-- l ouverture filmee de la page de Jane : le papier nu se garnit -->
     <video class="jr-intro" id="jrIntro" src="assets/jr_intro.mp4"
-           poster="assets/jr_intro_start.jpg" muted playsinline preload="none"
+           data-poster="assets/jr_intro_start.jpg" muted playsinline preload="none"
            disablepictureinpicture aria-hidden="true"></video>
     <!-- ce qui vit par dessus le fond : fleurs, traits de lumiere, braises -->
     <span class="deco-life" aria-hidden="true">
@@ -76,7 +76,7 @@
   <!-- l eclipse : un anneau de lumiere fait le tour du disque a venir -->
   <video class="eclipse" id="eclipse" src="assets/eclipse.mp4?v=4" muted playsinline
          preload="none" disablepictureinpicture aria-hidden="true"></video>
-  <img class="intro-logo" id="introLogo" src="assets/logo_light.png" alt="Play"
+  <img class="intro-logo" id="introLogo" src="assets/logo_light.webp" alt="Play"
        role="button" tabindex="0" draggable="false">
 
 
@@ -98,7 +98,7 @@
       <div class="platter-mat"></div>
       <div class="disc-fly" id="discFly">
         <div class="disc-spin" id="discSpin">
-          <img class="disc" src="assets/disc.png?v=2" alt="">
+          <img class="disc" src="assets/disc.webp?v=2" alt="">
         </div>
       </div>
       <span class="spindle"></span>
@@ -2244,8 +2244,8 @@ var A3 = [
 
 var ALBUMS = [
   { title:'Unmusique', by:'Lucy Bedroque', theme:'paper',
-    disc:'assets/disc.png?v=2', cover:'assets/cover.jpg', thumb:'assets/alb1.jpg',
-    art:'assets/emblem.png', artFill:false,
+    disc:'assets/disc.webp?v=2', cover:'assets/cover.jpg', thumb:'assets/alb1.jpg',
+    art:'assets/emblem.webp', artFill:false,
     start:1,                                  /* G6 Anthem ouvre l album */
     tracks: A1_NAMES.map(function(name, i){
       return { name:name, audio:TRACK_AUDIO[i], bpm:TRACK_BPM[i] || 100,
@@ -2253,7 +2253,7 @@ var ALBUMS = [
     }) },
 
   { title:'Revengeseekerz', by:'Jane Remover', theme:'red',
-    disc:'assets/disc2.png?v=3', cover:'assets/cover2.jpg', thumb:'assets/alb2.jpg',
+    disc:'assets/disc2.webp?v=3', cover:'assets/cover2.jpg', thumb:'assets/alb2.jpg',
     art:'assets/trk2.jpg', artFill:true,
     start:7,                                  /* Dancing with your eyes closed */
     /* le film d ouverture est coupe pour l instant : tout son code reste en
@@ -2391,6 +2391,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var hx     = 0;        // position lissee : la loupe rattrape la souris
   var hAmt   = 0;        // force de la loupe : monte a l entree, retombe a la sortie
   var idle   = 0;
+  var vuPos = NaN, vuHx = NaN, vuAmt = NaN, vuHalf = NaN;   // dernier etat dessine
   var centre = -1;       // la piste au centre, pour le tic de passage
   var roule  = -1e9;     // dernier instant ou le manege a bouge
   var cible  = null;     // position ou le manege va se poser (fleches, clic), ou null
@@ -2463,8 +2464,11 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (hAmt < 0.002) hx = hover;        // premiere entree : on se cale sans glisser
       hx   += (hover - hx) * 0.12;
       hAmt += (1 - hAmt) * 0.055;   // montee lente : meme la premiere fois, ca ne claque pas
+      if (hAmt > .9995) hAmt = 1;
+      if (Math.abs(hover - hx) < .02) hx = hover;
     } else {
       hAmt += (0 - hAmt) * 0.07;
+      if (hAmt < .002) hAmt = 0;    // le rendu la tient deja pour nulle sous ce seuil
     }
 
     var avant = pos;
@@ -2506,7 +2510,13 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (window.__ui && !parSurvol) window.__ui('scroll');
     }
 
-    render();
+    /* on ne reecrit les styles des pastilles que si quelque chose a bouge :
+       au repos, rien a recalculer, image apres image */
+    var half = win.clientWidth / 2;
+    if (pos !== vuPos || hx !== vuHx || hAmt !== vuAmt || half !== vuHalf){
+      vuPos = pos; vuHx = hx; vuAmt = hAmt; vuHalf = half;
+      render();
+    }
     survol();
   }
 
@@ -2625,7 +2635,21 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     build();
     if (MOBILE) reveal(); else render();
   };
-  window.__dockMark = mark;
+  /* la piste qui joue vient se poser au centre, meme quand elle change seule
+     (fin de piste, piste suivante) : meme glissement pose qu apres un clic,
+     sans tic de passage. Si la main fait tourner le manege a ce moment, on
+     ne le lui arrache pas. */
+  window.__dockMark = function(i){
+    mark(i);
+    if (MOBILE){
+      var el = items[i];
+      if (el && el.scrollIntoView) el.scrollIntoView({inline:'center', block:'nearest', behavior:'smooth'});
+      return;
+    }
+    if (!N || !scenePrete() || Math.abs(vel) > .5) return;
+    var d = wrap(i * STEP - pos);
+    if (Math.abs(d) > .3){ vel = 0; cible = pos + d; parSurvol = true; }
+  };
 
   build();
 
@@ -2999,11 +3023,13 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     return Math.max(b[0], Math.min(b[1], base));
   }
 
+  var ecrit = null;               // derniere position ecrite
   (function loop(){
     var w = wanted();
     pos += (w - pos) * 0.14;
     if (Math.abs(w - pos) < .3) pos = w;
-    track.style.transform = 'translateY(' + pos.toFixed(1) + 'px)';
+    var y = pos.toFixed(1);
+    if (y !== ecrit){ ecrit = y; track.style.transform = 'translateY(' + y + 'px)'; }
     requestAnimationFrame(loop);
   })();
 
@@ -3267,6 +3293,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   /* rend vrai si le film a bien lieu : la musique attendra alors sa fin */
   function jouer(){
     clearTimeout(musique);
+    /* le film est coupe pour l instant : son affiche n est chargee qu ici,
+       le jour ou il resservira */
+    if (!vid.getAttribute('poster') && vid.dataset.poster) vid.setAttribute('poster', vid.dataset.poster);
     /* le systeme demande le calme : pas de film, la page arrive directement */
     if (REDUCED) return false;
     en_cours = true;
