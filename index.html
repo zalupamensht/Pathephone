@@ -151,7 +151,7 @@
 <!-- la tempete de neige de l album clair ; les autres pages ne la montrent pas -->
 <canvas class="snow" id="blizzard" aria-hidden="true"></canvas>
 
-<audio id="theme" src="assets/track1.mp3?v=2" preload="auto"></audio>
+<audio id="theme" src="assets/track16.mp3?v=2" preload="auto"></audio>
 
 <div class="halftone"></div>
 <div class="scan"></div>
@@ -2246,7 +2246,7 @@ var ALBUMS = [
   { title:'Unmusique', by:'Lucy Bedroque', theme:'paper',
     disc:'assets/disc.webp?v=2', cover:'assets/cover.jpg', thumb:'assets/alb1.jpg',
     art:'assets/emblem.webp?v=2', artFill:false,
-    start:1,                                  /* G6 Anthem ouvre l album */
+    start:16,                                 /* Yes, You May ouvre l album : il s enchaine avec l intro */
     tracks: A1_NAMES.map(function(name, i){
       return { name:name, audio:TRACK_AUDIO[i], bpm:TRACK_BPM[i] || 100,
                lyrics:A1_LYRICS[i] || [] };
@@ -3445,6 +3445,12 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   /* on clique une autre icone du dock : la piste change, la platine continue
      de tourner sans repasser par l intro */
   var trackIdx = ALB().start;
+  /* le lecteur arrive charge d une piste dans le balisage : c est celle qui
+     ouvre l album qui doit y etre */
+  (function(){
+    var t = ALB().tracks[trackIdx];
+    if (t && t.audio && audio.getAttribute('src') !== t.audio) audio.src = t.audio;
+  })();
 
   /* la piste choisie attend la fin du son de choix pour partir ; tout autre
      geste sur la lecture entre temps annule ce depart differe */
