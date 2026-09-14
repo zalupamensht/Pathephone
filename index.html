@@ -3537,10 +3537,42 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   var demarre_a = -1e9;                  // instant ou l intro a ete armee
 
+  /* le son du depart : il part au clic sur le signe (ou a la barre d espace) */
+  var sonDepart = new Audio('assets/ui_start.mp3');
+  sonDepart.preload = 'auto';
+
+  /* L ambiance de l ecran d accueil : elle monte doucement tant qu on n est
+     pas parti, puis s eteint en douceur au clic sur le signe. Un navigateur
+     ne la laisse jouer que si la page a deja recu un geste — c est le cas en
+     arrivant depuis une autre page du site ; sinon elle reste muette, sans
+     rien empecher. AMBIANCE : le fichier, a choisir (vide = pas d ambiance). */
+  var AMBIANCE = '';
+  var VOL_AMBIANCE = .55;                // part du volume du site
+  var ambiance = null, fonduAmb = 0;
+  function fondu(el, but, ms, fin){
+    clearInterval(fonduAmb);
+    var de = el.volume, t0 = performance.now();
+    fonduAmb = setInterval(function(){                 // minuterie : marche aussi onglet cache
+      var k = Math.min(1, (performance.now() - t0) / ms);
+      el.volume = Math.max(0, Math.min(1, de + (but - de) * (k * k * (3 - 2 * k))));
+      if (k >= 1){ clearInterval(fonduAmb); if (fin) fin(); }
+    }, 30);
+  }
+  if (AMBIANCE && !REDUCED){
+    ambiance = new Audio(AMBIANCE);
+    ambiance.loop = true; ambiance.preload = 'auto'; ambiance.volume = 0;
+    var pa = ambiance.play();
+    if (pa && pa.then) pa.then(function(){
+      if (!started) fondu(ambiance, VOL_AMBIANCE * audio.volume, 2200);
+    }).catch(function(){});
+  }
+
   function startIntro(){
     if (started) return;
     started = true;
     demarre_a = performance.now();
+    try { sonDepart.currentTime = 0; sonDepart.volume = audio.volume; sonDepart.play().catch(function(){}); } catch (e) {}
+    if (ambiance) fondu(ambiance, 0, 1500, function(){ ambiance.pause(); });
     body.classList.add('is-armed');          // le disque part du centre de l ecran
 
     /* sur telephone il n y a pas de platine : le signe s efface, tout arrive
