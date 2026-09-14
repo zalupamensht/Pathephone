@@ -111,40 +111,59 @@ body.is-lit .veil-open{opacity:0}
   scale:.92;filter:brightness(.72);
   transition-duration:.09s;
 }
-/* le disque prend le relais : son etiquette porte deja le meme signe */
+/* Sur ordinateur, le signe argent est cale sur le signe blanc de l etiquette :
+   meme taille, meme angle, a un demi-pixel pres le long des contours (mesure
+   sur les fichiers). Le film part de cette image-la ; plus grand, le signe
+   obligeait le film a le retrecir en le tordant. */
+@media (min-width: 821px){
+  .intro-logo{
+    width:87.75px;height:87.75px;margin:-43.875px 0 0 -43.875px;
+    translate:-.29px -1.15px;rotate:-2.5deg;
+  }
+}
+/* le film prend le relais : sa premiere image est ce signe meme, puis il le
+   fait blanchir. Le signe de la page s efface donc tout de suite dessous. */
 body.is-armed .intro-logo{
   pointer-events:none;
   animation:logohandoff 4.2s both;
 }
-/* le signe reste par dessus le film tant que l etiquette n y est pas nee,
-   puis s efface a mesure qu elle apparait (1,25 s -> 1,8 s) */
 @keyframes logohandoff{
+  0%     {opacity:1}
+  7%     {opacity:1}
+  14%    {opacity:0}
+  100%   {opacity:0}
+}
+/* sans film, il reste jusqu a ce que le disque se revele autour de lui */
+body.is-armed.sans-eclipse .intro-logo{animation-name:logohandoffsolo}
+@keyframes logohandoffsolo{
   0%     {opacity:1}
   29.8%  {opacity:1}
   42.9%  {opacity:0}
   100%   {opacity:0}
 }
 
-/* L eclipse : un film carre, cale sur le disque (640 px de film pour 400 de
-   scene, le disque y faisant 480 px pour 300). Il fait tout : l anneau qui se
-   dessine, l eclat qui en fait le tour, le disque qui sort de l obscurite.
-   Il s acheve sur le disque tel que la page le montre ; le vrai disque se
-   pose alors par dessus (2,4 -> 2,6 s), le film s efface, et la chute part.
+/* L eclipse : un film carre, cale sur le disque (800 px de film pour 375 de
+   scene, le disque y faisant 640 px pour 300). Il donne l anneau qui se
+   dessine sur la tranche, l eclat qui en fait le tour, le signe qui blanchit
+   et l etiquette noire qui nait autour. Le disque, lui, n est pas le sien :
+   le vrai disque sort de l obscurite par dessus (1,45 -> 2,15 s) et couvre
+   l interieur du film, dont on ne garde alors que l anneau sur la tranche.
+   Puis le film s efface et la chute part.
    Ses bords se perdent dans le noir, son noir est celui du voile. */
 .eclipse{
   position:absolute;left:50%;top:50%;z-index:3;
-  width:400px;height:400px;margin:-200px 0 0 -200px;
+  width:375px;height:375px;margin:-187.5px 0 0 -187.5px;
   opacity:0;pointer-events:none;
-  -webkit-mask-image:radial-gradient(closest-side,#000 80%,transparent 100%);
-          mask-image:radial-gradient(closest-side,#000 80%,transparent 100%);
+  -webkit-mask-image:radial-gradient(closest-side,#000 86%,transparent 100%);
+          mask-image:radial-gradient(closest-side,#000 86%,transparent 100%);
 }
 body.is-armed .eclipse{animation:eclipsefilm 4.2s both}
 body.sans-eclipse .eclipse{display:none}
 @keyframes eclipsefilm{
   0%     {opacity:0}
-  4%     {opacity:1}
-  63.1%  {opacity:1}
-  66.7%  {opacity:0}
+  3%     {opacity:1}
+  57%    {opacity:1}
+  63.5%  {opacity:0}
   100%   {opacity:0}
 }
 @keyframes logobreath{
@@ -448,13 +467,17 @@ body.is-landed.is-playing .disc-spin{animation-play-state:running}
    d un seul geste sur le plateau (~1.5s). */
 @keyframes flyin{
   /* le disque est deja en place, a sa taille definitive, autour du signe :
-     c est le film qui le fait naitre ; le vrai disque se pose sur sa
-     derniere image, identique, puis tombe */
+     il sort de l obscurite, pale, flou et doucement lumineux, dans l anneau
+     du film, pendant que l etiquette y nait ; puis il tombe */
   0%     {opacity:0;
-          transform:translate(var(--fx,0px),var(--fy,0px)) scale(1)}
-  57.1%  {opacity:0}
-  61.9%  {opacity:1}
+          transform:translate(var(--fx,0px),var(--fy,0px)) scale(1);
+          filter:blur(6px) brightness(1.8)}
+  34.5%  {opacity:0;
+          filter:blur(6px) brightness(1.8)}
+  51.2%  {opacity:1;
+          filter:blur(0) brightness(1)}
   64.3%  {opacity:1;
+          filter:blur(0) brightness(1);
           transform:translate(var(--fx,0px),var(--fy,0px)) scale(1);
           animation-timing-function:cubic-bezier(.22,.7,.2,1)}
   100%   {opacity:1;
