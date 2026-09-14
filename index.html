@@ -2870,26 +2870,23 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 })();
 
 
-/* ---------------- le disque tourne au tempo de la piste ---------------- */
-/* Un tour par mesure, soit quatre temps : un morceau lent fait tourner le
-   disque lentement, un morceau rapide vite. Comme une vraie platine, il
-   prend sa vitesse et la quitte avec un peu d inertie : au changement de
-   piste il accelere ou ralentit en douceur, a la pause il s arrete en
-   glissant, et il repart de la ou il s est arrete. */
+/* ---------------- le disque tourne, avec l inertie d une platine ---------------- */
+/* Un tour en 1,9 s, quelle que soit la piste. Comme une vraie platine, il
+   prend sa vitesse et la quitte avec un peu d inertie : a la pause il
+   s arrete en glissant, et il repart de la ou il s est arrete. */
 (function(){
   var spin = document.getElementById('discSpin');
   if (!spin || REDUCED) return;
   spin.style.animation = 'none';                 // c est le script qui le fait tourner
-  var TEMPS_PAR_TOUR = 4;
+  var TOUR = 1.9;                                // secondes par tour
   var body = document.body;
   var angle = 0, vit = 0, avant = performance.now();
   function image(now){
     requestAnimationFrame(image);
     var dt = Math.min(.05, (now - avant) / 1000); avant = now;
-    var info = window.__trackInfo ? window.__trackInfo() : null;
     var tourne = body.classList.contains('is-landed') &&
       (body.classList.contains('is-playing') || body.classList.contains('is-silent'));
-    var cible = tourne ? (info ? info.bpm : 100) / 60 / TEMPS_PAR_TOUR * 360 : 0;   // degres par seconde
+    var cible = tourne ? 360 / TOUR : 0;                                         // degres par seconde
     vit += (cible - vit) * (1 - Math.exp(-dt / (cible > vit ? .35 : .6)));
     if (cible === 0 && vit < .3) vit = 0;
     if (!vit) return;
