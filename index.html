@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=40">
+<link rel="stylesheet" href="style.css?v=41">
 </head>
 <body>
 
@@ -28,10 +28,13 @@
     <div class="pk-bg" id="pkBgB"></div>
     <div class="pk-shade"></div>
   </div>
-  <img class="pk-sleeve" id="pkSleeve" alt="" draggable="false">
-  <button class="pk-hit" id="pkHit" type="button" aria-label="Open album">
-    <span class="pk-sink"><img class="pk-disc" id="pkDisc" alt="" draggable="false"></span>
-  </button>
+  <!-- l album : la pochette, et le disque a moitie sorti d elle -->
+  <div class="pk-album" id="pkAlbum">
+    <img class="pk-sleeve" id="pkSleeve" alt="" draggable="false">
+    <button class="pk-hit" id="pkHit" type="button" aria-label="Open album">
+      <span class="pk-sink"><img class="pk-disc" id="pkDisc" alt="" draggable="false"></span>
+    </button>
+  </div>
   <div class="pk-info" id="pkInfo"></div>
   <!-- la bande du bas : une vignette par image ou film du fond -->
   <div class="pk-strip" id="pkStrip"></div>
@@ -3974,6 +3977,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!pk || !PICKER) return;
   var body = document.body;
   var hit = document.getElementById('pkHit'), disc = document.getElementById('pkDisc');
+  var album = document.getElementById('pkAlbum');
   var sleeve = document.getElementById('pkSleeve'), info = document.getElementById('pkInfo');
   var dotsBox = document.getElementById('pkDots'), strip = document.getElementById('pkStrip');
   var bgA = document.getElementById('pkBgA'), bgB = document.getElementById('pkBgB');
@@ -3984,8 +3988,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var COUPE = 480;                       // Hz : au dessus, le son est retire (sous l eau)
   var VOL = .6;                          // part du volume du site
   var ECHO = .35;                        // part d echo
-  var SORTIE = 1300;                     // ms pour que le disque sorte de sa pochette
-  var EAU = 2.7;                         // s de plongee
+  var SORTIE = 750;                      // ms : le disque sort de sa pochette jusqu au centre
+  var EAU = 1.2;                         // s de plongee
 
   /* ce qui defile en fond quand l album s ouvre : des images, et des films
      (.mp4) glisses entre elles, qui passent en entier avant l image
@@ -3997,10 +4001,10 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     { from:5, gain:1, meta:'17 tracks', eau:[.56, .62, .66],
       jp:'運なんてない。ただ、愛するものに夢中なだけ。', de:'Tout Naturel',
       media:[{ src:'assets/lucy_bg1.mp4', th:'assets/lucy_th1.webp' },
-             { src:'assets/lucy_bg3.webp', th:'assets/lucy_th3.webp' },
-             { src:'assets/lucy_bg2.webp', th:'assets/lucy_th2.webp' },
-             { src:'assets/lucy_bg4.webp', th:'assets/lucy_th4.webp' },
-             { src:'assets/lucy_bg5.webp', th:'assets/lucy_th5.webp' }] },
+             { src:'assets/lucy_bg2.webp?v=2', th:'assets/lucy_th2.webp?v=2' },
+             { src:'assets/lucy_bg3.webp?v=2', th:'assets/lucy_th3.webp?v=2' },
+             { src:'assets/lucy_bg4.webp?v=2', th:'assets/lucy_th4.webp?v=2' },
+             { src:'assets/lucy_bg5.webp?v=2', th:'assets/lucy_th5.webp?v=2' }] },
     { from:30, gain:.97, meta:'13 tracks', eau:[.36, .07, .04],
       media:[{ src:'assets/jr_intro_start.jpg' }, { src:'assets/bg2.jpg' }, { src:'assets/trk2.jpg' }, { src:'assets/cover2.jpg' }] },
     /* plus fort que les deux autres une fois filtre : ramene a leur niveau */
@@ -4133,15 +4137,24 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (occupe || parti) return;
     parti = true;
     clearTimeout(tAttente);
+    clearTimeout(tDefile);
     if (window.__ui) window.__ui('select', true);
-    /* d abord il sort de sa pochette et revient au centre, puis il plonge */
-    var ouvert = pk.classList.contains('is-open');
-    if (ouvert) fermer();
+    /* l album s arrete la ou il est (meme en plein glissement) */
+    var ar = album.getBoundingClientRect();
+    album.style.transition = 'none';
+    album.style.left = ar.left + 'px';
+    album.style.top = (ar.top + ar.height / 2) + 'px';
+    /* tout s efface ; le disque sort de sa pochette jusqu au centre de
+       l ecran, sans grandir, puis il plonge */
     pk.classList.add('is-leaving');
+    var r = hit.getBoundingClientRect();
+    var dx = innerWidth / 2 - (r.left + r.width / 2), dy = innerHeight / 2 - (r.top + r.height / 2);
+    hit.style.transition = 'transform ' + SORTIE + 'ms cubic-bezier(.45,0,.2,1)';
+    hit.style.transform = 'translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px)';
     setTimeout(function(){
       son.sombrer(EAU);
       eau.plonger(EAU, suite);
-    }, ouvert ? SORTIE : 120);
+    }, SORTIE + 40);
   }
   /* au fond : l ecran d accueil de l album, ou l album lui meme */
   function suite(){
@@ -4292,8 +4305,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       /* la hauteur de l eau : trois fronts d onde qui partent du disque et
          s amortissent, et un clapot qui reste */
       'float H(vec2 p){vec2 d=p-uC;float r=length(d)/uR;float h=0.;',
-      ' for(int k=0;k<3;k++){float tt=uT-float(k)*.2;if(tt>0.){float f=.55+tt*1.25;',
-      '  float env=exp(-pow((r-f)*2.4,2.))*exp(-tt*.9)/(1.+r*.5);h+=env*sin((r-f)*17.);}}',
+      ' for(int k=0;k<3;k++){float tt=uT-float(k)*.12;if(tt>0.){float f=.55+tt*2.2;',
+      '  float env=exp(-pow((r-f)*2.4,2.))*exp(-tt*1.4)/(1.+r*.5);h+=env*sin((r-f)*17.);}}',
       ' h+=.10*exp(-uT*.45)*smoothstep(0.,.35,uT)*sin(r*8.-uT*5.5)*exp(-r*.35);',
       ' return h;}',
       /* les reflets qui dansent au fond */
@@ -4311,7 +4324,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       ' vec2 q=p+o;vec2 g=(q-vec2(.5*uRes.x,.48*uRes.y))/vec2(.55*uRes.x,.6*uRes.y);',
       ' vec3 col=mix(uTone,vec3(1.),uGlow*max(0.,1.-length(g)/.7));',
       /* le disque qui s enfonce */
-      ' float z=smoothstep(.12,uDur*.85,uT);',
+      ' float z=smoothstep(.06,uDur*.8,uT);',
       ' float sc=1.-.45*z;vec2 dc=uC+vec2(0.,uR*.12*z);',
       ' vec2 dq=(p+o*(1.+2.5*z)-dc)/(uR*sc);',
       ' float an=uAng+uT*.09;dq=mat2(cos(an),-sin(an),sin(an),cos(an))*dq;',
@@ -4331,7 +4344,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       ' float sp=pow(max(dot(reflect(-L,n),vec3(0.,0.,1.)),0.),90.);',
       ' col+=sp*.55*smoothstep(.001,.02,abs(hx)+abs(hy));',
       /* puis le noir des profondeurs */
-      ' col=mix(col,vec3(.043,.039,.035),smoothstep(uDur*.5,uDur,uT));',
+      ' col=mix(col,vec3(.043,.039,.035),smoothstep(uDur*.45,uDur,uT));',
       ' gl_FragColor=vec4(col,1.);}'
     ].join('\n');
 
