@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=39">
+<link rel="stylesheet" href="style.css?v=40">
 </head>
 <body>
 
@@ -30,7 +30,6 @@
   </div>
   <img class="pk-sleeve" id="pkSleeve" alt="" draggable="false">
   <button class="pk-hit" id="pkHit" type="button" aria-label="Open album">
-    <span class="pk-rip" aria-hidden="true"><i></i><i></i><i></i></span>
     <span class="pk-sink"><img class="pk-disc" id="pkDisc" alt="" draggable="false"></span>
   </button>
   <div class="pk-info" id="pkInfo"></div>
@@ -44,9 +43,6 @@
   </button>
   <div class="pk-dots" id="pkDots" aria-hidden="true"></div>
   <div class="pk-veil"></div>
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <filter id="pkWater"><feTurbulence id="pkTurb" type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="0" id="pkDisp"/></filter>
-  </svg>
 </div>
 
 <div class="bg">
@@ -2744,7 +2740,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var SONS = {
     scroll:     'assets/ui_scroll.mp3?v=2',        // une piste passe au centre du manege
     hover:      'assets/ui_hover.mp3?v=2',         // la souris passe sur une pastille
-    select:     'assets/ui_select.mp3?v=5',        // on choisit une piste
+    select:     'assets/ui_album.mp3?v=2',         // on choisit une piste (le meme son que pour un album)
     album:      'assets/ui_album.mp3?v=2',         // on change d album
     albumHover: 'assets/ui_album_hover.mp3'        // la souris passe sur un album
   };
@@ -3963,14 +3959,16 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 })();
 
 /* ---------------- le choix du disque ---------------- */
-/* On regarde un disque : au bout de DWELL il file dans sa pochette, et le
-   monde de l album s ouvre — son fond defile comme sur la PS5, son titre,
-   sa bande de clips et de photos — pendant que sa musique joue comme sous
-   l eau : on n en garde que le bas, avec un peu d echo. Les fleches (ou
+/* Un disque au centre, et sa musique qui joue deja, comme sous l eau : on
+   n en garde que le bas, avec un peu d echo. Au bout de DWELL passe sur le
+   meme disque, il file dans sa pochette et le monde de l album s ouvre —
+   son fond defile comme sur la PS5, sa bande de vignettes. Les fleches (ou
    <- ->) passent au disque voisin avec le son de defilement des pistes ;
-   un clic sur le disque, la pochette ou « Listen », avec le son de choix
-   d une piste, et il plonge : l ecran d accueil de cet album suit, son
-   ambiance comprise, que ce clic a ouvert. */
+   chaque disque reprend sa musique la ou on l avait laissee. Un clic sur
+   le disque ou la pochette (ou Entree), avec le son de choix : il sort de
+   sa pochette jusqu au centre, puis s enfonce dans la page devenue eau.
+   L ecran d accueil de cet album suit — ou l album lui meme, s il n a pas
+   encore d ecran d accueil. */
 (function(){
   var pk = document.getElementById('picker');
   if (!pk || !PICKER) return;
@@ -3981,31 +3979,32 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var bgA = document.getElementById('pkBgA'), bgB = document.getElementById('pkBgB');
   var theme = document.getElementById('theme');
 
-  var DWELL = 2500;                      // ms a regarder le disque avant qu il s ouvre
+  var DWELL = 3000;                      // ms sur un disque avant qu il s ouvre
   var SLIDE = 5000;                      // ms par image du fond
   var COUPE = 480;                       // Hz : au dessus, le son est retire (sous l eau)
-  var VOL = .45;                         // part du volume du site
+  var VOL = .6;                          // part du volume du site
   var ECHO = .35;                        // part d echo
+  var SORTIE = 1300;                     // ms pour que le disque sorte de sa pochette
+  var EAU = 2.7;                         // s de plongee
 
   /* ce qui defile en fond quand l album s ouvre : des images, et des films
      (.mp4) glisses entre elles, qui passent en entier avant l image
      suivante. th : la vignette de la bande du bas (pour un film, une belle
      image tiree de lui). Jane et matt proxy : images de passage.
-     jp : une ligne d une de ses chansons, en japonais, et d ou elle vient */
+     jp : une ligne d une de ses chansons, en japonais, et d ou elle vient.
+     eau : la couleur de l eau ou le disque s enfonce */
   var PK = [
-    { from:5, gain:1, meta:'17 tracks',
+    { from:5, gain:1, meta:'17 tracks', eau:[.56, .62, .66],
       jp:'運なんてない。ただ、愛するものに夢中なだけ。', de:'Tout Naturel',
       media:[{ src:'assets/lucy_bg1.mp4', th:'assets/lucy_th1.webp' },
-             { src:'assets/lucy_bg2.webp', th:'assets/lucy_th2.webp' },
              { src:'assets/lucy_bg3.webp', th:'assets/lucy_th3.webp' },
+             { src:'assets/lucy_bg2.webp', th:'assets/lucy_th2.webp' },
              { src:'assets/lucy_bg4.webp', th:'assets/lucy_th4.webp' },
              { src:'assets/lucy_bg5.webp', th:'assets/lucy_th5.webp' }] },
-    { from:30, gain:.97, meta:'13 tracks',
-      jp:'綱渡りの星を、ぜんぶきみにあげる。', de:'Experimental Skin',
+    { from:30, gain:.97, meta:'13 tracks', eau:[.36, .07, .04],
       media:[{ src:'assets/jr_intro_start.jpg' }, { src:'assets/bg2.jpg' }, { src:'assets/trk2.jpg' }, { src:'assets/cover2.jpg' }] },
     /* plus fort que les deux autres une fois filtre : ramene a leur niveau */
-    { from:20, gain:.6, meta:'12 tracks',
-      jp:'落ちていくぼくを、きみはパラシュートみたいに受け止めた。', de:'5',
+    { from:20, gain:.6, meta:'12 tracks', eau:[.42, .35, .23],
       media:[{ src:'assets/bg3.jpg' }, { src:'assets/cover3.jpg' }, { src:'assets/trk3.jpg' }] }
   ];
 
@@ -4025,10 +4024,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       '<h2 class="pk-title">' + a.title + '</h2>' +
       '<div class="pk-by">' + a.by + '</div>' +
       '<div class="pk-meta">' + p.meta + '</div>' +
-      '<p class="pk-jp" lang="ja">' + p.jp + '</p>' +
-      '<p class="pk-src">— ' + p.de + '</p>' +
-      '<div class="pk-btns"><button type="button" class="pk-listen">Listen</button><button type="button">Tracklist</button></div>';
-    info.querySelector('.pk-listen').addEventListener('click', plonger);
+      (p.jp ? '<p class="pk-jp" lang="ja">' + p.jp + '</p><p class="pk-src">— ' + p.de + '</p>' : '');
     /* la bande du bas : une vignette par image ou film ; un clic y amene */
     strip.innerHTML = p.media.map(function(m, j){
       return '<button type="button" class="pk-tile' + (j ? '' : ' on') + '" tabindex="-1" aria-label="' + (j + 1) + '"' +
@@ -4102,14 +4098,14 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (occupe || parti) return;
     pk.classList.add('is-open');
     vue = 0; montrer(0);
-    son.jouer();
   }
+  /* referme le monde de l album : le disque revient au centre, sa musique
+     continue */
   function fermer(){
     clearTimeout(tAttente); clearTimeout(tDefile);
     pk.classList.remove('is-open');
     bgA.classList.remove('on'); bgB.classList.remove('on');
     setTimeout(function(){ eteindre(bgA); eteindre(bgB); }, 800);
-    son.couper(.8);
   }
 
   function feuilleter(dir){
@@ -4118,12 +4114,14 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (window.__ui) window.__ui('scroll', true);
     var ouvert = pk.classList.contains('is-open');
     fermer();
+    son.couper(.6);
     setTimeout(function(){
       pk.classList.add(dir > 0 ? 'out-l' : 'out-r');
       setTimeout(function(){
         pk.classList.remove('out-l', 'out-r');
         cur = (cur + dir + ALBUMS.length) % ALBUMS.length;
         remplir(cur);
+        son.jouer();
         pk.classList.add(dir > 0 ? 'in-l' : 'in-r');
         setTimeout(function(){ pk.classList.remove('in-l', 'in-r'); occupe = false; attendre(); }, 560);
       }, 450);
@@ -4134,33 +4132,29 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (e) e.stopPropagation();
     if (occupe || parti) return;
     parti = true;
-    clearTimeout(tAttente); clearTimeout(tDefile);
+    clearTimeout(tAttente);
     if (window.__ui) window.__ui('select', true);
-    pk.classList.add('is-sinking');
-    son.couper(1.4);
-    /* l eau se trouble a mesure que le disque s enfonce */
-    var disp = document.getElementById('pkDisp'), turb = document.getElementById('pkTurb');
-    var t0 = performance.now();
-    (function onde(now){
-      var k = Math.min(1, (now - t0) / 1700);
-      if (disp) disp.setAttribute('scale', (k * 38).toFixed(1));
-      if (turb) turb.setAttribute('baseFrequency', (.012 + k * .01).toFixed(4) + ' ' + (.02 + k * .015).toFixed(4));
-      if (k < 1) requestAnimationFrame(onde);
-    })(t0);
-    setTimeout(function(){ pk.classList.add('is-dark'); }, 1500);
+    /* d abord il sort de sa pochette et revient au centre, puis il plonge */
+    var ouvert = pk.classList.contains('is-open');
+    if (ouvert) fermer();
+    pk.classList.add('is-leaving');
     setTimeout(function(){
-      /* l album choisi est pose sans que sa musique parte */
-      if (cur !== CUR_ALBUM && window.__setAlbum) window.__setAlbum(cur, 0, true);
-      var accueil = !!ALBUMS[cur].accueil;
-      if (!accueil) body.classList.add('is-direct');
-      body.classList.remove('is-picking');
-      body.classList.add('pk-from');
-      /* son ecran d accueil, s il en a un : c est lui qui lancera la
-         musique, apres son ambiance. Sinon l album s ouvre tout de suite. */
-      if (accueil){ if (window.__ambianceGo) window.__ambianceGo(); }
-      else if (window.__startIntro) window.__startIntro(true);
-      setTimeout(function(){ body.classList.remove('pk-from'); }, 1400);
-    }, 2500);
+      son.sombrer(EAU);
+      eau.plonger(EAU, suite);
+    }, ouvert ? SORTIE : 120);
+  }
+  /* au fond : l ecran d accueil de l album, ou l album lui meme */
+  function suite(){
+    pk.classList.add('is-dark');
+    /* l album choisi est pose sans que sa musique parte */
+    if (cur !== CUR_ALBUM && window.__setAlbum) window.__setAlbum(cur, 0, true);
+    var accueil = !!ALBUMS[cur].accueil;
+    if (!accueil) body.classList.add('is-direct');
+    body.classList.remove('is-picking');
+    body.classList.add('pk-from');
+    if (accueil){ if (window.__ambianceGo) window.__ambianceGo(); }
+    else if (window.__startIntro) window.__startIntro(true);
+    setTimeout(function(){ body.classList.remove('pk-from'); }, 1400);
   }
 
   hit.addEventListener('click', plonger);
@@ -4177,20 +4171,21 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (!e.repeat) plonger();
     }
   });
-  /* la souris ne bouge pas le disque, mais un clic dans le vide ne doit
-     pas selectionner le texte ni rien d autre */
+  /* un clic dans le vide ne selectionne rien */
   pk.addEventListener('mousedown', function(e){ if (e.target === pk) e.preventDefault(); });
 
   /* ---- la musique sous l eau ----
      un lecteur a part, branche dans un petit circuit : trois filtres passe
      bas a la suite (une pente raide : sinon les aigus d un morceau brillant
-     passent encore et grincent), un echo fait maison, puis le volume. Le
-     navigateur n ouvre le son qu apres un geste : on monte le circuit au
-     premier clic ou a la premiere touche, et s il s ouvrait deja, la
-     musique part a ce moment la. */
+     passent encore et grincent), un echo fait maison, puis le volume. Elle
+     joue sans s arreter ; chaque album garde sa place dans son morceau.
+     Le navigateur n ouvre le son qu apres un geste (sauf sur un site ou
+     l on ecoute souvent) : le circuit est monte tout de suite, et s il
+     reste muet la musique part au premier clic ou a la premiere touche. */
   var son = (function(){
-    var lecteur = new Audio(); lecteur.preload = 'none'; lecteur.loop = true;
-    var ctx = null, maitre = null, voulu = false, arret = 0;
+    var lecteur = new Audio(); lecteur.preload = 'auto'; lecteur.loop = true;
+    var ctx = null, maitre = null, filtres = [], voulu = false, arret = 0, charge = -1;
+    var places = {};                               // ou en etait chaque album
     function monter(){
       if (ctx) return;
       try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
@@ -4199,7 +4194,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       qs.forEach(function(q){
         var f = ctx.createBiquadFilter();
         f.type = 'lowpass'; f.frequency.value = COUPE; f.Q.value = q;
-        prec.connect(f); prec = f;
+        prec.connect(f); prec = f; filtres.push(f);
       });
       var sec = ctx.createGain(), mouille = ctx.createGain(), ech = ctx.createConvolver();
       var n = Math.floor(ctx.sampleRate * 2.4), ir = ctx.createBuffer(2, n, ctx.sampleRate);
@@ -4214,53 +4209,207 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       sec.connect(maitre); mouille.connect(maitre); maitre.connect(ctx.destination);
     }
     function niveau(){ return VOL * PK[cur].gain * (theme && !theme.muted ? theme.volume : .85); }
+    function rampe(v, sec){
+      var tt = ctx.currentTime;
+      maitre.gain.cancelScheduledValues(tt);
+      maitre.gain.setValueAtTime(maitre.gain.value, tt);
+      maitre.gain.linearRampToValueAtTime(v, tt + sec);
+    }
     function jouer(){
       voulu = true;
       clearTimeout(arret);
       var a = ALBUMS[cur], t = a.tracks[a.start];
       if (!t || !t.audio) return;
-      if (lecteur.getAttribute('src') !== t.audio){ lecteur.src = t.audio; }
-      /* un fichier pas encore charge ignore qu on le place : on attend
-         d en connaitre la duree pour partir du bon endroit */
-      var depuis = PK[cur].from;
-      if (lecteur.readyState >= 1){ try { lecteur.currentTime = depuis; } catch (e) {} }
-      else lecteur.addEventListener('loadedmetadata', function placer(){
-        lecteur.removeEventListener('loadedmetadata', placer);
-        try { lecteur.currentTime = depuis; } catch (e) {}
-      });
-      if (!ctx) return;                          // pas encore de geste : on attend
+      if (charge !== cur){
+        /* on quitte un album : on retient ou il en etait */
+        if (charge >= 0 && lecteur.getAttribute('src')) places[charge] = lecteur.currentTime;
+        charge = cur;
+        lecteur.src = t.audio;
+        /* un fichier pas encore charge ignore qu on le place : on attend
+           d en connaitre la duree */
+        var depuis = places[cur] != null ? places[cur] : PK[cur].from;
+        lecteur.addEventListener('loadedmetadata', function placer(){
+          lecteur.removeEventListener('loadedmetadata', placer);
+          try { lecteur.currentTime = depuis; } catch (e) {}
+        });
+      }
+      if (!ctx) return;
       if (ctx.state !== 'running') ctx.resume();
-      var tt = ctx.currentTime;
-      maitre.gain.cancelScheduledValues(tt);
-      maitre.gain.setValueAtTime(maitre.gain.value, tt);
-      maitre.gain.linearRampToValueAtTime(niveau(), tt + 1.8);
+      rampe(niveau(), 1.8);
       lecteur.play().catch(function(){});
     }
     function couper(sec){
       voulu = false;
       if (!ctx){ lecteur.pause(); return; }
-      var tt = ctx.currentTime;
-      maitre.gain.cancelScheduledValues(tt);
-      maitre.gain.setValueAtTime(maitre.gain.value, tt);
-      maitre.gain.linearRampToValueAtTime(0, tt + sec);
+      rampe(0, sec);
       clearTimeout(arret);
       arret = setTimeout(function(){ if (!voulu) lecteur.pause(); }, sec * 1000 + 80);
+    }
+    /* la plongee : le son s enfonce avec le disque, de plus en plus sourd */
+    function sombrer(sec){
+      if (!ctx){ lecteur.pause(); return; }
+      var tt = ctx.currentTime;
+      filtres.forEach(function(f){
+        f.frequency.cancelScheduledValues(tt);
+        f.frequency.setValueAtTime(f.frequency.value, tt);
+        f.frequency.exponentialRampToValueAtTime(120, tt + sec);
+      });
+      couper(sec);
     }
     function geste(){
       if (!body.classList.contains('is-picking')){ fin(); return; }
       monter();
-      if (ctx && ctx.state !== 'running') ctx.resume();
-      if (voulu && lecteur.paused) jouer();
+      if (!ctx) return;
+      if (ctx.state !== 'running') ctx.resume().then(function(){ if (voulu) jouer(); });
+      else if (voulu && lecteur.paused) jouer();
     }
     function fin(){ ['pointerdown', 'keydown'].forEach(function(g){ window.removeEventListener(g, geste, true); }); }
     ['pointerdown', 'keydown'].forEach(function(g){ window.addEventListener(g, geste, true); });
-    return { jouer: jouer, couper: couper, etat: function(){
+    /* le circuit tout de suite : si le navigateur laisse deja jouer, la
+       musique part avec la page */
+    monter();
+    return { jouer: jouer, couper: couper, sombrer: sombrer, etat: function(){
       return { joue: !lecteur.paused, temps: +lecteur.currentTime.toFixed(2), piste: lecteur.getAttribute('src'),
                circuit: ctx ? ctx.state : null, niveau: maitre ? +maitre.gain.value.toFixed(3) : 0 };
     } };
   })();
 
+  /* ---- la page devenue eau ----
+     Au moment de plonger, la page est redessinee dans un canevas WebGL a
+     l identique (le ton de l album, sa lueur, le disque au centre), puis
+     l eau s anime : des vagues partent du point d impact et refractent tout
+     ce qu il y a dessous, la lumiere joue sur leurs pentes, et le disque
+     s enfonce — plus petit, plus flou, teinte par l eau, strie de reflets
+     qui dansent — jusqu au noir des profondeurs, qui est celui de l ecran
+     d accueil. Sans WebGL, le disque s efface simplement. */
+  var eau = (function(){
+    var VS = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
+    var FS = [
+      'precision highp float;',
+      'uniform vec2 uRes;uniform float uT;uniform vec2 uC;uniform float uR;',
+      'uniform vec3 uTone;uniform float uGlow;uniform vec3 uWater;uniform float uAng;uniform float uDur;',
+      'uniform sampler2D uDisc;',
+      /* la hauteur de l eau : trois fronts d onde qui partent du disque et
+         s amortissent, et un clapot qui reste */
+      'float H(vec2 p){vec2 d=p-uC;float r=length(d)/uR;float h=0.;',
+      ' for(int k=0;k<3;k++){float tt=uT-float(k)*.2;if(tt>0.){float f=.55+tt*1.25;',
+      '  float env=exp(-pow((r-f)*2.4,2.))*exp(-tt*.9)/(1.+r*.5);h+=env*sin((r-f)*17.);}}',
+      ' h+=.10*exp(-uT*.45)*smoothstep(0.,.35,uT)*sin(r*8.-uT*5.5)*exp(-r*.35);',
+      ' return h;}',
+      /* les reflets qui dansent au fond */
+      'float caus(vec2 u){vec2 w=u;float v=0.;',
+      ' for(int i=0;i<3;i++){float fi=float(i);w+=vec2(sin(w.y*1.7+uT*1.3+fi),cos(w.x*1.5-uT*1.1+fi*1.7))*.6;',
+      '  v+=1./(1.+14.*abs(sin(w.x)*sin(w.y)));}',
+      ' return pow(v/3.,3.);}',
+      'vec4 tex(vec2 u){return texture2D(uDisc,u);}',
+      'void main(){',
+      ' vec2 p=vec2(gl_FragCoord.x,uRes.y-gl_FragCoord.y);',
+      ' float e=1.5;float h=H(p);float hx=(H(p+vec2(e,0.))-h)/e;float hy=(H(p+vec2(0.,e))-h)/e;',
+      ' vec3 n=normalize(vec3(-hx*uR*.016,-hy*uR*.016,1.));',
+      ' vec2 o=n.xy*uR*.07;',
+      /* la page sous l eau : son ton et sa lueur, refractes */
+      ' vec2 q=p+o;vec2 g=(q-vec2(.5*uRes.x,.48*uRes.y))/vec2(.55*uRes.x,.6*uRes.y);',
+      ' vec3 col=mix(uTone,vec3(1.),uGlow*max(0.,1.-length(g)/.7));',
+      /* le disque qui s enfonce */
+      ' float z=smoothstep(.12,uDur*.85,uT);',
+      ' float sc=1.-.45*z;vec2 dc=uC+vec2(0.,uR*.12*z);',
+      ' vec2 dq=(p+o*(1.+2.5*z)-dc)/(uR*sc);',
+      ' float an=uAng+uT*.09;dq=mat2(cos(an),-sin(an),sin(an),cos(an))*dq;',
+      ' float rr=length(dq);float ins=1.-smoothstep(.985,1.,rr);',
+      ' vec2 tu=dq*.5+.5;float b=.003+z*.035;',
+      ' vec4 c=(tex(tu)*2.+tex(tu+vec2(b,0.))+tex(tu-vec2(b,0.))+tex(tu+vec2(0.,b))+tex(tu-vec2(0.,b)))/6.;',
+      ' vec3 dcol=c.rgb;',
+      ' dcol+=(1.-z*.5)*.22*caus(dq*2.6+vec2(uT*.3,0.))*vec3(1.,1.,.95);',
+      ' dcol=mix(dcol,uWater,.18+.6*z);dcol*=1.-.3*z;',
+      ' float da=c.a*ins*(1.-smoothstep(.72,1.,z));',
+      ' col=mix(col,dcol,da);',
+      /* l eau elle meme : un voile de sa couleur qui s epaissit */
+      ' col=mix(col,uWater,.12*smoothstep(0.,.6,uT));',
+      /* la lumiere sur les vagues */
+      ' vec3 L=normalize(vec3(-.35,-.55,.76));',
+      ' col*=1.+(dot(n,L)-L.z)*1.6;',
+      ' float sp=pow(max(dot(reflect(-L,n),vec3(0.,0.,1.)),0.),90.);',
+      ' col+=sp*.55*smoothstep(.001,.02,abs(hx)+abs(hy));',
+      /* puis le noir des profondeurs */
+      ' col=mix(col,vec3(.043,.039,.035),smoothstep(uDur*.5,uDur,uT));',
+      ' gl_FragColor=vec4(col,1.);}'
+    ].join('\n');
+
+    function couleur(v){                       // "rgb(241, 239, 235)" -> [.94,...]
+      var m = (v || '').match(/[\d.]+/g) || [241, 239, 235];
+      return [m[0] / 255, m[1] / 255, m[2] / 255];
+    }
+
+    function plonger(dur, fini){
+      var cv = document.createElement('canvas'), gl = null;
+      cv.className = 'pk-eau';
+      try { gl = cv.getContext('webgl', { premultipliedAlpha: false }) || cv.getContext('experimental-webgl'); } catch (e) {}
+      if (!gl || !disc.complete){ return repli(dur, fini); }
+      var dpr = Math.min(window.devicePixelRatio || 1, 1.25);
+      var W = Math.round(innerWidth * dpr), Hh = Math.round(innerHeight * dpr);
+      cv.width = W; cv.height = Hh;
+
+      function sh(type, src){
+        var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+        return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null;
+      }
+      var vs = sh(gl.VERTEX_SHADER, VS), fs = sh(gl.FRAGMENT_SHADER, FS);
+      if (!vs || !fs) return repli(dur, fini);
+      var pr = gl.createProgram(); gl.attachShader(pr, vs); gl.attachShader(pr, fs); gl.linkProgram(pr);
+      if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return repli(dur, fini);
+      gl.useProgram(pr);
+      var buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      var loc = gl.getAttribLocation(pr, 'a'); gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+      var tx = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tx);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      try { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, disc); }
+      catch (e){ return repli(dur, fini); }
+
+      /* le disque tel qu il est a l ecran, et l angle ou il a tourne */
+      var r = hit.getBoundingClientRect();
+      var m = getComputedStyle(disc).transform, ang = 0;
+      if (m && m !== 'none'){ var v = m.match(/-?[\d.e]+/g); if (v) ang = Math.atan2(+v[1], +v[0]); }
+      var cs = getComputedStyle(pk);
+      var U = function(n){ return gl.getUniformLocation(pr, n); };
+      gl.uniform2f(U('uRes'), W, Hh);
+      gl.uniform2f(U('uC'), (r.left + r.width / 2) * dpr, (r.top + r.height / 2) * dpr);
+      gl.uniform1f(U('uR'), r.width / 2 * dpr);
+      gl.uniform3fv(U('uTone'), couleur(cs.backgroundColor));
+      gl.uniform1f(U('uGlow'), +pk.dataset.alb ? .12 : .3);
+      gl.uniform3fv(U('uWater'), PK[cur].eau);
+      gl.uniform1f(U('uAng'), ang);
+      gl.uniform1f(U('uDur'), dur);
+      gl.uniform1i(U('uDisc'), 0);
+      var uT = U('uT');
+      gl.viewport(0, 0, W, Hh);
+
+      pk.appendChild(cv);
+      var t0 = performance.now();
+      (function image(now){
+        var t = (now - t0) / 1000;
+        gl.uniform1f(uT, Math.min(t, dur));
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        if (t === 0 || t < .05) pk.classList.add('is-water');     // le vrai disque s efface sous le canevas
+        if (t < dur) requestAnimationFrame(image);
+        else fini();
+      })(t0);
+    }
+    /* sans WebGL : le disque s enfonce en s effacant */
+    function repli(dur, fini){
+      pk.classList.add('is-sinking');
+      setTimeout(fini, dur * 1000);
+    }
+    return { plonger: plonger };
+  })();
+
   remplir(cur);
+  son.jouer();
   attendre();
   window.__picker = function(){ return { album: cur, ouvert: pk.classList.contains('is-open'), parti: parti, son: son.etat() }; };
 })();
