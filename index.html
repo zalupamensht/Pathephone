@@ -2608,11 +2608,38 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   /* Fleches : exactement une piste par appui. On vise la piste suivante au
      lieu d ajouter de l elan : trois appuis rapides font trois pistes, pas une
      glissade qui en saute. Touche maintenue : jamais plus de deux pistes
-     d avance. Le curseur de volume garde ses fleches pour lui. */
+     d avance.
+     Les fleches ne servent qu a cela : le navigateur ne fait plus rien
+     d autre avec (ni defiler, ni deplacer une selection, ni regler le
+     volume). Entree lance la piste amenee au centre, comme un clic ; la
+     barre d espace reste la lecture et la pause. */
+  function saisie(t){
+    var tag = t && t.tagName;
+    if (t && t.isContentEditable) return true;
+    if (tag === 'TEXTAREA' || tag === 'SELECT') return true;
+    return tag === 'INPUT' && !/^(range|checkbox|radio|button|submit)$/i.test(t.type || '');
+  }
+  function auCentre(){
+    var p = cible !== null ? cible : pos;
+    return ((Math.round(p / STEP) % N) + N) % N;
+  }
   window.addEventListener('keydown', function(e){
-    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-    var t = e.target, tag = t && t.tagName;
-    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || (t && t.isContentEditable)) return;
+    if (MOBILE || saisie(e.target)) return;
+    var fleche = e.key === 'ArrowRight' || e.key === 'ArrowLeft';
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown'){ e.preventDefault(); return; }
+    if (e.key === 'Enter'){
+      if (!scenePrete() || !N) return;
+      e.preventDefault();                    // un bouton qui a le clavier ne se clique pas en plus
+      if (e.repeat) return;
+      var j = auCentre();
+      designer(j);
+      var son = window.__ui ? window.__ui('select') : 0;
+      if (window.__pickTrack) window.__pickTrack(j, son);
+      return;
+    }
+    if (!fleche) return;
+    e.preventDefault();
+    if (!scenePrete()) return;
     var dir  = e.key === 'ArrowRight' ? 1 : -1;
     var base = cible !== null ? cible : Math.round(pos / STEP) * STEP;
     var but  = base + dir * STEP;
@@ -3561,7 +3588,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   sonSurvolSigne.preload = 'auto';
   /* et celui de l eclipse (PS2, « Bootup ») : il accompagne l apparition du
      disque et s efface de lui meme sous la musique, a l atterrissage */
-  var sonEclipse = new Audio('assets/ui_boot.mp3?v=4');
+  var sonEclipse = new Audio('assets/ui_boot.mp3?v=5');
   sonEclipse.preload = 'auto';
   var BOUM = 1.05;                       // le coup sourd du « Bootup », s apres le clic (un temps de Yes, You May)
 
@@ -3687,7 +3714,6 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (lance) return;
       lance = true;
       body.classList.add('is-armed');        // le disque part du centre de l ecran
-      caler_drop();
       if (REDUCED){
         setTimeout(land, LAND);              // sans vol, il n y a rien a attendre
       } else {
@@ -3698,23 +3724,11 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         setTimeout(land, LAND + 700);        // filet, si l evenement ne vient pas
       }
     }
-    /* L animation a sa propre horloge, la piste la sienne ; jusqu a
-       l atterrissage on garde la piste calee sur l image, en la faisant
-       jouer a peine plus vite ou plus lentement (sans toucher a la
-       hauteur) ; on ne saute que si l ecart est grand. */
-    function caler_drop(){
-      if (!synchro) return;
-      var arme = performance.now();
-      function attendu(){ return piste.drop - (arme + LAND - performance.now()) / 1000; }
-      var suivi = setInterval(function(){
-        if (landed || audio.paused || ALB().tracks[trackIdx] !== piste){
-          audio.playbackRate = 1; clearInterval(suivi); return;
-        }
-        var ecart = audio.currentTime - attendu();         // > 0 : le son est en avance
-        if (Math.abs(ecart) > .25){ try { audio.currentTime = attendu(); } catch (e) {} return; }
-        audio.playbackRate = Math.max(.97, Math.min(1.03, 1 - ecart * .8));
-      }, 100);
-    }
+    /* On ne touche jamais a la vitesse de la piste pour la caler : revenir
+       a la vitesse normale au moment du drop faisait claquer le son. Il n y
+       en a pas besoin : l animation part sur la position reelle de la piste,
+       le retard au demarrage du son est donc deja absorbe, et 4 s d image
+       contre 4 s de son ne derivent pas. */
 
     var filet = setTimeout(lancer, coup * 1000 + 400);
     var guide = synchro ? audio : sonEclipse;
