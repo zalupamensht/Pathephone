@@ -1819,10 +1819,12 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
 /* le monde de l album, derriere tout */
 .pk-world{position:absolute;inset:0;opacity:0;transition:opacity 1.1s ease;pointer-events:none;background:#0d0c0b}
 .picker.is-open .pk-world{opacity:1}
-.pk-bg{position:absolute;inset:-6%;background-size:cover;background-position:center;opacity:0;
-  transition:opacity 1.4s ease;filter:saturate(.9)}
-.pk-bg.on{opacity:1;animation:pkkb 14s ease-in-out infinite alternate}
-@keyframes pkkb{from{transform:scale(1.03)}to{transform:scale(1.15) translate(-2%,-1%)}}
+.pk-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;
+  transition:opacity .7s ease;filter:saturate(.9)}
+/* pas de lent zoom : l image arrive un peu grande et se recule d un coup,
+   puis ne bouge plus */
+.pk-bg.on{opacity:1;animation:pkrecul .9s cubic-bezier(.16,.8,.2,1) both}
+@keyframes pkrecul{from{transform:scale(1.08)}to{transform:scale(1)}}
 .pk-shade{position:absolute;inset:0;
   background:linear-gradient(90deg,rgba(10,9,8,.6),rgba(10,9,8,.35) 45%,rgba(10,9,8,.78)),
              linear-gradient(0deg,rgba(10,9,8,.88),transparent 42%)}
@@ -1857,15 +1859,6 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
   border:1px solid rgba(255,255,255,.5);background:none;color:#fff;cursor:pointer;transition:background .2s,color .2s}
 .pk-btns button:first-child{background:rgba(255,255,255,.92);color:#111}
 .pk-btns button:hover{background:#fff;color:#111}
-
-/* la bande du bas : clips, photos, edits */
-.pk-strip{position:absolute;left:9vw;right:9vw;bottom:5vh;display:flex;gap:14px;z-index:5;
-  opacity:0;transform:translateY(12px);transition:opacity .8s 1.2s,transform .8s 1.2s;pointer-events:none}
-.picker.is-open .pk-strip{opacity:1;transform:none}
-.pk-tile{flex:1;position:relative;height:min(12vh,7vw);background-size:cover;background-position:center;
-  border:1px solid rgba(255,255,255,.18);border-radius:6px;overflow:hidden;opacity:.55;transition:opacity .4s,border-color .4s}
-.pk-tile.on{opacity:1;border-color:rgba(255,255,255,.85)}
-.pk-tile b{position:absolute;left:8px;bottom:5px;font-weight:400;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#fff;text-shadow:0 1px 4px #000}
 
 /* les fleches : petites, a peine la */
 .pk-arrow{position:absolute;top:50vh;width:34px;height:60px;margin-top:-30px;display:grid;place-items:center;z-index:6;
@@ -1905,10 +1898,14 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
   100%{transform:translateY(8%) scale(.45);opacity:0;filter:blur(8px)}}
 .picker.is-sinking .pk-sleeve{transition:transform 1.6s cubic-bezier(.45,0,.2,1),opacity 1.4s ease;transform:translate(0,-44%) scale(.6);opacity:0}
 .picker.is-sinking .pk-arrow,.picker.is-sinking .pk-dots,
-.picker.is-sinking .pk-info,.picker.is-sinking .pk-strip{opacity:0;transition:opacity .4s}
+.picker.is-sinking .pk-info{opacity:0;transition:opacity .4s}
 /* puis le noir de l ecran d accueil : on passe de l un a l autre sans raccord */
 .pk-veil{position:absolute;inset:0;background:#0b0a09;opacity:0;pointer-events:none;transition:opacity 1s ease;z-index:8}
 .picker.is-dark .pk-veil{opacity:1}
 @media (prefers-reduced-motion:reduce){
   .pk-disc,.pk-bg.on{animation:none}
 }
+/* un album sans ecran d accueil a lui s ouvre tout de suite apres le choix
+   du disque : ni signe, ni eclipse, ni vol ; la page se leve du noir */
+body.is-direct .intro-logo,body.is-direct .eclipse,body.is-direct .intro-hint{display:none}
+body.is-direct .disc-fly,body.is-direct .disc-fly::after{animation:none}

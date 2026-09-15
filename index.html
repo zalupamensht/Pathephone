@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=36">
+<link rel="stylesheet" href="style.css?v=37">
 </head>
 <body>
 
@@ -34,7 +34,6 @@
     <span class="pk-sink"><img class="pk-disc" id="pkDisc" alt="" draggable="false"></span>
   </button>
   <div class="pk-info" id="pkInfo"></div>
-  <div class="pk-strip" id="pkStrip" aria-hidden="true"></div>
   <button class="pk-arrow pk-l" id="pkPrev" type="button" aria-label="Previous album">
     <svg viewBox="0 0 11 22" aria-hidden="true"><path d="M10 1 L1.5 11 L10 21" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
   </button>
@@ -2283,7 +2282,9 @@ var ALBUMS = [
   { title:'Unmusique', by:'Lucy Bedroque', theme:'paper',
     disc:'assets/disc.webp?v=2', cover:'assets/cover.jpg', thumb:'assets/alb1.jpg',
     art:'assets/emblem.webp?v=2', artFill:false,
-    sign:'assets/logo_light.webp', eclipse:true,   /* l ecran d accueil a ete fait pour lui */
+    /* son ecran d accueil a lui (signe, eclipse, vol sur le drop) ; les
+       albums qui n en ont pas encore s ouvrent directement */
+    accueil:true, sign:'assets/logo_light.webp', eclipse:true,
     start:16,                                /* Yes, You May ouvre l album : il s enchaine avec l intro */
     tracks: A1_NAMES.map(function(name, i){
       return { name:name, audio:TRACK_AUDIO[i], bpm:TRACK_BPM[i] || 100,
@@ -3291,12 +3292,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     disc.src = a.disc;
     if (sleeve) sleeve.src = a.cover;
-    /* le signe de l ecran d accueil : celui de l album s il en a un, sinon
-       son disque en petit, en attendant le sien */
-    if (signe){
-      signe.src = a.sign || a.disc;
-      signe.classList.toggle('is-disc-sign', !a.sign);
-    }
+    /* le signe de l ecran d accueil, pour les albums qui en ont un */
+    if (signe && a.sign) signe.src = a.sign;
     items.forEach(function(el, j){ el.classList.toggle('is-current', j === i); });
 
     /* le decor de la page suit l album : une seule classe sur le corps,
@@ -3720,21 +3717,27 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }
   }
 
-  function startIntro(){
+  /* direct : l album n a pas (encore) d ecran d accueil a lui — on vient
+     de le choisir sur la page du choix, et il s ouvre tout de suite, sans
+     signe, sans vol ni sons d intro, sa musique avec lui */
+  function startIntro(direct){
     if (started) return;
     started = true;
+    direct = direct === true;
     demarre_a = performance.now();
     try { sonSurvolSigne.pause(); } catch (e) {}            // le clic prend la place du survol
-    try { sonDepart.currentTime = 0; sonDepart.volume = audio.volume; sonDepart.play().catch(function(){}); } catch (e) {}
+    if (!direct){
+      try { sonDepart.currentTime = 0; sonDepart.volume = audio.volume; sonDepart.play().catch(function(){}); } catch (e) {}
+    }
     /* sur telephone il n y a pas d animation : la musique part tout de suite */
-    if (!MOBILE){
+    if (!MOBILE && !direct){
       try { sonEclipse.currentTime = 0; sonEclipse.volume = audio.volume; sonEclipse.play().catch(function(){}); } catch (e) {}
     }
     if (amb){ amb.fini = true; amb.aller(0, 1500); }
 
     /* sur telephone il n y a pas de platine : le signe s efface, tout arrive
        d un coup et la musique part tout de suite */
-    if (MOBILE){
+    if (MOBILE || direct){
       body.classList.add('is-armed');
       body.classList.add('sans-eclipse');        // pas de film sur telephone
       body.classList.add('is-lighten');
@@ -3972,7 +3975,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var body = document.body;
   var hit = document.getElementById('pkHit'), disc = document.getElementById('pkDisc');
   var sleeve = document.getElementById('pkSleeve'), info = document.getElementById('pkInfo');
-  var strip = document.getElementById('pkStrip'), dotsBox = document.getElementById('pkDots');
+  var dotsBox = document.getElementById('pkDots');
   var bgA = document.getElementById('pkBgA'), bgB = document.getElementById('pkBgB');
   var theme = document.getElementById('theme');
 
@@ -3982,16 +3985,16 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var VOL = .45;                         // part du volume du site
   var ECHO = .35;                        // part d echo
 
-  /* ce que chaque album montre en s ouvrant ; les clips, photos et edits
-     definitifs remplaceront ces images */
+  /* les images qui defilent en fond quand l album s ouvre (cinq par album
+     a venir : celles ci tiennent la place) */
   var PK = [
     { from:5, gain:1, meta:'17 tracks',
-      media:[['assets/cover.jpg','Clip'],['assets/t1.jpg','Photo'],['assets/t2.jpg','Edit'],['assets/t3.jpg','Art'],['assets/alb1.jpg','Video']] },
+      media:['assets/cover.jpg', 'assets/t1.jpg', 'assets/t2.jpg', 'assets/t3.jpg'] },
     { from:30, gain:.97, meta:'13 tracks',
-      media:[['assets/jr_intro_start.jpg','Clip'],['assets/bg2.jpg','Edit'],['assets/trk2.jpg','Photo'],['assets/cover2.jpg','Photo'],['assets/alb2.jpg','Video']] },
+      media:['assets/jr_intro_start.jpg', 'assets/bg2.jpg', 'assets/trk2.jpg', 'assets/cover2.jpg'] },
     /* plus fort que les deux autres une fois filtre : ramene a leur niveau */
     { from:20, gain:.6, meta:'12 tracks',
-      media:[['assets/bg3.jpg','Clip'],['assets/cover3.jpg','Photo'],['assets/trk3.jpg','Edit'],['assets/alb3.jpg','Photo']] }
+      media:['assets/bg3.jpg', 'assets/cover3.jpg', 'assets/trk3.jpg'] }
   ];
 
   var cur = CUR_ALBUM, occupe = false, parti = false;
@@ -4013,10 +4016,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       '<p class="pk-text">A few words about the album will live here — its story, its mood, a line from the artist.</p>' +
       '<div class="pk-btns"><button type="button" class="pk-listen">Listen</button><button type="button">Tracklist</button></div>';
     info.querySelector('.pk-listen').addEventListener('click', plonger);
-    strip.innerHTML = p.media.map(function(m, j){
-      return '<div class="pk-tile' + (j ? '' : ' on') + '" style="background-image:url(\'' + m[0] + '\')"><b>' + m[1] + '</b></div>';
-    }).join('');
-    p.media.forEach(function(m){ var im = new Image(); im.src = m[0]; });
+    p.media.forEach(function(m){ var im = new Image(); im.src = m; });
   }
 
   function attendre(){
@@ -4027,9 +4027,11 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function montrer(j){
     var m = PK[cur].media[j], el = surA ? bgA : bgB, autre = surA ? bgB : bgA;
     surA = !surA;
-    el.style.backgroundImage = 'url(\'' + m[0] + '\')';
+    el.style.backgroundImage = 'url(\'' + m + '\')';
+    /* l image arrive un peu grande et se recule d un coup : on relance
+       l animation a chaque nouvelle image */
+    el.classList.remove('on'); void el.offsetWidth;
     el.classList.add('on'); autre.classList.remove('on');
-    [].slice.call(strip.children).forEach(function(t, k){ t.classList.toggle('on', k === j); });
   }
 
   function ouvrir(){
@@ -4084,12 +4086,16 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     })(t0);
     setTimeout(function(){ pk.classList.add('is-dark'); }, 1500);
     setTimeout(function(){
-      /* l album choisi est pose sans que sa musique parte : c est l ecran
-         d accueil qui la lancera, comme toujours */
+      /* l album choisi est pose sans que sa musique parte */
       if (cur !== CUR_ALBUM && window.__setAlbum) window.__setAlbum(cur, 0, true);
+      var accueil = !!ALBUMS[cur].accueil;
+      if (!accueil) body.classList.add('is-direct');
       body.classList.remove('is-picking');
       body.classList.add('pk-from');
-      if (window.__ambianceGo) window.__ambianceGo();
+      /* son ecran d accueil, s il en a un : c est lui qui lancera la
+         musique, apres son ambiance. Sinon l album s ouvre tout de suite. */
+      if (accueil){ if (window.__ambianceGo) window.__ambianceGo(); }
+      else if (window.__startIntro) window.__startIntro(true);
       setTimeout(function(){ body.classList.remove('pk-from'); }, 1400);
     }, 2500);
   }
