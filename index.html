@@ -13,9 +13,40 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=35">
+<link rel="stylesheet" href="style.css?v=36">
 </head>
 <body>
+
+<!-- Le choix du disque : la premiere chose qu on voit (ordinateur). On
+     regarde un disque, il file dans sa pochette et le monde de l album
+     s ouvre ; un clic, et il plonge : l ecran d accueil de l album suit.
+     Tout est rempli par le script (module du choix, a la fin). -->
+<div class="picker" id="picker" data-alb="0" role="region" aria-label="Choose an album">
+  <div class="pk-glow"></div>
+  <div class="pk-world" aria-hidden="true">
+    <div class="pk-bg" id="pkBgA"></div>
+    <div class="pk-bg" id="pkBgB"></div>
+    <div class="pk-shade"></div>
+  </div>
+  <img class="pk-sleeve" id="pkSleeve" alt="" draggable="false">
+  <button class="pk-hit" id="pkHit" type="button" aria-label="Open album">
+    <span class="pk-rip" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="pk-sink"><img class="pk-disc" id="pkDisc" alt="" draggable="false"></span>
+  </button>
+  <div class="pk-info" id="pkInfo"></div>
+  <div class="pk-strip" id="pkStrip" aria-hidden="true"></div>
+  <button class="pk-arrow pk-l" id="pkPrev" type="button" aria-label="Previous album">
+    <svg viewBox="0 0 11 22" aria-hidden="true"><path d="M10 1 L1.5 11 L10 21" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+  </button>
+  <button class="pk-arrow pk-r" id="pkNext" type="button" aria-label="Next album">
+    <svg viewBox="0 0 11 22" aria-hidden="true"><path d="M1 1 L9.5 11 L1 21" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+  </button>
+  <div class="pk-dots" id="pkDots" aria-hidden="true"></div>
+  <div class="pk-veil"></div>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <filter id="pkWater"><feTurbulence id="pkTurb" type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="0" id="pkDisp"/></filter>
+  </svg>
+</div>
 
 <div class="bg">
   <span class="blob b1"></span>
@@ -2252,7 +2283,8 @@ var ALBUMS = [
   { title:'Unmusique', by:'Lucy Bedroque', theme:'paper',
     disc:'assets/disc.webp?v=2', cover:'assets/cover.jpg', thumb:'assets/alb1.jpg',
     art:'assets/emblem.webp?v=2', artFill:false,
-    start:16,                                 /* Yes, You May ouvre l album : il s enchaine avec l intro */
+    sign:'assets/logo_light.webp', eclipse:true,   /* l ecran d accueil a ete fait pour lui */
+    start:16,                                /* Yes, You May ouvre l album : il s enchaine avec l intro */
     tracks: A1_NAMES.map(function(name, i){
       return { name:name, audio:TRACK_AUDIO[i], bpm:TRACK_BPM[i] || 100,
                drop:TRACK_DROP[i], tempete:TRACK_TEMPETE[i] || 1,
@@ -2288,6 +2320,12 @@ function ALB(){ return ALBUMS[CUR_ALBUM]; }
    se contrediraient. */
 var MOBILE = window.matchMedia('(max-width: 820px)').matches;
 if (MOBILE) document.body.classList.add('is-mobile');
+
+/* La page s ouvre sur le choix du disque (ordinateur seulement pour
+   l instant) : tant qu il est la, rien de l ecran d accueil ne part — ni
+   l ambiance, ni le signe. Le module du choix est a la fin du script. */
+var PICKER = !MOBILE;
+if (PICKER) document.body.classList.add('is-picking');
 
 /* le systeme demande de limiter les animations : le vol du disque est alors
    remplace par un simple fondu, donc rien a attendre avant la pose */
@@ -2761,9 +2799,20 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* rend le temps, en secondes, au bout duquel le son s est tu ; 0 s il
      n a pas sonne */
-  window.__ui = function(nom){
+  /* partout : le son joue meme hors pause (la page du choix du disque, ou
+     la musique n a pas encore commence). Au tout premier geste le tampon
+     n est pas encore decode : un simple lecteur prend alors le relais. */
+  window.__ui = function(nom, partout){
+    if (partout && SONS[nom] && (!ctx || !tampons[nom])){
+      try {
+        var l = new Audio(SONS[nom]);
+        l.volume = music && !music.muted ? music.volume : 0;
+        l.play().catch(function(){});
+      } catch (e) {}
+      return 0;
+    }
     if (!ctx || !tampons[nom]) return 0;
-    if (!window.__musicPaused || !window.__musicPaused()) return 0;
+    if (!partout && (!window.__musicPaused || !window.__musicPaused())) return 0;
     var now = performance.now();
     /* le meme son vient de partir : il ne repart pas, mais on rend le temps
        qu il lui reste, pour qu une piste ne demarre pas par dessus lui */
@@ -3232,13 +3281,22 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* son : le temps que met le son de changement d album a se taire ; la
      premiere piste part juste apres lui, pas en meme temps */
-  function pick(i, son){
+  /* attendre : l album est pose, sa piste chargee, mais rien ne part — c est
+     le cas quand on le choisit sur la page du choix, avant l ecran d accueil */
+  var signe = document.getElementById('introLogo');
+  function pick(i, son, attendre){
     if (i === CUR_ALBUM || !ALBUMS[i]) return;
     CUR_ALBUM = i;
     var a = ALBUMS[i];
 
     disc.src = a.disc;
     if (sleeve) sleeve.src = a.cover;
+    /* le signe de l ecran d accueil : celui de l album s il en a un, sinon
+       son disque en petit, en attendant le sien */
+    if (signe){
+      signe.src = a.sign || a.disc;
+      signe.classList.toggle('is-disc-sign', !a.sign);
+    }
     items.forEach(function(el, j){ el.classList.toggle('is-current', j === i); });
 
     /* le decor de la page suit l album : une seule classe sur le corps,
@@ -3260,7 +3318,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (a.intro) enFilm = window.__intro.jouer();
       else window.__intro.couper();
     }
-    if (window.__playTrack) window.__playTrack(a.start, true, enFilm, son);
+    if (window.__playTrack) window.__playTrack(a.start, true, enFilm || !!attendre, son);
   }
 
   items[0].classList.add('is-current');
@@ -3633,21 +3691,33 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
        geste sur la page — sauf le geste qui lance l intro (le signe, la
        barre d espace, Entree), puisque celui la l eteint. */
     function monter(){ if (!started && amb) amb.aller(1, 2200); }
-    var pa = amb.lecteurs[0].play();
-    if (pa && pa.then) pa.then(monter).catch(function(){
+    /* Avec la page du choix du disque devant, l ambiance attend qu on la
+       quitte : le clic sur le disque a alors ouvert le son, elle part a coup
+       sur (window.__ambianceGo, appele par le choix). */
+    function demarrer(){
+      if (!amb || started) return;
+      var pa = amb.lecteurs[amb.actif].play();
+      if (pa && pa.then) pa.then(monter).catch(refus);
+    }
+    window.__ambianceGo = demarrer;
+    if (!body.classList.contains('is-picking')) demarrer();
+    function refus(){
       var gestes = ['pointerdown', 'keydown'];
       function reessayer(e){
         if (started || !amb){ fin(); return; }
         if (e.type === 'keydown' && (e.code === 'Space' || e.key === ' ' || e.key === 'Enter')) return;
         var s = document.getElementById('introLogo');
         if (e.type === 'pointerdown' && s && s.contains(e.target)) return;
-        fin();
+        /* on n arrete d ecouter qu une fois le son vraiment parti : une
+           touche que le navigateur ne compte pas comme un geste (Maj, Ctrl,
+           Alt, Echap...) est refusee, et le geste suivant doit pouvoir
+           reessayer */
         var p2 = amb.lecteurs[amb.actif].play();
-        if (p2 && p2.then) p2.then(monter).catch(function(){});
+        if (p2 && p2.then) p2.then(function(){ fin(); monter(); }).catch(function(){});
       }
       function fin(){ gestes.forEach(function(g){ window.removeEventListener(g, reessayer, true); }); }
       gestes.forEach(function(g){ window.addEventListener(g, reessayer, true); });
-    });
+    }
   }
 
   function startIntro(){
@@ -3767,7 +3837,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   /* telecharge seulement la ou il sert : ordinateur, sans animations reduites */
   if (film && !MOBILE && !REDUCED){ film.preload = 'auto'; film.load(); }
   function eclipse(){
-    if (!film || film.readyState < 2 || getComputedStyle(film).display === 'none'){
+    /* le film a ete tourne avec le disque d Unmusique : les autres albums se
+       revelent par leur simple trait de lumiere */
+    if (!ALB().eclipse || !film || film.readyState < 2 || getComputedStyle(film).display === 'none'){
       body.classList.add('sans-eclipse'); return;
     }
     try { film.currentTime = 0; } catch (e) {}
@@ -3785,7 +3857,10 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
      Le signe s enfonce a l appui et reste enfonce tant qu on appuie ; la
      sequence part au relachement, comme sous le doigt un vrai bouton. */
   var signe = document.getElementById('introLogo');
-  function enfoncer(){ if (!started && signe) signe.classList.add('is-pressed'); }
+  function enfoncer(){
+    if (body.classList.contains('is-picking')) return;   // on est encore sur le choix du disque
+    if (!started && signe) signe.classList.add('is-pressed');
+  }
   function relacher(){ signe.classList.remove('is-pressed'); }
   function waitForGesture(){
     if (!signe) return;
@@ -3880,6 +3955,245 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   audio.addEventListener('play', paintBtn);
   audio.addEventListener('pause', paintBtn);
   paintBtn();
+})();
+
+/* ---------------- le choix du disque ---------------- */
+/* On regarde un disque : au bout de DWELL il file dans sa pochette, et le
+   monde de l album s ouvre — son fond defile comme sur la PS5, son titre,
+   sa bande de clips et de photos — pendant que sa musique joue comme sous
+   l eau : on n en garde que le bas, avec un peu d echo. Les fleches (ou
+   <- ->) passent au disque voisin avec le son de defilement des pistes ;
+   un clic sur le disque, la pochette ou « Listen », avec le son de choix
+   d une piste, et il plonge : l ecran d accueil de cet album suit, son
+   ambiance comprise, que ce clic a ouvert. */
+(function(){
+  var pk = document.getElementById('picker');
+  if (!pk || !PICKER) return;
+  var body = document.body;
+  var hit = document.getElementById('pkHit'), disc = document.getElementById('pkDisc');
+  var sleeve = document.getElementById('pkSleeve'), info = document.getElementById('pkInfo');
+  var strip = document.getElementById('pkStrip'), dotsBox = document.getElementById('pkDots');
+  var bgA = document.getElementById('pkBgA'), bgB = document.getElementById('pkBgB');
+  var theme = document.getElementById('theme');
+
+  var DWELL = 2500;                      // ms a regarder le disque avant qu il s ouvre
+  var SLIDE = 5000;                      // ms par image du fond
+  var COUPE = 480;                       // Hz : au dessus, le son est retire (sous l eau)
+  var VOL = .45;                         // part du volume du site
+  var ECHO = .35;                        // part d echo
+
+  /* ce que chaque album montre en s ouvrant ; les clips, photos et edits
+     definitifs remplaceront ces images */
+  var PK = [
+    { from:5, gain:1, meta:'17 tracks',
+      media:[['assets/cover.jpg','Clip'],['assets/t1.jpg','Photo'],['assets/t2.jpg','Edit'],['assets/t3.jpg','Art'],['assets/alb1.jpg','Video']] },
+    { from:30, gain:.97, meta:'13 tracks',
+      media:[['assets/jr_intro_start.jpg','Clip'],['assets/bg2.jpg','Edit'],['assets/trk2.jpg','Photo'],['assets/cover2.jpg','Photo'],['assets/alb2.jpg','Video']] },
+    /* plus fort que les deux autres une fois filtre : ramene a leur niveau */
+    { from:20, gain:.6, meta:'12 tracks',
+      media:[['assets/bg3.jpg','Clip'],['assets/cover3.jpg','Photo'],['assets/trk3.jpg','Edit'],['assets/alb3.jpg','Photo']] }
+  ];
+
+  var cur = CUR_ALBUM, occupe = false, parti = false;
+  var tAttente = 0, tDefile = 0, vue = 0, surA = true;
+
+  dotsBox.innerHTML = ALBUMS.map(function(){ return '<i></i>'; }).join('');
+  var dots = [].slice.call(dotsBox.children);
+
+  function remplir(i){
+    var a = ALBUMS[i], p = PK[i];
+    disc.src = a.disc; sleeve.src = a.cover;
+    pk.dataset.alb = i;
+    dots.forEach(function(d, j){ d.classList.toggle('on', j === i); });
+    info.innerHTML =
+      '<div class="pk-kind">Album</div>' +
+      '<h2 class="pk-title">' + a.title + '</h2>' +
+      '<div class="pk-by">' + a.by + '</div>' +
+      '<div class="pk-meta">' + p.meta + '</div>' +
+      '<p class="pk-text">A few words about the album will live here — its story, its mood, a line from the artist.</p>' +
+      '<div class="pk-btns"><button type="button" class="pk-listen">Listen</button><button type="button">Tracklist</button></div>';
+    info.querySelector('.pk-listen').addEventListener('click', plonger);
+    strip.innerHTML = p.media.map(function(m, j){
+      return '<div class="pk-tile' + (j ? '' : ' on') + '" style="background-image:url(\'' + m[0] + '\')"><b>' + m[1] + '</b></div>';
+    }).join('');
+    p.media.forEach(function(m){ var im = new Image(); im.src = m[0]; });
+  }
+
+  function attendre(){
+    clearTimeout(tAttente);
+    tAttente = setTimeout(ouvrir, DWELL);
+  }
+
+  function montrer(j){
+    var m = PK[cur].media[j], el = surA ? bgA : bgB, autre = surA ? bgB : bgA;
+    surA = !surA;
+    el.style.backgroundImage = 'url(\'' + m[0] + '\')';
+    el.classList.add('on'); autre.classList.remove('on');
+    [].slice.call(strip.children).forEach(function(t, k){ t.classList.toggle('on', k === j); });
+  }
+
+  function ouvrir(){
+    if (occupe || parti) return;
+    pk.classList.add('is-open');
+    vue = 0; montrer(0);
+    clearInterval(tDefile);
+    tDefile = setInterval(function(){ vue = (vue + 1) % PK[cur].media.length; montrer(vue); }, SLIDE);
+    son.jouer();
+  }
+  function fermer(){
+    clearTimeout(tAttente); clearInterval(tDefile);
+    pk.classList.remove('is-open');
+    bgA.classList.remove('on'); bgB.classList.remove('on');
+    son.couper(.8);
+  }
+
+  function feuilleter(dir){
+    if (occupe || parti) return;
+    occupe = true;
+    if (window.__ui) window.__ui('scroll', true);
+    var ouvert = pk.classList.contains('is-open');
+    fermer();
+    setTimeout(function(){
+      pk.classList.add(dir > 0 ? 'out-l' : 'out-r');
+      setTimeout(function(){
+        pk.classList.remove('out-l', 'out-r');
+        cur = (cur + dir + ALBUMS.length) % ALBUMS.length;
+        remplir(cur);
+        pk.classList.add(dir > 0 ? 'in-l' : 'in-r');
+        setTimeout(function(){ pk.classList.remove('in-l', 'in-r'); occupe = false; attendre(); }, 560);
+      }, 450);
+    }, ouvert ? 1150 : 0);
+  }
+
+  function plonger(e){
+    if (e) e.stopPropagation();
+    if (occupe || parti) return;
+    parti = true;
+    clearTimeout(tAttente); clearInterval(tDefile);
+    if (window.__ui) window.__ui('select', true);
+    pk.classList.add('is-sinking');
+    son.couper(1.4);
+    /* l eau se trouble a mesure que le disque s enfonce */
+    var disp = document.getElementById('pkDisp'), turb = document.getElementById('pkTurb');
+    var t0 = performance.now();
+    (function onde(now){
+      var k = Math.min(1, (now - t0) / 1700);
+      if (disp) disp.setAttribute('scale', (k * 38).toFixed(1));
+      if (turb) turb.setAttribute('baseFrequency', (.012 + k * .01).toFixed(4) + ' ' + (.02 + k * .015).toFixed(4));
+      if (k < 1) requestAnimationFrame(onde);
+    })(t0);
+    setTimeout(function(){ pk.classList.add('is-dark'); }, 1500);
+    setTimeout(function(){
+      /* l album choisi est pose sans que sa musique parte : c est l ecran
+         d accueil qui la lancera, comme toujours */
+      if (cur !== CUR_ALBUM && window.__setAlbum) window.__setAlbum(cur, 0, true);
+      body.classList.remove('is-picking');
+      body.classList.add('pk-from');
+      if (window.__ambianceGo) window.__ambianceGo();
+      setTimeout(function(){ body.classList.remove('pk-from'); }, 1400);
+    }, 2500);
+  }
+
+  hit.addEventListener('click', plonger);
+  sleeve.addEventListener('click', plonger);
+  document.getElementById('pkNext').addEventListener('click', function(){ feuilleter(1); });
+  document.getElementById('pkPrev').addEventListener('click', function(){ feuilleter(-1); });
+  window.addEventListener('keydown', function(e){
+    if (parti || !body.classList.contains('is-picking')) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft'){
+      e.preventDefault();
+      if (!e.repeat) feuilleter(e.key === 'ArrowRight' ? 1 : -1);
+    } else if (e.key === 'Enter'){
+      e.preventDefault();
+      if (!e.repeat) plonger();
+    }
+  });
+  /* la souris ne bouge pas le disque, mais un clic dans le vide ne doit
+     pas selectionner le texte ni rien d autre */
+  pk.addEventListener('mousedown', function(e){ if (e.target === pk) e.preventDefault(); });
+
+  /* ---- la musique sous l eau ----
+     un lecteur a part, branche dans un petit circuit : trois filtres passe
+     bas a la suite (une pente raide : sinon les aigus d un morceau brillant
+     passent encore et grincent), un echo fait maison, puis le volume. Le
+     navigateur n ouvre le son qu apres un geste : on monte le circuit au
+     premier clic ou a la premiere touche, et s il s ouvrait deja, la
+     musique part a ce moment la. */
+  var son = (function(){
+    var lecteur = new Audio(); lecteur.preload = 'none'; lecteur.loop = true;
+    var ctx = null, maitre = null, voulu = false, arret = 0;
+    function monter(){
+      if (ctx) return;
+      try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+      var src = ctx.createMediaElementSource(lecteur);
+      var qs = [.5176, .7071, 1.9319], prec = src;          // un Butterworth d ordre 6
+      qs.forEach(function(q){
+        var f = ctx.createBiquadFilter();
+        f.type = 'lowpass'; f.frequency.value = COUPE; f.Q.value = q;
+        prec.connect(f); prec = f;
+      });
+      var sec = ctx.createGain(), mouille = ctx.createGain(), ech = ctx.createConvolver();
+      var n = Math.floor(ctx.sampleRate * 2.4), ir = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (var c = 0; c < 2; c++){
+        var d = ir.getChannelData(c);
+        for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3);
+      }
+      ech.buffer = ir;
+      sec.gain.value = 1 - ECHO * .35; mouille.gain.value = ECHO * .9;
+      maitre = ctx.createGain(); maitre.gain.value = 0;
+      prec.connect(sec); prec.connect(ech); ech.connect(mouille);
+      sec.connect(maitre); mouille.connect(maitre); maitre.connect(ctx.destination);
+    }
+    function niveau(){ return VOL * PK[cur].gain * (theme && !theme.muted ? theme.volume : .85); }
+    function jouer(){
+      voulu = true;
+      clearTimeout(arret);
+      var a = ALBUMS[cur], t = a.tracks[a.start];
+      if (!t || !t.audio) return;
+      if (lecteur.getAttribute('src') !== t.audio){ lecteur.src = t.audio; }
+      /* un fichier pas encore charge ignore qu on le place : on attend
+         d en connaitre la duree pour partir du bon endroit */
+      var depuis = PK[cur].from;
+      if (lecteur.readyState >= 1){ try { lecteur.currentTime = depuis; } catch (e) {} }
+      else lecteur.addEventListener('loadedmetadata', function placer(){
+        lecteur.removeEventListener('loadedmetadata', placer);
+        try { lecteur.currentTime = depuis; } catch (e) {}
+      });
+      if (!ctx) return;                          // pas encore de geste : on attend
+      if (ctx.state !== 'running') ctx.resume();
+      var tt = ctx.currentTime;
+      maitre.gain.cancelScheduledValues(tt);
+      maitre.gain.setValueAtTime(maitre.gain.value, tt);
+      maitre.gain.linearRampToValueAtTime(niveau(), tt + 1.8);
+      lecteur.play().catch(function(){});
+    }
+    function couper(sec){
+      voulu = false;
+      if (!ctx){ lecteur.pause(); return; }
+      var tt = ctx.currentTime;
+      maitre.gain.cancelScheduledValues(tt);
+      maitre.gain.setValueAtTime(maitre.gain.value, tt);
+      maitre.gain.linearRampToValueAtTime(0, tt + sec);
+      clearTimeout(arret);
+      arret = setTimeout(function(){ if (!voulu) lecteur.pause(); }, sec * 1000 + 80);
+    }
+    function geste(){
+      if (!body.classList.contains('is-picking')){ fin(); return; }
+      monter();
+      if (ctx && ctx.state !== 'running') ctx.resume();
+      if (voulu && lecteur.paused) jouer();
+    }
+    function fin(){ ['pointerdown', 'keydown'].forEach(function(g){ window.removeEventListener(g, geste, true); }); }
+    ['pointerdown', 'keydown'].forEach(function(g){ window.addEventListener(g, geste, true); });
+    return { jouer: jouer, couper: couper, etat: function(){
+      return { joue: !lecteur.paused, temps: +lecteur.currentTime.toFixed(2), piste: lecteur.getAttribute('src'),
+               circuit: ctx ? ctx.state : null, niveau: maitre ? +maitre.gain.value.toFixed(3) : 0 };
+    } };
+  })();
+
+  remplir(cur);
+  attendre();
+  window.__picker = function(){ return { album: cur, ouvert: pk.classList.contains('is-open'), parti: parti, son: son.etat() }; };
 })();
 </script>
 
