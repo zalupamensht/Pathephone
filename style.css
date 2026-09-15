@@ -1,5 +1,19 @@
 /* Unmusique - Lucy Bedroque : desktop only */
 
+/* Les polices du site, reduites aux lettres latines (et, pour le japonais,
+   aux seuls signes des lignes affichees) :
+   - Rajdhani : le texte, a la maniere de la police de la PS3 ;
+   - Zen Dots : les titres, large et arrondie, facon an 2000 ;
+   - Zen Kaku Gothic New : les lignes en japonais. */
+@font-face{font-family:"Rajdhani";src:url("assets/fonts/Rajdhani-Medium.woff2") format("woff2");
+  font-weight:100 550;font-style:normal;font-display:swap}
+@font-face{font-family:"Rajdhani";src:url("assets/fonts/Rajdhani-SemiBold.woff2") format("woff2");
+  font-weight:551 900;font-style:normal;font-display:swap}
+@font-face{font-family:"Zen Dots";src:url("assets/fonts/ZenDots-Regular.woff2") format("woff2");
+  font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Zen Kaku JP";src:url("assets/fonts/ZenKakuGothicNew-Medium-jp.woff2") format("woff2");
+  font-weight:400 700;font-style:normal;font-display:swap}
+
 :root{
   --paper:#faf9f7;
   --ink:#14120f;
@@ -11,11 +25,12 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html{overflow:hidden}
 html,body{height:100%}
+button{font-family:inherit}
 
 body{
   background:var(--paper);
   color:var(--ink);
-  font-family:"Arial Narrow","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-family:"Rajdhani","Arial Narrow","Helvetica Neue",Helvetica,Arial,sans-serif;
   overflow:hidden;
   min-height:100%;
   display:flex;align-items:center;justify-content:center;
@@ -1851,15 +1866,29 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
   z-index:5;color:#f1eee8;opacity:0;transition:opacity .8s .9s,transform .8s .9s;pointer-events:none}
 .picker.is-open .pk-info{opacity:1;transform:translateY(-50%);pointer-events:auto}
 .pk-kind{font-size:12px;letter-spacing:.3em;text-transform:uppercase;opacity:.6}
-.pk-title{margin:6px 0 0;font-weight:400;font-size:clamp(28px,4.4vw,64px);letter-spacing:.14em;text-transform:uppercase;line-height:1.02}
+/* le titre en Zen Dots : large et arrondi, en blanc comme le reste */
+.pk-title{margin:8px 0 0;font-family:"Zen Dots","Rajdhani",sans-serif;font-weight:400;font-size:clamp(26px,3.6vw,54px);
+  letter-spacing:.04em;text-transform:uppercase;line-height:1.08}
 .pk-by{font-size:clamp(13px,1.5vw,20px);letter-spacing:.24em;text-transform:uppercase;opacity:.85;margin-top:8px}
 .pk-meta{font-size:13px;letter-spacing:.08em;opacity:.6;margin-top:14px}
-.pk-text{font-size:14px;line-height:1.6;opacity:.75;margin:12px 0 0;max-width:460px}
+/* la ligne d une chanson, en japonais, puis d ou elle vient */
+.pk-jp{font-family:"Zen Kaku JP","Yu Gothic","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;
+  font-size:clamp(15px,1.35vw,20px);line-height:1.6;letter-spacing:.06em;opacity:.9;margin:16px 0 0;max-width:520px}
+.pk-src{font-size:12px;letter-spacing:.2em;text-transform:uppercase;opacity:.5;margin-top:4px}
 .pk-btns{display:flex;gap:12px;margin-top:22px}
 .pk-btns button{font:inherit;font-size:12px;letter-spacing:.2em;text-transform:uppercase;padding:9px 22px;border-radius:99px;
   border:1px solid rgba(255,255,255,.5);background:none;color:#fff;cursor:pointer;transition:background .2s,color .2s}
 .pk-btns button:first-child{background:rgba(255,255,255,.92);color:#111}
 .pk-btns button:hover{background:#fff;color:#111}
+
+/* la bande du bas : une vignette par image ou film du fond, sans titre */
+.pk-strip{position:absolute;left:9vw;right:9vw;bottom:5vh;display:flex;gap:14px;z-index:5;
+  opacity:0;transform:translateY(12px);transition:opacity .8s 1.2s,transform .8s 1.2s;pointer-events:none}
+.picker.is-open .pk-strip{opacity:1;transform:none;pointer-events:auto}
+.pk-tile{flex:1;height:min(12vh,7vw);padding:0;background:#111 center/cover no-repeat;cursor:pointer;
+  border:1px solid rgba(255,255,255,.18);border-radius:6px;opacity:.5;transition:opacity .4s,border-color .4s}
+.pk-tile:hover{opacity:.8}
+.pk-tile.on{opacity:1;border-color:rgba(255,255,255,.85)}
 
 /* les fleches : petites, a peine la */
 .pk-arrow{position:absolute;top:50vh;width:34px;height:60px;margin-top:-30px;display:grid;place-items:center;z-index:6;
@@ -1899,7 +1928,7 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
   100%{transform:translateY(8%) scale(.45);opacity:0;filter:blur(8px)}}
 .picker.is-sinking .pk-sleeve{transition:transform 1.6s cubic-bezier(.45,0,.2,1),opacity 1.4s ease;transform:translate(0,-44%) scale(.6);opacity:0}
 .picker.is-sinking .pk-arrow,.picker.is-sinking .pk-dots,
-.picker.is-sinking .pk-info{opacity:0;transition:opacity .4s}
+.picker.is-sinking .pk-info,.picker.is-sinking .pk-strip{opacity:0;transition:opacity .4s}
 /* puis le noir de l ecran d accueil : on passe de l un a l autre sans raccord */
 .pk-veil{position:absolute;inset:0;background:#0b0a09;opacity:0;pointer-events:none;transition:opacity 1s ease;z-index:8}
 .picker.is-dark .pk-veil{opacity:1}

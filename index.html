@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=38">
+<link rel="stylesheet" href="style.css?v=39">
 </head>
 <body>
 
@@ -34,6 +34,8 @@
     <span class="pk-sink"><img class="pk-disc" id="pkDisc" alt="" draggable="false"></span>
   </button>
   <div class="pk-info" id="pkInfo"></div>
+  <!-- la bande du bas : une vignette par image ou film du fond -->
+  <div class="pk-strip" id="pkStrip"></div>
   <button class="pk-arrow pk-l" id="pkPrev" type="button" aria-label="Previous album">
     <svg viewBox="0 0 11 22" aria-hidden="true"><path d="M10 1 L1.5 11 L10 21" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
   </button>
@@ -3975,7 +3977,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var body = document.body;
   var hit = document.getElementById('pkHit'), disc = document.getElementById('pkDisc');
   var sleeve = document.getElementById('pkSleeve'), info = document.getElementById('pkInfo');
-  var dotsBox = document.getElementById('pkDots');
+  var dotsBox = document.getElementById('pkDots'), strip = document.getElementById('pkStrip');
   var bgA = document.getElementById('pkBgA'), bgB = document.getElementById('pkBgB');
   var theme = document.getElementById('theme');
 
@@ -3987,15 +3989,24 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ce qui defile en fond quand l album s ouvre : des images, et des films
      (.mp4) glisses entre elles, qui passent en entier avant l image
-     suivante (cinq images par album a venir : celles ci tiennent la place) */
+     suivante. th : la vignette de la bande du bas (pour un film, une belle
+     image tiree de lui). Jane et matt proxy : images de passage.
+     jp : une ligne d une de ses chansons, en japonais, et d ou elle vient */
   var PK = [
     { from:5, gain:1, meta:'17 tracks',
-      media:['assets/cover.jpg', 'assets/t1.jpg', 'assets/lucy_bg1.mp4', 'assets/t2.jpg', 'assets/t3.jpg'] },
+      jp:'運なんてない。ただ、愛するものに夢中なだけ。', de:'Tout Naturel',
+      media:[{ src:'assets/lucy_bg1.mp4', th:'assets/lucy_th1.webp' },
+             { src:'assets/lucy_bg2.webp', th:'assets/lucy_th2.webp' },
+             { src:'assets/lucy_bg3.webp', th:'assets/lucy_th3.webp' },
+             { src:'assets/lucy_bg4.webp', th:'assets/lucy_th4.webp' },
+             { src:'assets/lucy_bg5.webp', th:'assets/lucy_th5.webp' }] },
     { from:30, gain:.97, meta:'13 tracks',
-      media:['assets/jr_intro_start.jpg', 'assets/bg2.jpg', 'assets/trk2.jpg', 'assets/cover2.jpg'] },
+      jp:'綱渡りの星を、ぜんぶきみにあげる。', de:'Experimental Skin',
+      media:[{ src:'assets/jr_intro_start.jpg' }, { src:'assets/bg2.jpg' }, { src:'assets/trk2.jpg' }, { src:'assets/cover2.jpg' }] },
     /* plus fort que les deux autres une fois filtre : ramene a leur niveau */
     { from:20, gain:.6, meta:'12 tracks',
-      media:['assets/bg3.jpg', 'assets/cover3.jpg', 'assets/trk3.jpg'] }
+      jp:'落ちていくぼくを、きみはパラシュートみたいに受け止めた。', de:'5',
+      media:[{ src:'assets/bg3.jpg' }, { src:'assets/cover3.jpg' }, { src:'assets/trk3.jpg' }] }
   ];
 
   var cur = CUR_ALBUM, occupe = false, parti = false;
@@ -4014,14 +4025,24 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       '<h2 class="pk-title">' + a.title + '</h2>' +
       '<div class="pk-by">' + a.by + '</div>' +
       '<div class="pk-meta">' + p.meta + '</div>' +
-      '<p class="pk-text">A few words about the album will live here — its story, its mood, a line from the artist.</p>' +
+      '<p class="pk-jp" lang="ja">' + p.jp + '</p>' +
+      '<p class="pk-src">— ' + p.de + '</p>' +
       '<div class="pk-btns"><button type="button" class="pk-listen">Listen</button><button type="button">Tracklist</button></div>';
     info.querySelector('.pk-listen').addEventListener('click', plonger);
+    /* la bande du bas : une vignette par image ou film ; un clic y amene */
+    strip.innerHTML = p.media.map(function(m, j){
+      return '<button type="button" class="pk-tile' + (j ? '' : ' on') + '" tabindex="-1" aria-label="' + (j + 1) + '"' +
+             ' style="background-image:url(\'' + (m.th || m.src) + '\')"></button>';
+    }).join('');
+    [].slice.call(strip.children).forEach(function(t, j){
+      t.addEventListener('click', function(e){ e.stopPropagation(); if (pk.classList.contains('is-open') && !parti){ vue = j; montrer(j); } });
+    });
     /* charge d avance ce que l album va montrer */
     p.media.forEach(function(m){
-      if (avance[m]) return;
-      if (estFilm(m)){ var v = document.createElement('video'); v.preload = 'auto'; v.muted = true; v.src = m; avance[m] = v; }
-      else { var im = new Image(); im.src = m; avance[m] = im; }
+      if (avance[m.src]) return;
+      if (estFilm(m.src)){ var v = document.createElement('video'); v.preload = 'auto'; v.muted = true; v.src = m.src; avance[m.src] = v; }
+      else { var im = new Image(); im.src = m.src; avance[m.src] = im; }
+      if (m.th){ var t = new Image(); t.src = m.th; }
     });
   }
   var avance = {};
@@ -4046,9 +4067,10 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function eteindre(el){ var v = el.querySelector('video'); if (v) v.pause(); }
 
   function montrer(j){
-    var m = PK[cur].media[j], el = surA ? bgA : bgB, autre = surA ? bgB : bgA;
+    var m = PK[cur].media[j].src, el = surA ? bgA : bgB, autre = surA ? bgB : bgA;
     surA = !surA;
     var duree = SLIDE;
+    [].slice.call(strip.children).forEach(function(t, k){ t.classList.toggle('on', k === j); });
     if (estFilm(m)){
       var v = film(el);
       if (v.getAttribute('src') !== m) v.src = m;
