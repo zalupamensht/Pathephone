@@ -3627,9 +3627,27 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }, 30);
     amb.aller = function(cible, ms){ de = amb.niveau; amb.cible = cible; duree = ms; t0 = performance.now(); };
     window.__ambiance = function(){ return amb; };          // pour verifier
+    /* Chrome ne laisse jouer le son d entree de jeu qu aux sites ou l on
+       ecoute deja souvent (son indice d engagement media) : ailleurs il
+       refuse. On ne renonce pas pour autant : l ambiance part au premier
+       geste sur la page — sauf le geste qui lance l intro (le signe, la
+       barre d espace, Entree), puisque celui la l eteint. */
+    function monter(){ if (!started && amb) amb.aller(1, 2200); }
     var pa = amb.lecteurs[0].play();
-    if (pa && pa.then) pa.then(function(){ if (!started) amb.aller(1, 2200); })
-                          .catch(function(){ clearInterval(amb.minuterie); amb = null; });
+    if (pa && pa.then) pa.then(monter).catch(function(){
+      var gestes = ['pointerdown', 'keydown'];
+      function reessayer(e){
+        if (started || !amb){ fin(); return; }
+        if (e.type === 'keydown' && (e.code === 'Space' || e.key === ' ' || e.key === 'Enter')) return;
+        var s = document.getElementById('introLogo');
+        if (e.type === 'pointerdown' && s && s.contains(e.target)) return;
+        fin();
+        var p2 = amb.lecteurs[amb.actif].play();
+        if (p2 && p2.then) p2.then(monter).catch(function(){});
+      }
+      function fin(){ gestes.forEach(function(g){ window.removeEventListener(g, reessayer, true); }); }
+      gestes.forEach(function(g){ window.addEventListener(g, reessayer, true); });
+    });
   }
 
   function startIntro(){
