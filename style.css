@@ -1825,6 +1825,7 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
    puis ne bouge plus */
 .pk-bg.on{opacity:1;animation:pkrecul .9s cubic-bezier(.16,.8,.2,1) both}
 @keyframes pkrecul{from{transform:scale(1.08)}to{transform:scale(1)}}
+.pk-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .pk-shade{position:absolute;inset:0;
   background:linear-gradient(90deg,rgba(10,9,8,.6),rgba(10,9,8,.35) 45%,rgba(10,9,8,.78)),
              linear-gradient(0deg,rgba(10,9,8,.88),transparent 42%)}

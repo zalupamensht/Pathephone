@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=37">
+<link rel="stylesheet" href="style.css?v=38">
 </head>
 <body>
 
@@ -3985,11 +3985,12 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var VOL = .45;                         // part du volume du site
   var ECHO = .35;                        // part d echo
 
-  /* les images qui defilent en fond quand l album s ouvre (cinq par album
-     a venir : celles ci tiennent la place) */
+  /* ce qui defile en fond quand l album s ouvre : des images, et des films
+     (.mp4) glisses entre elles, qui passent en entier avant l image
+     suivante (cinq images par album a venir : celles ci tiennent la place) */
   var PK = [
     { from:5, gain:1, meta:'17 tracks',
-      media:['assets/cover.jpg', 'assets/t1.jpg', 'assets/t2.jpg', 'assets/t3.jpg'] },
+      media:['assets/cover.jpg', 'assets/t1.jpg', 'assets/lucy_bg1.mp4', 'assets/t2.jpg', 'assets/t3.jpg'] },
     { from:30, gain:.97, meta:'13 tracks',
       media:['assets/jr_intro_start.jpg', 'assets/bg2.jpg', 'assets/trk2.jpg', 'assets/cover2.jpg'] },
     /* plus fort que les deux autres une fois filtre : ramene a leur niveau */
@@ -4016,36 +4017,76 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       '<p class="pk-text">A few words about the album will live here — its story, its mood, a line from the artist.</p>' +
       '<div class="pk-btns"><button type="button" class="pk-listen">Listen</button><button type="button">Tracklist</button></div>';
     info.querySelector('.pk-listen').addEventListener('click', plonger);
-    p.media.forEach(function(m){ var im = new Image(); im.src = m; });
+    /* charge d avance ce que l album va montrer */
+    p.media.forEach(function(m){
+      if (avance[m]) return;
+      if (estFilm(m)){ var v = document.createElement('video'); v.preload = 'auto'; v.muted = true; v.src = m; avance[m] = v; }
+      else { var im = new Image(); im.src = m; avance[m] = im; }
+    });
   }
+  var avance = {};
+  function estFilm(m){ return /\.mp4(\?|$)/.test(m); }
 
   function attendre(){
     clearTimeout(tAttente);
     tAttente = setTimeout(ouvrir, DWELL);
   }
 
+  /* chaque couche du fond a son lecteur, pour les films */
+  function film(el){
+    var v = el.querySelector('video');
+    if (!v){
+      v = document.createElement('video');
+      v.className = 'pk-vid'; v.muted = true; v.playsInline = true;
+      v.setAttribute('playsinline', ''); v.preload = 'auto';
+      el.appendChild(v);
+    }
+    return v;
+  }
+  function eteindre(el){ var v = el.querySelector('video'); if (v) v.pause(); }
+
   function montrer(j){
     var m = PK[cur].media[j], el = surA ? bgA : bgB, autre = surA ? bgB : bgA;
     surA = !surA;
-    el.style.backgroundImage = 'url(\'' + m + '\')';
+    var duree = SLIDE;
+    if (estFilm(m)){
+      var v = film(el);
+      if (v.getAttribute('src') !== m) v.src = m;
+      try { v.currentTime = 0; } catch (e) {}
+      v.hidden = false;
+      v.play().catch(function(){});
+      el.style.backgroundImage = 'none';
+      /* le film passe en entier, puis l image suivante : on attend sa vraie
+         fin (il peut marquer un temps pour se charger) ; la minuterie n est
+         qu un filet */
+      v.onended = function(){ if (el.classList.contains('on') && pk.classList.contains('is-open')) suivant(); };
+      duree = ((v.duration || 6) + 4) * 1000;
+    } else {
+      var w = el.querySelector('video');
+      if (w){ w.pause(); w.hidden = true; }
+      el.style.backgroundImage = 'url(\'' + m + '\')';
+    }
     /* l image arrive un peu grande et se recule d un coup : on relance
        l animation a chaque nouvelle image */
     el.classList.remove('on'); void el.offsetWidth;
     el.classList.add('on'); autre.classList.remove('on');
+    setTimeout(function(){ if (!autre.classList.contains('on')) eteindre(autre); }, 800);
+    clearTimeout(tDefile);
+    tDefile = setTimeout(suivant, duree);
   }
+  function suivant(){ vue = (vue + 1) % PK[cur].media.length; montrer(vue); }
 
   function ouvrir(){
     if (occupe || parti) return;
     pk.classList.add('is-open');
     vue = 0; montrer(0);
-    clearInterval(tDefile);
-    tDefile = setInterval(function(){ vue = (vue + 1) % PK[cur].media.length; montrer(vue); }, SLIDE);
     son.jouer();
   }
   function fermer(){
-    clearTimeout(tAttente); clearInterval(tDefile);
+    clearTimeout(tAttente); clearTimeout(tDefile);
     pk.classList.remove('is-open');
     bgA.classList.remove('on'); bgB.classList.remove('on');
+    setTimeout(function(){ eteindre(bgA); eteindre(bgB); }, 800);
     son.couper(.8);
   }
 
@@ -4071,7 +4112,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (e) e.stopPropagation();
     if (occupe || parti) return;
     parti = true;
-    clearTimeout(tAttente); clearInterval(tDefile);
+    clearTimeout(tAttente); clearTimeout(tDefile);
     if (window.__ui) window.__ui('select', true);
     pk.classList.add('is-sinking');
     son.couper(1.4);
