@@ -3853,9 +3853,17 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
      son simple trait de lumiere, comme avant. */
   var film = document.getElementById('eclipse');
   /* telecharge seulement la ou il sert : ordinateur, sans animations reduites */
-  /* pas pendant le choix du disque : ce film ne sert qu a Unmusique, et il
-     prendrait la ligne pendant que la page du choix charge ses images */
-  if (film && !MOBILE && !REDUCED && !body.classList.contains('is-picking')){ film.preload = 'auto'; film.load(); }
+  /* Le film ne sert qu aux albums qui ont une eclipse, et il ne doit pas
+     prendre la ligne pendant que la page du choix charge ses images : il se
+     telecharge des qu on s arrete sur un tel album (window.__filmEclipse,
+     appele par le choix du disque), et tout de suite s il n y a pas de
+     page de choix. */
+  function chargerFilm(){
+    if (!film || MOBILE || REDUCED || film.preload === 'auto') return;
+    film.preload = 'auto'; film.load();
+  }
+  window.__filmEclipse = chargerFilm;
+  if (!body.classList.contains('is-picking')) chargerFilm();
   function eclipse(){
     /* le film a ete tourne avec le disque d Unmusique : les autres albums se
        revelent par leur simple trait de lumiere */
@@ -4067,6 +4075,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     tCharge = setTimeout(function(){ charger(p); }, 1200);
   }
   function charger(p){
+    /* l album regarde a une eclipse : son film se prepare des maintenant,
+       pour etre pret quand on le choisira */
+    if (ALBUMS[cur].eclipse && window.__filmEclipse) window.__filmEclipse();
     p.media.forEach(function(m){
       if (avance[m.src]) return;
       /* le film se charge dans le lecteur du fond lui meme : deux lecteurs
@@ -4200,6 +4211,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     /* l album choisi est pose sans que sa musique parte */
     if (cur !== CUR_ALBUM && window.__setAlbum) window.__setAlbum(cur, 0, true);
     var accueil = !!ALBUMS[cur].accueil;
+    if (ALBUMS[cur].eclipse && window.__filmEclipse) window.__filmEclipse();
     if (!accueil) body.classList.add('is-direct');
     body.classList.remove('is-picking');
     body.classList.add('pk-from');
