@@ -4026,10 +4026,10 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     { from:5, gain:1, meta:'17 tracks', eau:[.56, .62, .66],
       jp:'運なんてない。ただ、愛するものに夢中なだけ。', de:'Tout Naturel',
       media:[{ src:'assets/lucy_bg1.mp4', th:'assets/lucy_th1.webp' },
-             { src:'assets/lucy_bg2.webp?v=2', th:'assets/lucy_th2.webp?v=2' },
-             { src:'assets/lucy_bg3.webp?v=2', th:'assets/lucy_th3.webp?v=2' },
-             { src:'assets/lucy_bg4.webp?v=2', th:'assets/lucy_th4.webp?v=2' },
-             { src:'assets/lucy_bg5.webp?v=2', th:'assets/lucy_th5.webp?v=2' }] },
+             { src:'assets/lucy_v2.mp4', th:'assets/lucy_th2.webp?v=3' },
+             { src:'assets/lucy_v3.mp4', th:'assets/lucy_th3.webp?v=3' },
+             { src:'assets/lucy_v4.mp4', th:'assets/lucy_th4.webp?v=3' },
+             { src:'assets/lucy_v5.mp4', th:'assets/lucy_th5.webp?v=3' }] },
     { from:30, gain:.97, meta:'13 tracks', eau:[.36, .07, .04],
       media:[{ src:'assets/jr_intro_start.jpg', th:'assets/jane_th1.webp' }, { src:'assets/bg2.jpg', th:'assets/jane_th2.webp' },
              { src:'assets/trk2.jpg', th:'assets/jane_th3.webp' }, { src:'assets/cover2.jpg', th:'assets/jane_th4.webp' }] },
@@ -4133,7 +4133,17 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
        l animation a chaque nouvelle image */
     el.classList.remove('on'); void el.offsetWidth;
     el.classList.add('on'); autre.classList.remove('on');
-    setTimeout(function(){ if (!autre.classList.contains('on')) eteindre(autre); }, 800);
+    setTimeout(function(){
+      if (autre.classList.contains('on')) return;
+      eteindre(autre);
+      /* la couche qui s est eteinte montrera l element suivant : si c est un
+         film, il s y charge des maintenant, pour partir sans attendre */
+      var p = PK[cur], suiv = p && p.media[(j + 1) % p.media.length];
+      if (suiv && estFilm(suiv.src) && pk.classList.contains('is-open')){
+        var w = film(autre);
+        if (w.getAttribute('src') !== suiv.src){ w.hidden = true; w.src = suiv.src; }
+      }
+    }, 800);
     clearTimeout(tDefile);
     tDefile = setTimeout(suivant, duree);
   }
