@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=41">
+<link rel="stylesheet" href="style.css?v=45">
 </head>
 <body>
 
@@ -45,6 +45,8 @@
     <svg viewBox="0 0 11 22" aria-hidden="true"><path d="M1 1 L9.5 11 L1 21" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
   </button>
   <div class="pk-dots" id="pkDots" aria-hidden="true"></div>
+  <!-- le volume, discret dans un coin : il regle aussi celui du site -->
+  <label class="pk-vol"><input id="pkVol" type="range" min="0" max="100" value="85" aria-label="Volume"></label>
   <div class="pk-veil"></div>
 </div>
 
@@ -2320,6 +2322,10 @@ function ALB(){ return ALBUMS[CUR_ALBUM]; }
 /* Version telephone : meme fonctions, mise en page simple et legere.
    Le seuil est le meme que dans la feuille de style, sinon les deux
    se contrediraient. */
+/* une image ne se traine pas hors de la page (Firefox ignore la feuille de
+   style pour cela) */
+document.addEventListener('dragstart', function(e){ e.preventDefault(); });
+
 var MOBILE = window.matchMedia('(max-width: 820px)').matches;
 if (MOBILE) document.body.classList.add('is-mobile');
 
@@ -3980,6 +3986,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var album = document.getElementById('pkAlbum');
   var sleeve = document.getElementById('pkSleeve'), info = document.getElementById('pkInfo');
   var dotsBox = document.getElementById('pkDots'), strip = document.getElementById('pkStrip');
+  var curseur = document.getElementById('pkVol');
   var bgA = document.getElementById('pkBgA'), bgB = document.getElementById('pkBgB');
   var theme = document.getElementById('theme');
 
@@ -4139,11 +4146,11 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     clearTimeout(tAttente);
     clearTimeout(tDefile);
     if (window.__ui) window.__ui('select', true);
-    /* l album s arrete la ou il est (meme en plein glissement) */
-    var ar = album.getBoundingClientRect();
+    /* l album s arrete la ou il est, meme en plein glissement : on fige la
+       transformation en cours */
+    var ou = getComputedStyle(album).transform;
     album.style.transition = 'none';
-    album.style.left = ar.left + 'px';
-    album.style.top = (ar.top + ar.height / 2) + 'px';
+    album.style.transform = ou;
     /* tout s efface ; le disque sort de sa pochette jusqu au centre de
        l ecran, sans grandir, puis il plonge */
     pk.classList.add('is-leaving');
@@ -4281,7 +4288,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     /* le circuit tout de suite : si le navigateur laisse deja jouer, la
        musique part avec la page */
     monter();
-    return { jouer: jouer, couper: couper, sombrer: sombrer, etat: function(){
+    /* le curseur de volume vient de bouger */
+    function regler(){ if (ctx && !lecteur.paused && voulu) rampe(niveau(), .08); }
+    return { jouer: jouer, couper: couper, sombrer: sombrer, regler: regler, etat: function(){
       return { joue: !lecteur.paused, temps: +lecteur.currentTime.toFixed(2), piste: lecteur.getAttribute('src'),
                circuit: ctx ? ctx.state : null, niveau: maitre ? +maitre.gain.value.toFixed(3) : 0 };
     } };
@@ -4420,6 +4429,20 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }
     return { plonger: plonger };
   })();
+
+  /* le curseur de volume : il regle le site entier, l apercu compris, et
+     la page de l album le retrouve tel quel */
+  var volSite = document.getElementById('vol');
+  curseur.value = Math.round((theme.volume || .85) * 100);
+  curseur.style.setProperty('--v', curseur.value + '%');
+  curseur.addEventListener('input', function(){
+    var v = curseur.value / 100;
+    theme.volume = v;
+    curseur.style.setProperty('--v', curseur.value + '%');
+    if (volSite){ volSite.value = curseur.value; volSite.style.setProperty('--v', curseur.value + '%'); }
+    son.regler();
+  });
+  curseur.addEventListener('keydown', function(e){ e.stopPropagation(); });   // les fleches restent au curseur
 
   remplir(cur);
   son.jouer();
