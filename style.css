@@ -1826,7 +1826,8 @@ body.is-picking .fit,body.is-picking .intro-hint{visibility:hidden}
 /* le decor du site (trois taches floutees de 170 px, la lueur) et deux de
    ses trames sont entierement couverts par le choix du disque : les peindre
    pour rien coutait des images par seconde, et le disque saccadait */
-body.is-picking .bg,body.is-picking .halftone,body.is-picking .scan{display:none}
+body.is-picking .bg,body.is-picking .halftone,body.is-picking .scan,
+body.is-picking .noise{display:none}
 body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
 @keyframes pkreveal{from{opacity:0}to{opacity:1}}
 
@@ -1911,7 +1912,7 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
   opacity:.16;transition:opacity .25s,color .6s;color:var(--pk-ink)}
 .pk-vol:hover,.pk-vol:focus-within{opacity:.5}
 .picker.is-open .pk-vol{color:#fff}
-.picker.is-leaving .pk-vol{opacity:0;transition:opacity .45s}
+.picker.is-leaving .pk-vol{opacity:0;pointer-events:none;transition:opacity .45s}
 #pkVol{-webkit-appearance:none;appearance:none;width:84px;height:14px;background:none;cursor:pointer;margin:0}
 #pkVol::-webkit-slider-runnable-track{height:1px;
   background:linear-gradient(90deg,currentColor 0 var(--v,85%),color-mix(in srgb,currentColor 35%,transparent) var(--v,85%) 100%)}
@@ -1950,6 +1951,9 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
 .picker.is-dark .pk-veil{opacity:1}
 @media (prefers-reduced-motion:reduce){
   .pk-disc,.pk-bg.on{animation:none}
+  .pk-album{transition:none}
+  .picker.out-l .pk-album,.picker.out-r .pk-album,
+  .picker.in-l .pk-album,.picker.in-r .pk-album{animation-duration:.01s}
 }
 /* un album sans ecran d accueil a lui s ouvre tout de suite apres le choix
    du disque : ni signe, ni eclipse, ni vol ; la page se leve du noir */
