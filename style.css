@@ -8,15 +8,8 @@
   font-weight:100 550;font-style:normal;font-display:swap}
 @font-face{font-family:"Rajdhani";src:url("assets/fonts/Rajdhani-SemiBold.woff2") format("woff2");
   font-weight:551 900;font-style:normal;font-display:swap}
-/* Dead Secretary (Sick Capital, dafont) : le titre et l artiste sur la
-   page du choix du disque. Gratuite pour un usage personnel. */
-@font-face{font-family:"Dead Secretary";src:url("assets/fonts/DeadSecretary.woff2") format("woff2");
-  font-weight:400;font-style:normal;font-display:swap}
-/* Unmusique : les lettres de sa pochette — Pinyon Script pour le titre
-   (en contour, comme sur la pochette), Instrument Serif, haute et etroite,
-   pour l artiste (comme GLUTMOTHER) */
-@font-face{font-family:"Pinyon Script";src:url("assets/fonts/PinyonScript.woff2") format("woff2");
-  font-weight:400;font-style:normal;font-display:swap}
+/* Instrument Serif, haute et etroite comme le GLUTMOTHER de la pochette
+   d Unmusique : le titre et l artiste sur la page du choix du disque */
 @font-face{font-family:"Instrument Serif";src:url("assets/fonts/InstrumentSerif.woff2") format("woff2");
   font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:"Zen Kaku JP";src:url("assets/fonts/ZenKakuGothicNew-Medium-jp.woff2") format("woff2");
@@ -1887,19 +1880,11 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
   z-index:5;color:#f1eee8;opacity:0;transition:opacity .8s .9s,transform .8s .9s;pointer-events:none}
 .picker.is-open .pk-info{opacity:1;transform:translateY(-50%);pointer-events:auto}
 .pk-kind{font-size:12px;letter-spacing:.3em;text-transform:uppercase;opacity:.6}
-.pk-title{margin:6px 0 0;font-family:"Dead Secretary","Rajdhani",sans-serif;font-weight:400;font-size:clamp(34px,4.5vw,72px);
-  letter-spacing:.04em;text-transform:uppercase;line-height:.95}
-.pk-by{font-family:"Dead Secretary","Rajdhani",sans-serif;font-size:clamp(15px,1.65vw,26px);letter-spacing:.08em;
-  text-transform:uppercase;opacity:.9;margin-top:8px}
+.pk-title{margin:6px 0 0;font-family:"Instrument Serif",serif;font-weight:400;font-size:clamp(38px,4.9vw,80px);
+  letter-spacing:.03em;text-transform:uppercase;line-height:1}
+.pk-by{font-family:"Instrument Serif",serif;font-size:clamp(20px,2.3vw,36px);letter-spacing:.05em;
+  text-transform:uppercase;opacity:.95;margin-top:4px}
 .pk-meta{font-size:13px;letter-spacing:.08em;opacity:.6;margin-top:14px}
-/* Unmusique ecrit comme sur sa pochette ; les autres albums gardent leur
-   titre en attendant le leur */
-.picker[data-alb="0"] .pk-title{font-family:"Pinyon Script",serif;text-transform:none;letter-spacing:0;
-  font-size:clamp(52px,6.4vw,104px);line-height:1.1;margin-top:0;
-  color:transparent;-webkit-text-stroke:1.2px #f2efe9}
-.picker[data-alb="0"] .pk-by{font-family:"Instrument Serif",serif;font-size:clamp(20px,2.3vw,36px);
-  letter-spacing:.05em;opacity:.95;margin-top:2px}
-
 /* la ligne d une chanson, en japonais, puis d ou elle vient */
 .pk-jp{font-family:"Zen Kaku JP","Yu Gothic","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;
   font-size:clamp(15px,1.35vw,20px);line-height:1.6;letter-spacing:.06em;opacity:.9;margin:16px 0 0;max-width:520px}
