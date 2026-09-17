@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=54">
+<link rel="stylesheet" href="style.css?v=56">
 </head>
 <body>
 
@@ -51,7 +51,16 @@
   <button class="pk-menu" id="pkMenu" type="button" aria-label="Tous les albums" aria-expanded="false"></button>
   <div class="pk-list" id="pkList" hidden></div>
   <!-- le volume, discret dans un coin : il regle aussi celui du site -->
-  <label class="pk-vol"><input id="pkVol" type="range" min="0" max="100" value="85" aria-label="Volume"></label>
+  <div class="pk-vol">
+    <button class="pk-mute" id="pkMute" type="button" aria-label="Sound off" aria-pressed="false">
+      <svg viewBox="0 0 22 16" aria-hidden="true">
+        <path d="M2 6 h3 L9 2.5 v11 L5 10 H2 z" fill="currentColor"/>
+        <path class="pk-onde" d="M12.5 5.2 a4.4 4.4 0 0 1 0 5.6 M15 3 a7.6 7.6 0 0 1 0 10" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        <path class="pk-barre" d="M13 5 L19 11 M19 5 L13 11" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <input id="pkVol" type="range" min="0" max="100" value="85" aria-label="Volume">
+  </div>
   <div class="pk-veil"></div>
 </div>
 
@@ -4011,11 +4020,11 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var strip = document.getElementById('pkStrip');
   var barres = document.getElementById('pkMenu'), liste = document.getElementById('pkList');
   var hautImg = document.getElementById('pkUpImg'), basImg = document.getElementById('pkDownImg');
-  var curseur = document.getElementById('pkVol');
+  var curseur = document.getElementById('pkVol'), muet = document.getElementById('pkMute');
   var bgA = document.getElementById('pkBgA'), bgB = document.getElementById('pkBgB');
   var theme = document.getElementById('theme');
 
-  var DWELL = 3000;                      // ms sur un disque avant qu il s ouvre
+  var DWELL = 40;                        // ms avant que le fond de l album parte
   var SLIDE = 5000;                      // ms par image du fond
   var COUPE = 480;                       // Hz : au dessus, le son est retire (sous l eau)
   var VOL = .6;                          // part du volume du site
@@ -4200,9 +4209,10 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
   /* referme le monde de l album : le disque revient au centre, sa musique
      continue */
+  /* on quitte cet album : son fond s arrete, mais la page garde sa forme —
+     la pochette reste a sa place, c est l album qui change, pas la page */
   function fermer(){
     clearTimeout(tAttente); clearTimeout(tDefile);
-    pk.classList.remove('is-open');
     bgA.classList.remove('on'); bgB.classList.remove('on');
     setTimeout(function(){ eteindre(bgA); eteindre(bgB); }, 800);
   }
@@ -4217,7 +4227,6 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (occupe){ if (vise == null) enAttente += dir; return; }
     occupe = true;
     if (window.__ui) window.__ui('scroll', true);
-    var ouvert = pk.classList.contains('is-open');
     fermer();
     son.couper(.6);
     setTimeout(function(){
@@ -4234,7 +4243,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
           else attendre();
         }, 400);
       }, 300);
-    }, ouvert ? 500 : 0);
+    }, 0);
   }
   /* la liste : on va droit a l album choisi, par le chemin le plus court */
   function allerA(i){
@@ -4371,7 +4380,10 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       prec.connect(sec); prec.connect(ech); ech.connect(mouille);
       sec.connect(maitre); mouille.connect(maitre); maitre.connect(ctx.destination);
     }
-    function niveau(){ return VOL * PK[cur].gain * (theme && !theme.muted ? theme.volume : .85); }
+    function niveau(){
+      if (theme && theme.muted) return 0;                 // le son est coupe
+      return VOL * PK[cur].gain * (theme ? theme.volume : .85);
+    }
     function rampe(v, sec){
       var tt = ctx.currentTime;
       maitre.gain.cancelScheduledValues(tt);
@@ -4437,7 +4449,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
        musique part avec la page */
     monter();
     /* le curseur de volume vient de bouger */
-    function regler(){ if (ctx && !lecteur.paused && voulu) rampe(niveau(), .08); }
+    function regler(){ if (ctx && voulu) rampe(niveau(), .08); }
     return { jouer: jouer, couper: couper, sombrer: sombrer, regler: regler, etat: function(){
       return { joue: !lecteur.paused, temps: +lecteur.currentTime.toFixed(2), piste: lecteur.getAttribute('src'),
                circuit: ctx ? ctx.state : null, niveau: maitre ? +maitre.gain.value.toFixed(3) : 0 };
@@ -4591,6 +4603,22 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     son.regler();
   });
   curseur.addEventListener('keydown', function(e){ e.stopPropagation(); });   // les fleches restent au curseur
+  /* une seule touche pour couper le son : elle vaut pour tout le site, et
+     le curseur garde sa place, pour la retrouver en le rallumant */
+  function peindreMuet(){
+    var m = !!theme.muted;
+    pk.classList.toggle('is-muet', m);
+    muet.setAttribute('aria-pressed', m ? 'true' : 'false');
+    muet.setAttribute('aria-label', m ? 'Sound on' : 'Sound off');
+  }
+  muet.addEventListener('click', function(e){
+    e.stopPropagation();
+    theme.muted = !theme.muted;
+    peindreMuet();
+    son.regler();
+  });
+  muet.addEventListener('keydown', function(e){ e.stopPropagation(); });
+  peindreMuet();
 
   remplir(cur);
   son.jouer();

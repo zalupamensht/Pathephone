@@ -1865,12 +1865,11 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
 /* l album : la pochette, et le disque a moitie sorti d elle, derriere.
    Au centre d abord ; au bout de DWELL, l album entier glisse a gauche et
    son monde s ouvre autour de lui */
-/* il se deplace en transform, jamais en left/top : autrement le navigateur
-   refait toute la mise en page a chaque image et le disque saccade */
-.pk-album{position:absolute;left:calc(50vw - var(--S) * .695);top:50vh;
+/* l album est toujours a la meme place, a gauche : on change d album, pas
+   la mise en page */
+.pk-album{position:absolute;left:9vw;top:44vh;
   width:calc(var(--S) * 1.39);height:var(--S);transform:translateY(-50%);z-index:3;
-  will-change:transform;transition:transform .7s cubic-bezier(.4,0,.2,1)}
-.picker.is-open .pk-album{transform:translate(calc(9vw - 50vw + var(--S) * .695),calc(-50% - 6vh))}
+  will-change:transform}
 .pk-sleeve{position:absolute;left:0;top:0;width:var(--S);height:var(--S);object-fit:cover;z-index:2;
   box-shadow:0 18px 44px rgba(0,0,0,.45);cursor:pointer;transition:opacity .5s ease}
 .pk-hit{position:absolute;left:calc(var(--S) * .45);top:calc(var(--S) * .03);width:calc(var(--S) * .94);aspect-ratio:1;
@@ -1912,26 +1911,23 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
 .pk-arrow{position:absolute;left:calc(9vw + var(--S) * .5);width:60px;height:34px;margin-left:-30px;
   display:grid;place-items:center;z-index:6;
   padding:0;border:0;background:none;color:var(--pk-ink);opacity:.13;cursor:pointer;
-  transition:opacity .25s,transform .15s,color .6s,left .7s cubic-bezier(.4,0,.2,1)}
-.picker:not(.is-open) .pk-arrow{left:50vw}
+  transition:opacity .25s,transform .15s,color .6s}
 .pk-arrow:hover,.pk-arrow:focus-visible{opacity:.45;outline:none}
 .pk-arrow:active{transform:scale(.9)}
 .pk-arrow svg{width:22px;height:11px}
-.pk-u{top:9.5vh}.pk-d{bottom:2.4vh}
-.picker.is-open .pk-u{top:2.4vh}
+.pk-u{top:2.4vh}.pk-d{top:calc(44vh + var(--S) * .78)}
 .picker.is-open .pk-arrow{color:#fff}
-.picker.is-open .pk-d{bottom:auto;top:calc(44vh + var(--S) * .62)}
 
 /* les albums voisins, qui depassent en haut et en bas de celui qu on
    regarde ; ils s effacent vers le bord de l ecran */
-.pk-peek{position:absolute;left:0;width:var(--S);height:var(--S);padding:0;border:0;background:none;
-  cursor:pointer;opacity:.22;transition:opacity .3s}
-.pk-peek:hover,.pk-peek:focus-visible{opacity:.42;outline:none}
+.pk-peek{position:absolute;left:calc(var(--S) * .1);width:calc(var(--S) * .8);height:calc(var(--S) * .8);
+  padding:0;border:0;background:none;cursor:pointer;opacity:.13;transition:opacity .3s}
+.pk-peek:hover,.pk-peek:focus-visible{opacity:.3;outline:none}
 .pk-peek img{width:100%;height:100%;object-fit:cover;display:block}
-.pk-up{top:calc(var(--S) * -.78);
-  -webkit-mask-image:linear-gradient(#0000,#000 120%);mask-image:linear-gradient(#0000,#000 120%)}
-.pk-down{top:calc(var(--S) * 1.18);
-  -webkit-mask-image:linear-gradient(#000 -20%,#0000);mask-image:linear-gradient(#000 -20%,#0000)}
+.pk-up{top:calc(var(--S) * -1.2);
+  -webkit-mask-image:linear-gradient(#0000,#000 160%);mask-image:linear-gradient(#0000,#000 160%)}
+.pk-down{top:calc(var(--S) * 1.4);
+  -webkit-mask-image:linear-gradient(#000 -60%,#0000);mask-image:linear-gradient(#000 -60%,#0000)}
 
 /* les trois barres : la barre allumee est l album ouvert ; un clic ouvre
    la liste de tous les albums */
@@ -1961,6 +1957,16 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
 .pk-ligne em{font-style:normal;font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.6}
 
 /* le volume : un simple trait dans le coin, comme les fleches */
+.pk-mute{display:grid;place-items:center;width:26px;height:22px;margin-right:9px;padding:0;border:0;
+  background:none;color:currentColor;cursor:pointer}
+.pk-mute:focus-visible{outline:none}
+.pk-mute svg{width:19px;height:14px}
+.pk-mute .pk-barre{opacity:0;transition:opacity .18s}
+.pk-mute .pk-onde{opacity:1;transition:opacity .18s}
+.picker.is-muet .pk-mute .pk-barre{opacity:1}
+.picker.is-muet .pk-mute .pk-onde{opacity:0}
+.picker.is-muet #pkVol{opacity:.35}
+
 .pk-vol{position:absolute;right:2.2vw;bottom:3.2vh;z-index:6;display:flex;align-items:center;
   opacity:.16;transition:opacity .25s,color .6s;color:var(--pk-ink)}
 .pk-vol:hover,.pk-vol:focus-within{opacity:.5}
@@ -1985,10 +1991,6 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
 @keyframes pkoutd{to{transform:translateY(35%);opacity:0}}
 @keyframes pkinu{from{transform:translateY(35%);opacity:0}to{transform:translateY(-50%)}}
 @keyframes pkind{from{transform:translateY(-135%);opacity:0}to{transform:translateY(-50%)}}
-
-/* le voisin du dessous se range quand le monde de l album est ouvert :
-   la bande des vignettes a besoin de la place */
-.picker.is-open .pk-down{opacity:0;pointer-events:none}
 
 /* au clic : tout s efface — la pochette, les voisins, le monde de l album —
    sauf le disque, qui sort de sa pochette jusqu au centre */
