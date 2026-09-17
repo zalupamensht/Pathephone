@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=51">
+<link rel="stylesheet" href="style.css?v=54">
 </head>
 <body>
 
@@ -30,6 +30,9 @@
   </div>
   <!-- l album : la pochette, et le disque a moitie sorti d elle -->
   <div class="pk-album" id="pkAlbum">
+    <!-- les albums voisins, qui depassent en haut et en bas -->
+    <button class="pk-peek pk-up" id="pkUp" type="button" aria-label="Album au dessus"><img id="pkUpImg" alt="" draggable="false"></button>
+    <button class="pk-peek pk-down" id="pkDown" type="button" aria-label="Album au dessous"><img id="pkDownImg" alt="" draggable="false"></button>
     <img class="pk-sleeve" id="pkSleeve" alt="" draggable="false">
       <button class="pk-hit" id="pkHit" type="button" aria-label="Open this album">
       <span class="pk-sink"><img class="pk-disc" id="pkDisc" alt="" draggable="false"></span>
@@ -38,13 +41,15 @@
   <div class="pk-info" id="pkInfo"></div>
   <!-- la bande du bas : une vignette par image ou film du fond -->
   <div class="pk-strip" id="pkStrip"></div>
-  <button class="pk-arrow pk-l" id="pkPrev" type="button" aria-label="Previous album">
-    <svg viewBox="0 0 11 22" aria-hidden="true"><path d="M10 1 L1.5 11 L10 21" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+  <button class="pk-arrow pk-u" id="pkPrev" type="button" aria-label="Previous album">
+    <svg viewBox="0 0 22 11" aria-hidden="true"><path d="M1 10 L11 1.5 L21 10" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
   </button>
-  <button class="pk-arrow pk-r" id="pkNext" type="button" aria-label="Next album">
-    <svg viewBox="0 0 11 22" aria-hidden="true"><path d="M1 1 L9.5 11 L1 21" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+  <button class="pk-arrow pk-d" id="pkNext" type="button" aria-label="Next album">
+    <svg viewBox="0 0 22 11" aria-hidden="true"><path d="M1 1 L11 9.5 L21 1" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
   </button>
-  <div class="pk-dots" id="pkDots" aria-hidden="true"></div>
+  <!-- les trois barres : elles disent ou l on est, et ouvrent la liste -->
+  <button class="pk-menu" id="pkMenu" type="button" aria-label="Tous les albums" aria-expanded="false"></button>
+  <div class="pk-list" id="pkList" hidden></div>
   <!-- le volume, discret dans un coin : il regle aussi celui du site -->
   <label class="pk-vol"><input id="pkVol" type="range" min="0" max="100" value="85" aria-label="Volume"></label>
   <div class="pk-veil"></div>
@@ -4003,7 +4008,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var hit = document.getElementById('pkHit'), disc = document.getElementById('pkDisc');
   var album = document.getElementById('pkAlbum');
   var sleeve = document.getElementById('pkSleeve'), info = document.getElementById('pkInfo');
-  var dotsBox = document.getElementById('pkDots'), strip = document.getElementById('pkStrip');
+  var strip = document.getElementById('pkStrip');
+  var barres = document.getElementById('pkMenu'), liste = document.getElementById('pkList');
+  var hautImg = document.getElementById('pkUpImg'), basImg = document.getElementById('pkDownImg');
   var curseur = document.getElementById('pkVol');
   var bgA = document.getElementById('pkBgA'), bgB = document.getElementById('pkBgB');
   var theme = document.getElementById('theme');
@@ -4028,16 +4035,17 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       media:[{ src:'assets/lucy_bg1.mp4', th:'assets/lucy_th1.webp' },
              { src:'assets/lucy_p2.webp', th:'assets/lucy_tp2.webp' },
              { src:'assets/lucy_v4.mp4', th:'assets/lucy_th4.webp?v=4' },
-             /* un portrait en hauteur : sur un ecran large on garde le haut, ou
-                est Lucy, et pas le bas de la photo */
-             { src:'assets/lucy_p3.webp', th:'assets/lucy_tp3.webp', pos:'center 10%' },
+             /* un portrait en hauteur : l ecran large n en garde qu une bande,
+                alors on la prend le plus haut possible — la tete, le corps et
+                la guitare y tiennent */
+             { src:'assets/lucy_p3.webp', th:'assets/lucy_tp3.webp', pos:'center 6%' },
              { src:'assets/lucy_v3.mp4', th:'assets/lucy_th3.webp?v=4' }] },
     { from:30, gain:.97, meta:'13 tracks', eau:[.36, .07, .04],
-      media:[{ src:'assets/jane_v1.mp4', th:'assets/jane_tv1.webp' },
-             { src:'assets/jane_p2.webp', th:'assets/jane_tp2.webp', pos:'center 40%' },
-             { src:'assets/jane_v3.mp4', th:'assets/jane_tv3.webp' },
-             { src:'assets/jane_p4.webp', th:'assets/jane_tp4.webp', pos:'center 15%' },
-             { src:'assets/jane_v5.mp4', th:'assets/jane_tv5.webp' }] },
+      media:[{ src:'assets/jane_v1.mp4?v=2', th:'assets/jane_tv1.webp?v=2' },
+             { src:'assets/jane_v2.mp4', th:'assets/jane_tv2.webp' },
+             { src:'assets/jane_p3.webp', th:'assets/jane_tp3.webp' },
+             { src:'assets/jane_v4.mp4', th:'assets/jane_tv4.webp' },
+             { src:'assets/jane_v5.mp4?v=2', th:'assets/jane_tv5.webp?v=2' }] },
     /* plus fort que les deux autres une fois filtre : ramene a leur niveau */
     { from:20, gain:.6, meta:'12 tracks', eau:[.42, .35, .23],
       media:[{ src:'assets/bg3.jpg', th:'assets/matt_th1.webp' }, { src:'assets/cover3.jpg', th:'assets/matt_th2.webp' },
@@ -4052,8 +4060,19 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
      temps que le nouveau se telecharge */
   ALBUMS.forEach(function(a){ [a.disc, a.cover].forEach(function(s){ var i = new Image(); i.src = s; }); });
 
-  dotsBox.innerHTML = ALBUMS.map(function(){ return '<i></i>'; }).join('');
-  var dots = [].slice.call(dotsBox.children);
+  /* trois barres : la barre allumee dit quel album est ouvert, et un clic
+     deroule la liste de tous les albums */
+  barres.innerHTML = ALBUMS.map(function(){ return '<i></i>'; }).join('');
+  var barreaux = [].slice.call(barres.children);
+  liste.innerHTML = ALBUMS.map(function(a, i){
+    return '<button type="button" class="pk-ligne" data-i="' + i + '">' +
+             '<img src="' + a.cover + '" alt="">' +
+             '<span><b>' + a.title + '</b><em>' + a.by + '</em></span>' +
+           '</button>';
+  }).join('');
+  [].slice.call(liste.children).forEach(function(b){
+    b.addEventListener('click', function(e){ e.stopPropagation(); fermerListe(); allerA(+b.dataset.i); });
+  });
 
   function remplir(i){
     var a = ALBUMS[i], p = PK[i];
@@ -4062,7 +4081,12 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     /* le grain et la vignette du site suivent l album regarde */
     ALBUMS.forEach(function(o){ body.classList.remove('alb-' + o.theme); });
     body.classList.add('alb-' + a.theme);
-    dots.forEach(function(d, j){ d.classList.toggle('on', j === i); });
+    barreaux.forEach(function(d, j){ d.classList.toggle('on', j === i); });
+    [].slice.call(liste.children).forEach(function(b, j){ b.classList.toggle('on', j === i); });
+    /* les voisins qui depassent : au dessus le precedent, au dessous le suivant */
+    var n = ALBUMS.length;
+    hautImg.src = ALBUMS[(i - 1 + n) % n].cover;
+    basImg.src = ALBUMS[(i + 1) % n].cover;
     info.innerHTML =
       '<div class="pk-kind">Album</div>' +
       '<h2 class="pk-title">' + a.title + '</h2>' +
@@ -4184,32 +4208,53 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
   var enAttente = 0;                     // les appuis donnes pendant l animation
-  function feuilleter(dir){
+  /* dir : +1 vers le bas (album suivant), -1 vers le haut ; vise : on saute
+     droit a cet album la (depuis la liste) */
+  function feuilleter(dir, vise){
     if (parti) return;
     /* trois appuis rapides font trois albums : on les compte au lieu de les
        perdre, et ils partent l un apres l autre */
-    if (occupe){ enAttente += dir; return; }
+    if (occupe){ if (vise == null) enAttente += dir; return; }
     occupe = true;
     if (window.__ui) window.__ui('scroll', true);
     var ouvert = pk.classList.contains('is-open');
     fermer();
     son.couper(.6);
     setTimeout(function(){
-      pk.classList.add(dir > 0 ? 'out-l' : 'out-r');
+      pk.classList.add(dir > 0 ? 'out-u' : 'out-d');
       setTimeout(function(){
-        pk.classList.remove('out-l', 'out-r');
-        cur = (cur + dir + ALBUMS.length) % ALBUMS.length;
+        pk.classList.remove('out-u', 'out-d');
+        cur = vise != null ? vise : (cur + dir + ALBUMS.length) % ALBUMS.length;
         remplir(cur);
         son.jouer();
-        pk.classList.add(dir > 0 ? 'in-l' : 'in-r');
+        pk.classList.add(dir > 0 ? 'in-u' : 'in-d');
         setTimeout(function(){
-          pk.classList.remove('in-l', 'in-r'); occupe = false;
+          pk.classList.remove('in-u', 'in-d'); occupe = false;
           if (enAttente){ var d = enAttente > 0 ? 1 : -1; enAttente -= d; feuilleter(d); }
           else attendre();
         }, 400);
       }, 300);
     }, ouvert ? 500 : 0);
   }
+  /* la liste : on va droit a l album choisi, par le chemin le plus court */
+  function allerA(i){
+    if (i === cur || parti) return;
+    var n = ALBUMS.length, ecart = ((i - cur) % n + n) % n;
+    feuilleter(ecart <= n / 2 ? 1 : -1, i);
+  }
+  /* la liste deroulee sous les trois barres */
+  function ouvrirListe(){
+    if (parti) return;
+    liste.hidden = false; void liste.offsetWidth;
+    pk.classList.add('is-liste'); barres.setAttribute('aria-expanded', 'true');
+    clearTimeout(tAttente);
+  }
+  function fermerListe(){
+    pk.classList.remove('is-liste'); barres.setAttribute('aria-expanded', 'false');
+    setTimeout(function(){ if (!pk.classList.contains('is-liste')) liste.hidden = true; }, 300);
+    if (!pk.classList.contains('is-open')) attendre();
+  }
+  function bascule(){ if (pk.classList.contains('is-liste')) fermerListe(); else ouvrirListe(); }
 
   function plonger(e){
     if (e) e.stopPropagation();
@@ -4252,16 +4297,39 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   hit.addEventListener('click', plonger);
   sleeve.addEventListener('click', plonger);
-  document.getElementById('pkNext').addEventListener('click', function(){ feuilleter(1); });
-  document.getElementById('pkPrev').addEventListener('click', function(){ feuilleter(-1); });
+  document.getElementById('pkNext').addEventListener('click', function(e){ e.stopPropagation(); feuilleter(1); });
+  document.getElementById('pkPrev').addEventListener('click', function(e){ e.stopPropagation(); feuilleter(-1); });
+  document.getElementById('pkUp').addEventListener('click', function(e){ e.stopPropagation(); feuilleter(-1); });
+  document.getElementById('pkDown').addEventListener('click', function(e){ e.stopPropagation(); feuilleter(1); });
+  barres.addEventListener('click', function(e){ e.stopPropagation(); bascule(); });
+  liste.addEventListener('click', function(e){ e.stopPropagation(); });
+  pk.addEventListener('click', function(){ if (pk.classList.contains('is-liste')) fermerListe(); });
+
+  /* la molette : un album par geste, pas un par cran */
+  var roue = 0, tRoue = 0;
+  pk.addEventListener('wheel', function(e){
+    if (parti || !body.classList.contains('is-picking')) return;
+    e.preventDefault();
+    roue += e.deltaY;
+    clearTimeout(tRoue);
+    tRoue = setTimeout(function(){ roue = 0; }, 260);
+    if (Math.abs(roue) < 40) return;
+    var d = roue > 0 ? 1 : -1; roue = 0;
+    feuilleter(d);
+  }, {passive: false});
+
   window.addEventListener('keydown', function(e){
     if (parti || !body.classList.contains('is-picking')) return;
-    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft'){
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){
       e.preventDefault();
-      if (!e.repeat) feuilleter(e.key === 'ArrowRight' ? 1 : -1);
+      if (!e.repeat) feuilleter(e.key === 'ArrowDown' ? 1 : -1);
+    } else if (e.key === 'Escape'){
+      if (pk.classList.contains('is-liste')){ e.preventDefault(); fermerListe(); }
     } else if (e.key === 'Enter'){
-      /* si une fleche a le clavier, Entree lui appartient */
-      if (e.target && e.target.classList && e.target.classList.contains('pk-arrow')) return;
+      /* une fleche, les barres ou la liste ont le clavier : la touche leur appartient */
+      var t = e.target;
+      if (t && t.classList && (t.classList.contains('pk-arrow') || t.classList.contains('pk-menu') ||
+          t.classList.contains('pk-ligne') || t.classList.contains('pk-peek'))) return;
       e.preventDefault();
       if (!e.repeat) plonger();
     }

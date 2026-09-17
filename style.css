@@ -1848,7 +1848,7 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
 /* le monde de l album, derriere tout */
 .pk-world{position:absolute;inset:0;opacity:0;transition:opacity .45s ease;pointer-events:none;background:#0d0c0b}
 .picker.is-open .pk-world{opacity:1}
-.pk-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;
+.pk-bg{position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat;opacity:0;
   transition:opacity .32s ease}
 /* pas de lent zoom : l image arrive un peu grande et se recule d un coup,
    puis ne bouge plus */
@@ -1907,19 +1907,58 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
 .pk-tile:hover{opacity:.8}
 .pk-tile.on{opacity:1;border-color:rgba(255,255,255,.85)}
 
-/* les fleches : petites, a peine la */
-.pk-arrow{position:absolute;top:50vh;width:34px;height:60px;margin-top:-30px;display:grid;place-items:center;z-index:6;
+/* les fleches : petites, a peine la, en haut et en bas de la colonne de
+   l album — c est par la qu on passe d un album a l autre */
+.pk-arrow{position:absolute;left:calc(9vw + var(--S) * .5);width:60px;height:34px;margin-left:-30px;
+  display:grid;place-items:center;z-index:6;
   padding:0;border:0;background:none;color:var(--pk-ink);opacity:.13;cursor:pointer;
-  transition:opacity .25s,transform .15s,color .6s}
+  transition:opacity .25s,transform .15s,color .6s,left .7s cubic-bezier(.4,0,.2,1)}
+.picker:not(.is-open) .pk-arrow{left:50vw}
 .pk-arrow:hover,.pk-arrow:focus-visible{opacity:.45;outline:none}
 .pk-arrow:active{transform:scale(.9)}
-.pk-arrow svg{width:11px;height:22px}
-.pk-l{left:2.2vw}.pk-r{right:2.2vw}
+.pk-arrow svg{width:22px;height:11px}
+.pk-u{top:9.5vh}.pk-d{bottom:2.4vh}
+.picker.is-open .pk-u{top:2.4vh}
 .picker.is-open .pk-arrow{color:#fff}
-.pk-dots{position:absolute;bottom:3.6vh;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:6;transition:opacity .5s}
-.pk-dots i{width:4px;height:4px;border-radius:50%;background:var(--pk-ink);opacity:.18}
-.pk-dots i.on{opacity:.55}
-.picker.is-open .pk-dots{opacity:0}
+.picker.is-open .pk-d{bottom:auto;top:calc(44vh + var(--S) * .62)}
+
+/* les albums voisins, qui depassent en haut et en bas de celui qu on
+   regarde ; ils s effacent vers le bord de l ecran */
+.pk-peek{position:absolute;left:0;width:var(--S);height:var(--S);padding:0;border:0;background:none;
+  cursor:pointer;opacity:.22;transition:opacity .3s}
+.pk-peek:hover,.pk-peek:focus-visible{opacity:.42;outline:none}
+.pk-peek img{width:100%;height:100%;object-fit:cover;display:block}
+.pk-up{top:calc(var(--S) * -.78);
+  -webkit-mask-image:linear-gradient(#0000,#000 120%);mask-image:linear-gradient(#0000,#000 120%)}
+.pk-down{top:calc(var(--S) * 1.18);
+  -webkit-mask-image:linear-gradient(#000 -20%,#0000);mask-image:linear-gradient(#000 -20%,#0000)}
+
+/* les trois barres : la barre allumee est l album ouvert ; un clic ouvre
+   la liste de tous les albums */
+.pk-menu{position:absolute;top:3vh;left:50%;transform:translateX(-50%);z-index:7;
+  display:flex;flex-direction:column;gap:5px;align-items:center;
+  padding:10px 14px;border:0;background:none;cursor:pointer;color:var(--pk-ink);
+  opacity:.3;transition:opacity .25s,color .6s}
+.pk-menu:hover,.pk-menu:focus-visible{opacity:.7;outline:none}
+.picker.is-open .pk-menu,.picker.is-liste .pk-menu{color:#fff}
+.pk-menu i{display:block;width:16px;height:2px;background:currentColor;opacity:.45;
+  transition:width .25s,opacity .25s}
+.pk-menu i.on{width:28px;opacity:1}
+
+.pk-list{position:absolute;top:calc(3vh + 46px);left:50%;transform:translate(-50%,-8px);z-index:7;
+  display:flex;flex-direction:column;gap:2px;padding:8px;border-radius:10px;
+  background:rgba(12,11,10,.92);border:1px solid rgba(255,255,255,.12);
+  opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+.picker.is-liste .pk-list{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.pk-ligne{display:flex;align-items:center;gap:12px;width:300px;padding:8px 10px;border:0;border-radius:7px;
+  background:none;color:#e9e6e0;cursor:pointer;text-align:left;font:inherit;transition:background .2s}
+.pk-ligne:hover,.pk-ligne:focus-visible{background:rgba(255,255,255,.08);outline:none}
+.pk-ligne.on{background:rgba(255,255,255,.14)}
+.pk-ligne img{width:44px;height:44px;object-fit:cover;border-radius:3px}
+.pk-ligne span{display:flex;flex-direction:column;gap:2px;min-width:0}
+.pk-ligne b{font-family:"Kingjola","Instrument Serif",serif;font-weight:400;font-size:19px;text-transform:lowercase;
+  line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk-ligne em{font-style:normal;font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.6}
 
 /* le volume : un simple trait dans le coin, comme les fleches */
 .pk-vol{position:absolute;right:2.2vw;bottom:3.2vh;z-index:6;display:flex;align-items:center;
@@ -1937,19 +1976,24 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
 #pkVol::-moz-range-thumb{width:7px;height:7px;border:0;border-radius:50%;background:currentColor}
 #pkVol:focus-visible{outline:none}
 
-/* feuilleter : l album glisse de cote, sans tourner */
-.picker.out-l .pk-album{animation:pkoutl .3s cubic-bezier(.5,0,.8,.4) forwards}
-.picker.out-r .pk-album{animation:pkoutr .3s cubic-bezier(.5,0,.8,.4) forwards}
-.picker.in-l .pk-album{animation:pkinl .4s cubic-bezier(.2,.6,.3,1) forwards}
-.picker.in-r .pk-album{animation:pkinr .4s cubic-bezier(.2,.6,.3,1) forwards}
-@keyframes pkoutl{to{transform:translateY(-50%) translateX(-45%);opacity:0}}
-@keyframes pkoutr{to{transform:translateY(-50%) translateX(45%);opacity:0}}
-@keyframes pkinl{from{transform:translateY(-50%) translateX(45%);opacity:0}to{transform:translateY(-50%)}}
-@keyframes pkinr{from{transform:translateY(-50%) translateX(-45%);opacity:0}to{transform:translateY(-50%)}}
+/* feuilleter : l album monte ou descend, et le voisin prend sa place */
+.picker.out-u .pk-album{animation:pkoutu .3s cubic-bezier(.5,0,.8,.4) forwards}
+.picker.out-d .pk-album{animation:pkoutd .3s cubic-bezier(.5,0,.8,.4) forwards}
+.picker.in-u .pk-album{animation:pkinu .4s cubic-bezier(.2,.6,.3,1) forwards}
+.picker.in-d .pk-album{animation:pkind .4s cubic-bezier(.2,.6,.3,1) forwards}
+@keyframes pkoutu{to{transform:translateY(-135%);opacity:0}}
+@keyframes pkoutd{to{transform:translateY(35%);opacity:0}}
+@keyframes pkinu{from{transform:translateY(35%);opacity:0}to{transform:translateY(-50%)}}
+@keyframes pkind{from{transform:translateY(-135%);opacity:0}to{transform:translateY(-50%)}}
 
-/* au clic : tout s efface — la pochette, le monde de l album — sauf le
-   disque, qui sort de sa pochette jusqu au centre (le script le deplace) */
-.picker.is-leaving .pk-sleeve,.picker.is-leaving .pk-arrow,.picker.is-leaving .pk-dots,
+/* le voisin du dessous se range quand le monde de l album est ouvert :
+   la bande des vignettes a besoin de la place */
+.picker.is-open .pk-down{opacity:0;pointer-events:none}
+
+/* au clic : tout s efface — la pochette, les voisins, le monde de l album —
+   sauf le disque, qui sort de sa pochette jusqu au centre */
+.picker.is-leaving .pk-peek,.picker.is-leaving .pk-menu,.picker.is-leaving .pk-list,
+.picker.is-leaving .pk-sleeve,.picker.is-leaving .pk-arrow,
 .picker.is-leaving .pk-info,.picker.is-leaving .pk-strip{opacity:0;transition:opacity .45s ease;pointer-events:none}
 .picker.is-leaving .pk-world{opacity:0;transition:opacity .6s ease}
 .picker.is-leaving .pk-hit{cursor:default}
@@ -1966,8 +2010,8 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
 @media (prefers-reduced-motion:reduce){
   .pk-disc,.pk-bg.on{animation:none}
   .pk-album{transition:none}
-  .picker.out-l .pk-album,.picker.out-r .pk-album,
-  .picker.in-l .pk-album,.picker.in-r .pk-album{animation-duration:.01s}
+  .picker.out-u .pk-album,.picker.out-d .pk-album,
+  .picker.in-u .pk-album,.picker.in-d .pk-album{animation-duration:.01s}
 }
 /* un album sans ecran d accueil a lui s ouvre tout de suite apres le choix
    du disque : ni signe, ni eclipse, ni vol ; la page se leve du noir */
