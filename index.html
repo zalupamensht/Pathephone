@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=49">
+<link rel="stylesheet" href="style.css?v=50">
 </head>
 <body>
 
@@ -4028,7 +4028,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       media:[{ src:'assets/lucy_bg1.mp4', th:'assets/lucy_th1.webp' },
              { src:'assets/lucy_p2.webp', th:'assets/lucy_tp2.webp' },
              { src:'assets/lucy_v4.mp4', th:'assets/lucy_th4.webp?v=4' },
-             { src:'assets/lucy_p3.webp', th:'assets/lucy_tp3.webp' },
+             /* un portrait en hauteur : sur un ecran large on garde le haut, ou
+                est Lucy, et pas le bas de la photo */
+             { src:'assets/lucy_p3.webp', th:'assets/lucy_tp3.webp', pos:'center 10%' },
              { src:'assets/lucy_v3.mp4', th:'assets/lucy_th3.webp?v=4' }] },
     { from:30, gain:.97, meta:'13 tracks', eau:[.36, .07, .04],
       media:[{ src:'assets/jr_intro_start.jpg', th:'assets/jane_th1.webp' }, { src:'assets/bg2.jpg', th:'assets/jane_th2.webp' },
@@ -4062,7 +4064,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     /* la bande du bas : une vignette par image ou film ; un clic y amene */
     strip.innerHTML = p.media.map(function(m, j){
       return '<button type="button" class="pk-tile' + (j ? '' : ' on') + '" aria-label="' + a.title + ' — ' + (j + 1) + ' / ' + p.media.length + '"' +
-             ' style="background-image:url(\'' + (m.th || m.src) + '\')"></button>';
+             ' style="background-image:url(\'' + (m.th || m.src) + '\');background-position:' + (m.pos || 'center') + '"></button>';
     }).join('');
     [].slice.call(strip.children).forEach(function(t, j){
       t.addEventListener('click', function(e){ e.stopPropagation(); if (pk.classList.contains('is-open') && !parti){ vue = j; montrer(j); } });
@@ -4128,6 +4130,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var w = el.querySelector('video');
       if (w){ w.pause(); w.hidden = true; }
       el.style.backgroundImage = 'url(\'' + m + '\')';
+      el.style.backgroundPosition = PK[cur].media[j].pos || 'center';
     }
     /* l image arrive un peu grande et se recule d un coup : on relance
        l animation a chaque nouvelle image */
