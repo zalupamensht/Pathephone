@@ -4062,7 +4062,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   ];
 
   var cur = CUR_ALBUM, occupe = false, parti = false;
-  var tAttente = 0, tDefile = 0, tCharge = 0, vue = 0, surA = true;
+  var tAttente = 0, tDefile = 0, tCharge = 0, tFilm = 0, tArret = 0, vue = 0, surA = true;
 
   /* les disques et les pochettes des trois albums sont pris d avance :
      sans cela, en changeant d album, l ancien disque restait affiche le
@@ -4114,8 +4114,10 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
        tout charger au moment du changement d album saturait la ligne juste
        pendant l animation */
     p.media.forEach(function(m){ if (m.th){ var t = new Image(); t.src = m.th; } });
+    /* le premier element se prepare tout de suite : c est lui qu on va voir */
+    if (estFilm(p.media[0].src)) film(p.media[0].src);
     clearTimeout(tCharge);
-    tCharge = setTimeout(function(){ charger(p); }, 1200);
+    tCharge = setTimeout(function(){ charger(p); }, 900);
   }
   function charger(p){
     /* l album regarde a une eclipse : son film se prepare des maintenant,
@@ -4139,8 +4141,12 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* Un lecteur par film, garde et reutilise : il se charge avant son tour
      et garde ce qu il a telecharge, si bien qu au moment de passer il part
-     tout de suite. On le deplace dans la couche qui doit le montrer. */
-  var lecteurs = {};
+     tout de suite. On le deplace dans la couche qui doit le montrer.
+     Mais on n en garde que quelques uns : a force de changer d album, les
+     lecteurs s accumulaient, le navigateur n en decode qu un petit nombre
+     a la fois, et les films suivants ne demarraient plus. Les plus vieux,
+     ceux qui ne sont accroches a aucune couche, sont donc relaches. */
+  var lecteurs = {}, ordre = [], GARDE = 4;
   function film(src){
     var v = lecteurs[src];
     if (!v){
@@ -4148,22 +4154,37 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       v.className = 'pk-vid'; v.muted = true; v.playsInline = true;
       v.setAttribute('playsinline', ''); v.preload = 'auto';
       v.src = src;
-      lecteurs[src] = v;
+      lecteurs[src] = v; ordre.push(src);
+      menage();
+    } else {
+      var i = ordre.indexOf(src);
+      if (i >= 0){ ordre.splice(i, 1); ordre.push(src); }
     }
     return v;
   }
+  function menage(){
+    for (var i = 0; i < ordre.length && ordre.length > GARDE; ){
+      var s = ordre[i], v = lecteurs[s];
+      if (v && !v.parentNode){
+        try { v.pause(); v.removeAttribute('src'); v.load(); } catch (e) {}
+        delete lecteurs[s]; ordre.splice(i, 1);
+      } else i++;
+    }
+  }
   function eteindre(el){
     var v = el.querySelector('video');
-    if (v){ v.pause(); v.classList.remove('is-la'); }
+    /* dataset.stop : cette pause la est voulue, il ne faut pas relancer */
+    if (v){ v.dataset.stop = '1'; v.pause(); v.classList.remove('is-la'); }
   }
 
   function montrer(j){
     var m = PK[cur].media[j].src, el = surA ? bgA : bgB, autre = surA ? bgB : bgA;
     surA = !surA;
+    clearTimeout(tArret);                  // l arret differe ne doit pas tomber sur celui ci
     var duree = SLIDE;
     [].slice.call(strip.children).forEach(function(t, k){ t.classList.toggle('on', k === j); });
     var w = el.querySelector('video');
-    if (w && (!estFilm(m) || w.src.indexOf(m) < 0)){ w.pause(); el.removeChild(w); }
+    if (w && (!estFilm(m) || w.src.indexOf(m) < 0)){ w.dataset.stop = '1'; w.pause(); el.removeChild(w); }
     if (estFilm(m)){
       var v = film(m);
       if (v.parentNode !== el) el.appendChild(v);
@@ -4173,10 +4194,31 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       el.style.backgroundPosition = 'center';
       v.classList.remove('is-la');
       try { v.currentTime = 0; } catch (e) {}
-      v.play().catch(function(){});
+      /* Sorti d une couche pour etre mis dans l autre, le lecteur est mis en
+         pause par le navigateur lui meme, et cette pause arrive apres notre
+         demande de lecture : le film restait alors fige sur son image. On
+         lance donc a l image suivante, et on relance s il retombe en pause
+         sans avoir fini. */
+      v.dataset.stop = '';
+      var lance = function(){ if (!v.dataset.stop) v.play().catch(function(){}); };
+      requestAnimationFrame(function(){ requestAnimationFrame(lance); });
+      v.onpause = function(){
+        if (v.dataset.stop || !el.classList.contains('on') || parti) return;
+        if (v.duration && v.currentTime >= v.duration - .15) return;    // il est arrive au bout
+        lance();
+      };
       /* il n apparait qu une fois vraiment parti */
-      var voir = function(){ v.classList.add('is-la'); };
-      if (v.readyState >= 2) voir(); else v.addEventListener('playing', voir, {once: true});
+      var voir = function(){ clearTimeout(tFilm); v.classList.add('is-la'); };
+      v.addEventListener('playing', voir, {once: true});
+      if (!v.paused && v.readyState >= 2 && v.currentTime > 0) voir();
+      /* s il ne part pas (reseau, decodeur occupe), on ne reste pas devant
+         une image figee : on passe a la suite */
+      clearTimeout(tFilm);
+      tFilm = setTimeout(function(){
+        if (!el.classList.contains('on') || !pk.classList.contains('is-open')) return;
+        if (v.readyState < 2 || v.paused) suivant();
+      }, 1600);
+      v.onerror = function(){ if (el.classList.contains('on')) suivant(); };
       /* le film passe en entier, puis l image suivante : on attend sa vraie
          fin (il peut marquer un temps pour se charger) ; la minuterie n est
          qu un filet */
@@ -4214,7 +4256,13 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function fermer(){
     clearTimeout(tAttente); clearTimeout(tDefile);
     bgA.classList.remove('on'); bgB.classList.remove('on');
-    setTimeout(function(){ eteindre(bgA); eteindre(bgB); }, 800);
+    /* on n arrete que les couches qui ne montrent plus rien : sans cela,
+       cet arret differe tombait sur le film du nouvel album, qui venait de
+       partir, et le figeait sur sa premiere image */
+    clearTimeout(tArret);
+    tArret = setTimeout(function(){
+      [bgA, bgB].forEach(function(l){ if (!l.classList.contains('on')) eteindre(l); });
+    }, 800);
   }
 
   var enAttente = 0;                     // les appuis donnes pendant l animation
