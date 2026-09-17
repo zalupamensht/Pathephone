@@ -1945,6 +1945,8 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
   display:flex;flex-direction:column;gap:2px;padding:8px;border-radius:10px;
   background:rgba(12,11,10,.92);border:1px solid rgba(255,255,255,.12);
   opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+/* fermee, elle ne doit pas non plus attraper le clavier */
+.pk-list[hidden]{display:none}
 .picker.is-liste .pk-list{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .pk-ligne{display:flex;align-items:center;gap:12px;width:300px;padding:8px 10px;border:0;border-radius:7px;
   background:none;color:#e9e6e0;cursor:pointer;text-align:left;font:inherit;transition:background .2s}

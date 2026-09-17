@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=56">
+<link rel="stylesheet" href="style.css?v=57">
 </head>
 <body>
 
@@ -4061,7 +4061,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
              { src:'assets/trk3.jpg', th:'assets/matt_th3.webp' }] }
   ];
 
-  var cur = CUR_ALBUM, occupe = false, parti = false;
+  var cur = CUR_ALBUM, occupe = false, parti = false, plongeEnAttente = false;
   var tAttente = 0, tDefile = 0, tCharge = 0, tFilm = 0, tArret = 0, vue = 0, surA = true;
 
   /* les disques et les pochettes des trois albums sont pris d avance :
@@ -4146,7 +4146,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
      lecteurs s accumulaient, le navigateur n en decode qu un petit nombre
      a la fois, et les films suivants ne demarraient plus. Les plus vieux,
      ceux qui ne sont accroches a aucune couche, sont donc relaches. */
-  var lecteurs = {}, ordre = [], GARDE = 4;
+  var lecteurs = {}, ordre = [], GARDE = 7;
   function film(src){
     var v = lecteurs[src];
     if (!v){
@@ -4178,6 +4178,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
   function montrer(j){
+    if (parti) return;
     var m = PK[cur].media[j].src, el = surA ? bgA : bgB, autre = surA ? bgB : bgA;
     surA = !surA;
     clearTimeout(tArret);                  // l arret differe ne doit pas tomber sur celui ci
@@ -4215,14 +4216,14 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
          une image figee : on passe a la suite */
       clearTimeout(tFilm);
       tFilm = setTimeout(function(){
-        if (!el.classList.contains('on') || !pk.classList.contains('is-open')) return;
+        if (parti || !el.classList.contains('on') || !pk.classList.contains('is-open')) return;
         if (v.readyState < 2 || v.paused) suivant();
       }, 1600);
-      v.onerror = function(){ if (el.classList.contains('on')) suivant(); };
+      v.onerror = function(){ if (!parti && el.classList.contains('on')) suivant(); };
       /* le film passe en entier, puis l image suivante : on attend sa vraie
          fin (il peut marquer un temps pour se charger) ; la minuterie n est
          qu un filet */
-      v.onended = function(){ if (el.classList.contains('on') && pk.classList.contains('is-open')) suivant(); };
+      v.onended = function(){ if (!parti && el.classList.contains('on') && pk.classList.contains('is-open')) suivant(); };
       duree = ((v.duration || 6) + 4) * 1000;
     } else {
       el.style.backgroundImage = 'url(\'' + m + '\')';
@@ -4242,7 +4243,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     clearTimeout(tDefile);
     tDefile = setTimeout(suivant, duree);
   }
-  function suivant(){ vue = (vue + 1) % PK[cur].media.length; montrer(vue); }
+  function suivant(){ if (parti) return; vue = (vue + 1) % PK[cur].media.length; montrer(vue); }
 
   function ouvrir(){
     if (occupe || parti) return;
@@ -4265,14 +4266,18 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }, 800);
   }
 
-  var enAttente = 0;                     // les appuis donnes pendant l animation
+  var enAttente = 0, viseEnAttente = null;   // les appuis donnes pendant l animation
   /* dir : +1 vers le bas (album suivant), -1 vers le haut ; vise : on saute
      droit a cet album la (depuis la liste) */
   function feuilleter(dir, vise){
     if (parti) return;
     /* trois appuis rapides font trois albums : on les compte au lieu de les
        perdre, et ils partent l un apres l autre */
-    if (occupe){ if (vise == null) enAttente += dir; return; }
+    if (occupe){
+      if (vise == null) enAttente += dir;
+      else { viseEnAttente = vise; enAttente = 0; }        // la liste : on ira la des que possible
+      return;
+    }
     occupe = true;
     if (window.__ui) window.__ui('scroll', true);
     fermer();
@@ -4287,7 +4292,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         pk.classList.add(dir > 0 ? 'in-u' : 'in-d');
         setTimeout(function(){
           pk.classList.remove('in-u', 'in-d'); occupe = false;
-          if (enAttente){ var d = enAttente > 0 ? 1 : -1; enAttente -= d; feuilleter(d); }
+          if (plongeEnAttente){ plongeEnAttente = false; plonger(); return; }
+          if (viseEnAttente != null){ var q = viseEnAttente; viseEnAttente = null; allerA(q); }
+          else if (enAttente){ var d = enAttente > 0 ? 1 : -1; enAttente -= d; feuilleter(d); }
           else attendre();
         }, 400);
       }, 300);
@@ -4305,9 +4312,14 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     liste.hidden = false; void liste.offsetWidth;
     pk.classList.add('is-liste'); barres.setAttribute('aria-expanded', 'true');
     clearTimeout(tAttente);
+    /* le clavier entre dans la liste, sur l album ouvert */
+    var la = liste.querySelector('.pk-ligne.on') || liste.firstChild;
+    if (la && la.focus) setTimeout(function(){ la.focus(); }, 40);
   }
   function fermerListe(){
+    var dedans = liste.contains(document.activeElement);
     pk.classList.remove('is-liste'); barres.setAttribute('aria-expanded', 'false');
+    if (dedans && barres.focus) barres.focus();
     setTimeout(function(){ if (!pk.classList.contains('is-liste')) liste.hidden = true; }, 300);
     if (!pk.classList.contains('is-open')) attendre();
   }
@@ -4315,10 +4327,15 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function plonger(e){
     if (e) e.stopPropagation();
-    if (occupe || parti) return;
+    if (parti) return;
+    /* en plein changement d album : on plonge des qu il est fini, au lieu
+       de perdre le clic */
+    if (occupe){ plongeEnAttente = true; return; }
     parti = true;
-    clearTimeout(tAttente);
-    clearTimeout(tDefile);
+    /* plus rien ne tourne derriere : minuteries, films, ecoute des gestes */
+    clearTimeout(tAttente); clearTimeout(tDefile); clearTimeout(tCharge);
+    clearTimeout(tFilm); clearTimeout(tArret); clearTimeout(tRoue);
+    eteindre(bgA); eteindre(bgB);
     if (window.__ui) window.__ui('select', true);
     /* l album s arrete la ou il est, meme en plein glissement : on fige la
        transformation en cours */
@@ -4485,7 +4502,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (!body.classList.contains('is-picking')){ fin(); return; }
       /* ce geste ci va faire plonger le disque : inutile de lancer la
          musique pour l eteindre aussitot */
-      if (e && e.target && (hit.contains(e.target) || e.target === sleeve)) return;
+      var t = e && e.target;
+      if (t && t.nodeType === 1 && (hit.contains(t) || t === sleeve)) return;
       monter();
       if (!ctx) return;
       if (ctx.state !== 'running') ctx.resume().then(function(){ if (voulu) jouer(); });
@@ -4627,7 +4645,16 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         if (t === 0 || t < .05) pk.classList.add('is-water');     // le vrai disque s efface sous le canevas
         if (t < dur) requestAnimationFrame(image);
-        else fini();
+        else {
+          fini();
+          /* la nappe d eau a fini son travail : on la retire et on rend sa
+             memoire au navigateur, la page de l album n en a plus besoin */
+          setTimeout(function(){
+            var perte = gl.getExtension('WEBGL_lose_context');
+            if (perte) perte.loseContext();
+            if (cv.parentNode) cv.parentNode.removeChild(cv);
+          }, 1400);
+        }
       })(t0);
     }
     /* sans WebGL : le disque s enfonce en s effacant */
