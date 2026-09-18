@@ -2000,6 +2000,14 @@ body.is-picking .noise{display:none}
 /* au depart : plus rien ne repond, tout l ecran part ensuite vers la droite */
 .picker.is-part{pointer-events:none}
 .picker.is-part .pk-hit{cursor:default}
+/* tout tombe dans le vide, sans effet : il ne reste que le disque qui roule
+   sur le fond nu */
+.picker.is-part .pk-world,.picker.is-part .pk-sleeve,.picker.is-part .pk-peek,
+.picker.is-part .pk-info,.picker.is-part .pk-strip,.picker.is-part .pk-arrow,
+.picker.is-part .pk-vol{transform:translateY(125vh);
+  transition:transform .9s cubic-bezier(.5,0,.75,.3)}
+.picker.is-part .pk-menu{transform:translate(-50%,125vh);
+  transition:transform .9s cubic-bezier(.5,0,.75,.3)}
 /* la page de l album attend dessous, deja visible, le temps du glissement */
 body.is-picking.is-sortie .fit,body.is-picking.is-sortie .intro-hint{visibility:visible}
 /* puis la page devient eau (canevas WebGL, voir le script) ; sans WebGL,

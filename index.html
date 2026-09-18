@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=60">
+<link rel="stylesheet" href="style.css?v=61">
 </head>
 <body>
 
@@ -4030,9 +4030,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var COUPE = 480;                       // Hz : au dessus, le son est retire (sous l eau)
   var VOL = .6;                          // part du volume du site
   var ECHO = .35;                        // part d echo
-  var ROULE = 850;                       // ms : le disque roule jusqu au milieu (un tour)
-  var ELAN = 220;                        // ms : le petit retour en arriere
-  var SORTIE = 780;                      // ms : il s en va et emporte l ecran
+  var ROULE = 1200;                      // ms : le disque roule jusqu au milieu (un tour)
+  var ELAN = 260;                        // ms : le petit retour en arriere
+  var SORTIE = 1150;                     // ms : il s en va et emporte l ecran
 
   /* ce qui defile en fond quand l album s ouvre : des images, et des films
      (.mp4) glisses entre elles, qui passent en entier avant l image
@@ -4344,6 +4344,10 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     clearTimeout(tFilm); clearTimeout(tArret); clearTimeout(tRoue);
     eteindre(bgA); eteindre(bgB);
     if (window.__ui) window.__ui('select', true);
+    if (liste && !liste.hidden) fermerListe();   // la liste ne reste pas ouverte
+    /* tout le reste — la pochette, les voisins, le monde de l album, les
+       fleches, la bande, le volume — descend simplement dans le vide ;
+       il ne reste que le disque et le fond nu */
     pk.classList.add('is-part');           // plus rien ne repond au clic
     son.sombrer((ROULE + ELAN + SORTIE) / 1000);
 
