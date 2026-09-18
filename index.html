@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=61">
+<link rel="stylesheet" href="style.css?v=62">
 </head>
 <body>
 
@@ -4132,6 +4132,25 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (estFilm(m.src)){ avance[m.src] = true; if (m === p.media[0]) film(m.src); return; }
       var im = new Image(); im.src = m.src; avance[m.src] = im;
     });
+    /* et pendant qu on est ici, les albums d a cote se preparent en douce :
+       leurs vignettes et leurs images. C est ce qui faisait attendre au
+       premier passage — on arrivait sur un album dont rien n etait charge */
+    clearTimeout(tVoisins);
+    tVoisins = setTimeout(voisins, 1400);
+  }
+  var tVoisins;
+  function voisins(){
+    var n = ALBUMS.length;
+    [(cur + 1) % n, (cur - 1 + n) % n].forEach(function(i){
+      PK[i].media.forEach(function(m){
+        if (m.th && !avance['th:' + m.th]){ avance['th:' + m.th] = true; var t = new Image(); t.src = m.th; }
+        /* les films restent pour plus tard : deux albums de films charges
+           d avance, c est la ligne saturee pour rien */
+        if (estFilm(m.src) || avance[m.src]) return;
+        var im = new Image(); im.src = m.src; avance[m.src] = im;
+      });
+      var co = new Image(); co.src = ALBUMS[i].cover;
+    });
   }
   var avance = {};
   function estFilm(m){ return /\.mp4(\?|$)/.test(m); }
@@ -4298,8 +4317,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
           if (viseEnAttente != null){ var q = viseEnAttente; viseEnAttente = null; allerA(q); }
           else if (enAttente){ var d = enAttente > 0 ? 1 : -1; enAttente -= d; feuilleter(d); }
           else attendre();
-        }, 400);
-      }, 300);
+        }, 520);
+      }, 420);
     }, 0);
   }
   /* la liste : on va droit a l album choisi, par le chemin le plus court */
@@ -4341,7 +4360,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     parti = true;
     /* plus rien ne tourne derriere : minuteries, films, ecoute des gestes */
     clearTimeout(tAttente); clearTimeout(tDefile); clearTimeout(tCharge);
-    clearTimeout(tFilm); clearTimeout(tArret); clearTimeout(tRoue);
+    clearTimeout(tFilm); clearTimeout(tArret); clearTimeout(tRoue); clearTimeout(tVoisins);
     eteindre(bgA); eteindre(bgB);
     if (window.__ui) window.__ui('select', true);
     if (liste && !liste.hidden) fermerListe();   // la liste ne reste pas ouverte

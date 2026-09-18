@@ -1987,33 +1987,57 @@ body.is-picking .noise{display:none}
 #pkVol::-moz-range-thumb{width:7px;height:7px;border:0;border-radius:50%;background:currentColor}
 #pkVol:focus-visible{outline:none}
 
-/* feuilleter : l album monte ou descend, et le voisin prend sa place */
-.picker.out-u .pk-album{animation:pkoutu .3s cubic-bezier(.5,0,.8,.4) forwards}
-.picker.out-d .pk-album{animation:pkoutd .3s cubic-bezier(.5,0,.8,.4) forwards}
-.picker.in-u .pk-album{animation:pkinu .4s cubic-bezier(.2,.6,.3,1) forwards}
-.picker.in-d .pk-album{animation:pkind .4s cubic-bezier(.2,.6,.3,1) forwards}
-@keyframes pkoutu{to{transform:translateY(-135%);opacity:0}}
-@keyframes pkoutd{to{transform:translateY(35%);opacity:0}}
+/* feuilleter : l album prend d abord son elan du cote oppose — un centimetre
+   a peine — puis s en va, et le voisin arrive a sa place en rebondissant */
+.picker.out-u .pk-album{animation:pkoutu .42s cubic-bezier(.5,0,.8,.4) forwards}
+.picker.out-d .pk-album{animation:pkoutd .42s cubic-bezier(.5,0,.8,.4) forwards}
+.picker.in-u .pk-album{animation:pkinu .52s cubic-bezier(.2,.9,.3,1.08) forwards}
+.picker.in-d .pk-album{animation:pkind .52s cubic-bezier(.2,.9,.3,1.08) forwards}
+@keyframes pkoutu{0%{transform:translateY(-50%)}26%{transform:translateY(calc(-50% + 11px))}
+  100%{transform:translateY(-135%);opacity:0}}
+@keyframes pkoutd{0%{transform:translateY(-50%)}26%{transform:translateY(calc(-50% - 11px))}
+  100%{transform:translateY(35%);opacity:0}}
 @keyframes pkinu{from{transform:translateY(35%);opacity:0}to{transform:translateY(-50%)}}
 @keyframes pkind{from{transform:translateY(-135%);opacity:0}to{transform:translateY(-50%)}}
+
+/* le texte suit l album, du meme cote */
+.picker.out-u .pk-info{animation:pkinfou .42s cubic-bezier(.5,0,.8,.4) forwards}
+.picker.out-d .pk-info{animation:pkinfod .42s cubic-bezier(.5,0,.8,.4) forwards}
+.picker.in-u .pk-info{animation:pkinfoinu .52s cubic-bezier(.2,.9,.3,1.08) forwards}
+.picker.in-d .pk-info{animation:pkinfoind .52s cubic-bezier(.2,.9,.3,1.08) forwards}
+@keyframes pkinfou{0%{transform:translateY(-44%)}26%{transform:translateY(calc(-44% + 9px))}
+  100%{transform:translateY(-110%);opacity:0}}
+@keyframes pkinfod{0%{transform:translateY(-44%)}26%{transform:translateY(calc(-44% - 9px))}
+  100%{transform:translateY(25%);opacity:0}}
+@keyframes pkinfoinu{from{transform:translateY(25%);opacity:0}to{transform:translateY(-44%)}}
+@keyframes pkinfoind{from{transform:translateY(-110%);opacity:0}to{transform:translateY(-44%)}}
+
+/* la bande du bas, elle, part toujours par le bas : elle se souleve d un
+   cheveu, tombe hors de l ecran, et les nouvelles vignettes remontent */
+.picker.out-u .pk-strip,.picker.out-d .pk-strip{animation:pkstripout .42s cubic-bezier(.5,0,.8,.4) forwards}
+.picker.in-u .pk-strip,.picker.in-d .pk-strip{animation:pkstripin .56s cubic-bezier(.2,.9,.3,1.12) forwards}
+@keyframes pkstripout{0%{transform:translateY(0)}26%{transform:translateY(-10px)}
+  100%{transform:translateY(145%);opacity:0}}
+@keyframes pkstripin{from{transform:translateY(145%);opacity:0}60%{opacity:1}to{transform:translateY(0);opacity:1}}
 
 /* au depart : plus rien ne repond, tout l ecran part ensuite vers la droite */
 .picker.is-part{pointer-events:none}
 .picker.is-part .pk-hit{cursor:default}
-/* tout tombe dans le vide, sans effet : il ne reste que le disque qui roule
-   sur le fond nu */
-.picker.is-part .pk-world,.picker.is-part .pk-sleeve,.picker.is-part .pk-peek,
+/* tout s en va vers le fond — comme le patephone arrive de la profondeur,
+   mais a l envers : flou, pale, un peu plus petit. Le fond de l album, lui,
+   reste : ses films continuent de jouer derriere le disque qui roule. */
+.picker.is-part .pk-sleeve,.picker.is-part .pk-peek,
 .picker.is-part .pk-info,.picker.is-part .pk-strip,.picker.is-part .pk-arrow,
-.picker.is-part .pk-vol{transform:translateY(125vh);
-  transition:transform .9s cubic-bezier(.5,0,.75,.3)}
-.picker.is-part .pk-menu{transform:translate(-50%,125vh);
-  transition:transform .9s cubic-bezier(.5,0,.75,.3)}
+.picker.is-part .pk-vol,.picker.is-part .pk-menu{
+  opacity:0;filter:blur(11px) brightness(1.5);
+  transition:opacity .85s ease-in,filter .85s ease-in,transform .85s cubic-bezier(.4,0,.6,1)}
+.picker.is-part .pk-sleeve,.picker.is-part .pk-peek,
+.picker.is-part .pk-strip,.picker.is-part .pk-arrow,
+.picker.is-part .pk-vol{transform:scale(.84)}
+.picker.is-part .pk-info{transform:translateY(-44%) scale(.84)}
+.picker.is-part .pk-menu{transform:translateX(-50%) scale(.84)}
 /* la page de l album attend dessous, deja visible, le temps du glissement */
 body.is-picking.is-sortie .fit,body.is-picking.is-sortie .intro-hint{visibility:visible}
-/* puis la page devient eau (canevas WebGL, voir le script) ; sans WebGL,
-   le disque s efface en s enfoncant */
-@keyframes pksink{0%{transform:scale(1);opacity:1}100%{transform:translateY(8%) scale(.6);opacity:0;filter:blur(8px)}}
-
 /* puis le noir de l ecran d accueil : on passe de l un a l autre sans raccord */
 .pk-veil{position:absolute;inset:0;background:#0b0a09;opacity:0;pointer-events:none;transition:opacity 1s ease;z-index:8}
 .picker.is-dark .pk-veil{opacity:1}
