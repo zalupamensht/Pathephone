@@ -4029,6 +4029,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var SLIDE = 5000;                      // ms par image du fond
   var COUPE = 480;                       // Hz : au dessus, le son est retire (sous l eau)
   var VOL = .84;                         // part du volume du site
+  var BAS = 170;                         // Hz : les graves coupes en dessous (0 = rien)
   var ECHO = .35;                        // part d echo
   var ROULE = 1200;                      // ms : le disque roule jusqu au milieu (un tour)
   var ELAN = 260;                        // ms : le petit retour en arriere
@@ -4485,7 +4486,17 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (ctx) return;
       try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
       var src = ctx.createMediaElementSource(lecteur);
-      var qs = [.5176, .7071, 1.9319], prec = src;          // un Butterworth d ordre 6
+      var prec = src;
+      /* PROVISOIRE (pour filmer) : les graves partent. Sur les petits
+         haut parleurs d un portable ils ne sortent pas en note mais en
+         souffle, et ils salissent tout le reste. Mettre BAS a 0 pour les
+         rendre. */
+      if (BAS){
+        var hp = ctx.createBiquadFilter();
+        hp.type = 'highpass'; hp.frequency.value = BAS; hp.Q.value = .7071;
+        prec.connect(hp); prec = hp; filtres.push(hp);
+      }
+      var qs = [.5176, .7071, 1.9319];                      // un Butterworth d ordre 6
       qs.forEach(function(q){
         var f = ctx.createBiquadFilter();
         f.type = 'lowpass'; f.frequency.value = COUPE; f.Q.value = q;
