@@ -1875,7 +1875,10 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
 .pk-hit{position:absolute;left:calc(var(--S) * .45);top:calc(var(--S) * .03);width:calc(var(--S) * .94);aspect-ratio:1;
   z-index:1;padding:0;border:0;background:none;border-radius:50%;cursor:pointer}
 .pk-hit:focus-visible{outline:1px solid currentColor;outline-offset:8px}
-.pk-sink{position:absolute;inset:0}
+/* la souris passe sur l album : le disque sort un peu de sa pochette */
+.pk-sink{position:absolute;inset:0;transition:transform .4s cubic-bezier(.2,.7,.2,1)}
+.pk-album:hover .pk-sink,.pk-hit:focus-visible .pk-sink{transform:translateX(11%)}
+.picker.is-leaving .pk-sink,.picker.is-sinking .pk-sink{transition:none}
 /* le disque tourne sans arret : sa propre couche, pour ne pas repeindre la
    pochette derriere lui a chaque image */
 .pk-disc{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;
