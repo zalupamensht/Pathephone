@@ -4591,6 +4591,36 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     } };
   })();
 
+  /* le curseur de volume : il regle le site entier, l apercu compris, et
+     la page de l album le retrouve tel quel */
+  var volSite = document.getElementById('vol');
+  curseur.value = Math.round((theme.volume || .85) * 100);
+  curseur.style.setProperty('--v', curseur.value + '%');
+  curseur.addEventListener('input', function(){
+    var v = curseur.value / 100;
+    theme.volume = v;
+    curseur.style.setProperty('--v', curseur.value + '%');
+    if (volSite){ volSite.value = curseur.value; volSite.style.setProperty('--v', curseur.value + '%'); }
+    son.regler();
+  });
+  curseur.addEventListener('keydown', function(e){ e.stopPropagation(); });   // les fleches restent au curseur
+  /* une seule touche pour couper le son : elle vaut pour tout le site, et
+     le curseur garde sa place, pour la retrouver en le rallumant */
+  function peindreMuet(){
+    var m = !!theme.muted;
+    pk.classList.toggle('is-muet', m);
+    muet.setAttribute('aria-pressed', m ? 'true' : 'false');
+    muet.setAttribute('aria-label', m ? 'Sound on' : 'Sound off');
+  }
+  muet.addEventListener('click', function(e){
+    e.stopPropagation();
+    theme.muted = !theme.muted;
+    peindreMuet();
+    son.regler();
+  });
+  muet.addEventListener('keydown', function(e){ e.stopPropagation(); });
+  peindreMuet();
+
   remplir(cur);
   son.jouer();
   attendre();
