@@ -1837,8 +1837,6 @@ body.is-picking .fit,body.is-picking .intro-hint{visibility:hidden}
    pour rien coutait des images par seconde, et le disque saccadait */
 body.is-picking .bg,body.is-picking .halftone,body.is-picking .scan,
 body.is-picking .noise{display:none}
-body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
-@keyframes pkreveal{from{opacity:0}to{opacity:1}}
 
 .pk-glow{position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(55% 60% at 50% 48%,rgba(255,255,255,.3),transparent 70%)}
@@ -1878,7 +1876,9 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
 /* la souris passe sur l album : le disque sort un peu de sa pochette */
 .pk-sink{position:absolute;inset:0;transition:transform .4s cubic-bezier(.2,.7,.2,1)}
 .pk-album:hover .pk-sink,.pk-hit:focus-visible .pk-sink{transform:translateX(11%)}
-.picker.is-leaving .pk-sink,.picker.is-sinking .pk-sink{transition:none}
+/* pendant le depart, le disque ne tourne plus sur lui meme : son tour,
+   c est celui du roulement */
+.picker.is-part .pk-disc{animation-play-state:paused}
 /* le disque tourne sans arret : sa propre couche, pour ne pas repeindre la
    pochette derriere lui a chaque image */
 .pk-disc{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;
@@ -1976,7 +1976,7 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
   opacity:.16;transition:opacity .25s,color .6s;color:var(--pk-ink)}
 .pk-vol:hover,.pk-vol:focus-within{opacity:.5}
 .picker.is-open .pk-vol{color:#fff}
-.picker.is-leaving .pk-vol{opacity:0;pointer-events:none;transition:opacity .45s}
+.picker.is-part .pk-vol{pointer-events:none}
 #pkVol{-webkit-appearance:none;appearance:none;width:84px;height:14px;background:none;cursor:pointer;margin:0}
 #pkVol::-webkit-slider-runnable-track{height:1px;
   background:linear-gradient(90deg,currentColor 0 var(--v,85%),color-mix(in srgb,currentColor 35%,transparent) var(--v,85%) 100%)}
@@ -1997,18 +1997,13 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
 @keyframes pkinu{from{transform:translateY(35%);opacity:0}to{transform:translateY(-50%)}}
 @keyframes pkind{from{transform:translateY(-135%);opacity:0}to{transform:translateY(-50%)}}
 
-/* au clic : tout s efface — la pochette, les voisins, le monde de l album —
-   sauf le disque, qui sort de sa pochette jusqu au centre */
-.picker.is-leaving .pk-peek,.picker.is-leaving .pk-menu,.picker.is-leaving .pk-list,
-.picker.is-leaving .pk-sleeve,.picker.is-leaving .pk-arrow,
-.picker.is-leaving .pk-info,.picker.is-leaving .pk-strip{opacity:0;transition:opacity .45s ease;pointer-events:none}
-.picker.is-leaving .pk-world{opacity:0;transition:opacity .6s ease}
-.picker.is-leaving .pk-hit{cursor:default}
+/* au depart : plus rien ne repond, tout l ecran part ensuite vers la droite */
+.picker.is-part{pointer-events:none}
+.picker.is-part .pk-hit{cursor:default}
+/* la page de l album attend dessous, deja visible, le temps du glissement */
+body.is-picking.is-sortie .fit,body.is-picking.is-sortie .intro-hint{visibility:visible}
 /* puis la page devient eau (canevas WebGL, voir le script) ; sans WebGL,
    le disque s efface en s enfoncant */
-.pk-eau{position:absolute;inset:0;width:100%;height:100%;z-index:7;pointer-events:none}
-.picker.is-water .pk-hit{visibility:hidden}
-.picker.is-sinking .pk-sink{animation:pksink 1.1s cubic-bezier(.45,0,.2,1) forwards}
 @keyframes pksink{0%{transform:scale(1);opacity:1}100%{transform:translateY(8%) scale(.6);opacity:0;filter:blur(8px)}}
 
 /* puis le noir de l ecran d accueil : on passe de l un a l autre sans raccord */
