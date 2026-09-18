@@ -1872,7 +1872,7 @@ body.pk-from .fit,body.pk-from .intro-hint{animation:pkreveal 1.3s ease both}
   will-change:transform}
 .pk-sleeve{position:absolute;left:0;top:0;width:var(--S);height:var(--S);object-fit:cover;z-index:2;
   box-shadow:0 18px 44px rgba(0,0,0,.45);cursor:pointer;transition:opacity .5s ease}
-.pk-hit{position:absolute;left:calc(var(--S) * .45);top:calc(var(--S) * .03);width:calc(var(--S) * .94);aspect-ratio:1;
+.pk-hit{position:absolute;left:calc(var(--S) * .47);top:calc(var(--S) * .053);width:calc(var(--S) * .893);aspect-ratio:1;
   z-index:1;padding:0;border:0;background:none;border-radius:50%;cursor:pointer}
 .pk-hit:focus-visible{outline:1px solid currentColor;outline-offset:8px}
 /* la souris passe sur l album : le disque sort un peu de sa pochette */
