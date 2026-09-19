@@ -1310,6 +1310,37 @@ body.alb-crypt .sleeve{filter:contrast(1.04)}
    que l image d origine. On ne garde que son ombre portee. */
 body.alb-crypt .disc{filter:drop-shadow(0 6px 10px rgba(20,18,15,.45))}
 
+/* ---- la platine : noire a reflet sanguine, comme la pochette ----
+   Le blanc creme d origine tranchait avec l album ; ici le bois est noir,
+   le metal du bras reste argente et le bouton prend le rouge de la
+   pochette. Aucun autre album n est touche. */
+body.alb-crypt .deck-plinth{
+  background:linear-gradient(168deg,#170a0c 0%,#0a0405 48%,#030101 100%);
+  box-shadow:
+    0 30px 46px rgba(0,0,0,.6),
+    0 6px 12px rgba(0,0,0,.44),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+body.alb-crypt .deck-face{
+  background:linear-gradient(178deg,#221618 0%,#150d0f 40%,#1b1214 70%,#0b0607 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09),inset 0 -2px 8px rgba(0,0,0,.62);
+}
+body.alb-crypt .deck-face::after{display:none}
+/* le plateau : un peu plus clair que le bois, pour que le disque s y pose */
+body.alb-crypt .platter::before{
+  background:radial-gradient(circle at 38% 30%,#332426 0%,#1c1315 46%,#0c0708 100%);
+  box-shadow:0 10px 20px rgba(0,0,0,.52),inset 0 0 0 1px rgba(226,186,188,.14);
+}
+body.alb-crypt .arm-tube{background:linear-gradient(180deg,#9d9694,#615a5c 52%,#342e30)}
+body.alb-crypt .arm-pivot{
+  background:radial-gradient(circle at 36% 30%,#a29a98,#605a5b 60%,#302b2c 100%);
+}
+body.alb-crypt .spindle{background:linear-gradient(180deg,#cdc6c5,#5c5657)}
+body.alb-crypt .deck-knob{
+  background:linear-gradient(180deg,#c04a56,#6d1722);
+  box-shadow:0 2px 4px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.35);
+}
+
 /* ---- pastilles : un rond sombre, cercle de sanguine ---- */
 body.alb-crypt .trk .bub,
 body.alb-crypt .alb-t-crypt .bub{
