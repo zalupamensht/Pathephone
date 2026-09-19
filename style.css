@@ -1310,6 +1310,18 @@ body.alb-crypt .sleeve{filter:contrast(1.04)}
    que l image d origine. On ne garde que son ombre portee. */
 body.alb-crypt .disc{filter:drop-shadow(0 6px 10px rgba(20,18,15,.45))}
 
+/* le fond anime : le film prend toute la largeur et se pose au milieu ;
+   au dessus et au dessous reste l image fixe, dont il est issu, si bien que
+   la jointure ne se voit pas. Il n existe que pour cet album. */
+.crypt-film{display:none}
+body.alb-crypt .crypt-film{
+  display:block;position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:100%;height:auto;z-index:0;pointer-events:none;
+  opacity:0;transition:opacity 1.4s ease .3s;
+}
+body.alb-crypt.is-stage .crypt-film,
+body.alb-crypt.is-lighten .crypt-film{opacity:1}
+
 /* ---- la platine : graphite, sans rougeur ----
    Le creme d origine tirait tout l ecran a lui. Ici un gris de plomb
    neutre : il ne discute ni avec la pochette ni avec le fond, et le disque
