@@ -1288,7 +1288,7 @@ body.alb-crypt .deco{
   display:block;
   position:absolute;inset:0;z-index:0;
   overflow:hidden;
-  background:url("assets/bg4.jpg?v=3") center center / cover no-repeat;
+  background:url("assets/bg4.jpg?v=4") center center / cover no-repeat;
   pointer-events:none;
   opacity:0;transition:opacity 1.4s ease .3s;
   animation:bgdrift 76s ease-in-out infinite alternate;
