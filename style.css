@@ -2125,4 +2125,7 @@ body.is-picking.is-sortie .fit,body.is-picking.is-sortie .intro-hint{visibility:
 /* un album sans ecran d accueil a lui s ouvre tout de suite apres le choix
    du disque : ni signe, ni eclipse, ni vol ; la page se leve du noir */
 body.is-direct .intro-logo,body.is-direct .eclipse,body.is-direct .intro-hint{display:none}
-body.is-direct .disc-fly,body.is-direct .disc-fly::after{animation:none}
+/* le disque n a pas d arrivee a jouer ici : sans animation il restait au
+   zero de depart, donc invisible. Il est simplement la, des le debut. */
+body.is-direct .disc-fly{animation:none;opacity:1;transform:none}
+body.is-direct .disc-fly::after{animation:none;opacity:0}
