@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=62">
+<link rel="stylesheet" href="style.css?v=63">
 </head>
 <body>
 
@@ -2295,6 +2295,27 @@ var A3 = [
     ] }
 ];
 
+/* Le quatrieme album. Les paroles ne sont pas encore la : le tableau reste
+   vide, la page s en accommode. Les tempos sont mesures sur les fichiers,
+   a l oreille pres — a corriger si une animation tombe a cote. */
+var A4 = [
+  { name:"ALL SPEAKERS GO TO HEAVEN", audio:"assets/b4_1.mp3" + AV, bpm:150, lyrics:[] },
+  { name:"THE 9TH CIRCLE", audio:"assets/b4_2.mp3" + AV, bpm:94, lyrics:[] },
+  { name:"SPEED DEMON", audio:"assets/b4_3.mp3" + AV, bpm:122, lyrics:[] },
+  { name:"STONE IN FOCUS", audio:"assets/b4_4.mp3" + AV, bpm:94, lyrics:[] },
+  { name:"MISS BEHAVIOR", audio:"assets/b4_5.mp3" + AV, bpm:140, lyrics:[] },
+  { name:"BYOB", audio:"assets/b4_6.mp3" + AV, bpm:94, lyrics:[] },
+  { name:"OROCHIMARU", audio:"assets/b4_7.mp3" + AV, bpm:158, lyrics:[] },
+  { name:"MARRIED TO MY JEWELER", audio:"assets/b4_8.mp3" + AV, bpm:102, lyrics:[] },
+  { name:"C SECTION", audio:"assets/b4_9.mp3" + AV, bpm:154, lyrics:[] },
+  { name:"CO POISON", audio:"assets/b4_10.mp3" + AV, bpm:111, lyrics:[] },
+  { name:"SAFESPACE", audio:"assets/b4_11.mp3" + AV, bpm:103, lyrics:[] },
+  { name:"ZYGOTE", audio:"assets/b4_12.mp3" + AV, bpm:176, lyrics:[] },
+  { name:"SSJ2", audio:"assets/b4_13.mp3" + AV, bpm:171, lyrics:[] },
+  { name:"PEACE IN PANDEMONIUM", audio:"assets/b4_14.mp3" + AV, bpm:97, lyrics:[] },
+  { name:"BLACKPINK YZY", audio:"assets/b4_15.mp3" + AV, bpm:140, lyrics:[] }
+];
+
 var ALBUMS = [
   { title:'Unmusique', by:'Lucy Bedroque', theme:'paper',
     disc:'assets/disc.webp?v=2', cover:'assets/cover.jpg', thumb:'assets/alb1.jpg',
@@ -2325,7 +2346,16 @@ var ALBUMS = [
     disc:'assets/disc3.webp?v=2', cover:'assets/cover3.jpg', thumb:'assets/alb3.jpg',
     art:'assets/trk3.jpg', artFill:true,
     start:0,                                  /* la piste nommee 5 ouvre l album */
-    tracks: A3 }
+    tracks: A3 },
+
+  /* Le nouvel album : pour l instant sa pochette tient lieu de tout — image
+     des pistes, fond de la page, fond du choix. Son climat lui appartient
+     (alb-crypt) : retoucher celui d un autre album ne le touchera pas. */
+  { title:'C', by:'Lucy Bedroque', theme:'crypt',
+    disc:'assets/disc4.webp', cover:'assets/cover4.jpg', thumb:'assets/alb4.jpg',
+    art:'assets/trk4.jpg', artFill:true,
+    start:0,                                  /* All Speakers Go To Heaven ouvre l album */
+    tracks: A4 }
 ];
 
 /* l album ouvert : une seule variable, lue partout, jamais recopiee */
@@ -4061,7 +4091,12 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     /* plus fort que les deux autres une fois filtre : ramene a leur niveau */
     { from:20, gain:.6, meta:'12 tracks', eau:[.42, .35, .23],
       media:[{ src:'assets/bg3.jpg', th:'assets/matt_th1.webp' }, { src:'assets/cover3.jpg', th:'assets/matt_th2.webp' },
-             { src:'assets/trk3.jpg', th:'assets/matt_th3.webp' }] }
+             { src:'assets/trk3.jpg', th:'assets/matt_th3.webp' }] },
+    /* le nouvel album n a encore ni films ni photos : sa pochette et le fond
+       tire d elle font tout le tour */
+    { from:8, gain:.9, meta:'15 tracks',
+      media:[{ src:'assets/bg4.jpg', th:'assets/alb4.jpg' },
+             { src:'assets/cover4.jpg', th:'assets/alb4.jpg' }] }
   ];
 
   var cur = CUR_ALBUM, occupe = false, parti = false, plongeEnAttente = false;
