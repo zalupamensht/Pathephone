@@ -1288,7 +1288,7 @@ body.alb-crypt .deco{
   display:block;
   position:absolute;inset:0;z-index:0;
   overflow:hidden;
-  background:url("assets/bg4.jpg") center center / cover no-repeat;
+  background:url("assets/bg4.jpg?v=2") center center / cover no-repeat;
   pointer-events:none;
   opacity:0;transition:opacity 1.4s ease .3s;
   animation:bgdrift 76s ease-in-out infinite alternate;
@@ -1302,6 +1302,9 @@ body.alb-crypt .noise{opacity:.12}
 body.alb-crypt .vignette{
   background:radial-gradient(ellipse at 50% 46%,rgba(12,4,5,0) 52%,rgba(12,4,5,.46) 100%);
 }
+
+/* la pochette reste en couleur ici — ailleurs elle passe en noir et blanc */
+body.alb-crypt .sleeve{filter:contrast(1.04)}
 
 /* ---- pastilles : un rond sombre, cercle de sanguine ---- */
 body.alb-crypt .trk .bub,
