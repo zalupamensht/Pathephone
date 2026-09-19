@@ -1305,6 +1305,10 @@ body.alb-crypt .vignette{
 
 /* la pochette reste en couleur ici — ailleurs elle passe en noir et blanc */
 body.alb-crypt .sleeve{filter:contrast(1.04)}
+/* le disque est rendu tel qu il a ete fait : l assombrissement et le
+   contraste du site le transformaient en un objet plus dur et plus sombre
+   que l image d origine. On ne garde que son ombre portee. */
+body.alb-crypt .disc{filter:drop-shadow(0 6px 10px rgba(20,18,15,.45))}
 
 /* ---- pastilles : un rond sombre, cercle de sanguine ---- */
 body.alb-crypt .trk .bub,
