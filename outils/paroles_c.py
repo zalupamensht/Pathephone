@@ -74,12 +74,24 @@ def chercher(titre, duree):
 
 
 def decouper(lrc):
-    """le LRC devient la liste attendue par le site : t en secondes"""
+    """Le LRC devient la liste attendue par le site : t en secondes.
+
+    Une ligne peut porter plusieurs temps a la suite — c est ainsi qu un
+    refrain repete s ecrit sans se recopier. Chacun devient alors sa propre
+    entree, et le texte n en garde aucun : sinon le temps restait colle
+    devant les paroles et s affichait sur la page.
+    """
     lignes = []
-    for m in re.finditer(r'\[(\d+):(\d+(?:\.\d+)?)\]\s*(.*)', lrc):
-        t = round(int(m.group(1)) * 60 + float(m.group(2)), 2)
-        txt = m.group(3).strip()
-        lignes.append({'t': t, 'text': txt} if txt else {'t': t, 'music': True})
+    for brute in lrc.splitlines():
+        temps = re.findall(r'\[(\d+):(\d+(?:\.\d+)?)\]', brute)
+        if not temps:
+            continue
+        txt = re.sub(r'^(?:\s*\[\d+:\d+(?:\.\d+)?\])+\s*', '', brute).strip()
+        txt = re.sub(r'\[\d+:\d+(?:\.\d+)?\]', '', txt).strip()
+        for mn, sec in temps:
+            t = round(int(mn) * 60 + float(sec), 2)
+            lignes.append({'t': t, 'text': txt} if txt else {'t': t, 'music': True})
+    lignes.sort(key=lambda l: l['t'])
     return lignes
 
 
