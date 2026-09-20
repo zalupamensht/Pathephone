@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=71">
+<link rel="stylesheet" href="style.css?v=72">
 </head>
 <body>
 
@@ -78,12 +78,6 @@
     <!-- l ouverture filmee de la page de Jane : le papier nu se garnit -->
     <video class="jr-intro" id="jrIntro" src="assets/jr_intro.mp4"
            data-poster="assets/jr_intro_start.jpg" muted playsinline preload="none"
-           disablepictureinpicture aria-hidden="true"></video>
-    <!-- le fond anime de l album « C » : les rouages du decor tournent, un
-         a-coup par temps du morceau. Il est pose en pleine largeur au milieu ;
-         le haut et le bas restent l image fixe, qui lui est identique. -->
-    <video class="crypt-film" id="cryptFilm" src="assets/bg4_film.mp4"
-           muted loop playsinline preload="none"
            disablepictureinpicture aria-hidden="true"></video>
     <!-- ce qui vit par dessus le fond : fleurs, traits de lumiere, braises -->
     <span class="deco-life" aria-hidden="true">
@@ -4047,46 +4041,6 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
    l ecran.
    L ecran d accueil de cet album suit — ou l album lui meme, s il n a pas
    encore d ecran d accueil. */
-/* ---- Les rouages du fond de « C » ----
-   Le film tourne par a-coups ; sa vitesse est reglee pour qu un a-coup
-   tombe sur un temps du morceau, quel que soit son tempo. A l arret de la
-   musique le film s arrete aussi : les rouages attendent avec elle. */
-(function(){
-  var film = document.getElementById('cryptFilm');
-  if (!film || MOBILE) return;
-  var corps = document.body;
-  var SAUTS = 8;                       // a-coups contenus dans le film
-  var demande = false;
-  function ici(){
-    return corps.classList.contains('alb-crypt') &&
-      (corps.classList.contains('is-stage') || corps.classList.contains('is-lighten'));
-  }
-  function vitesse(bpm){
-    var d = film.duration || 5.04;
-    return Math.max(.35, Math.min(3, (d / SAUTS) / (60 / (bpm || 100))));
-  }
-  function tour(){
-    requestAnimationFrame(tour);
-    if (!ici()){
-      if (demande){ try { film.pause(); } catch (e) {} demande = false; }
-      return;
-    }
-    /* on ne telecharge le film qu une fois sur cet album : ailleurs il ne
-       sert a rien et prendrait la ligne pendant la musique */
-    if (!demande){
-      demande = true;
-      if (film.preload !== 'auto'){ film.preload = 'auto'; film.load(); }
-    }
-    var info = window.__trackInfo ? window.__trackInfo() : null;
-    var joue = !!(info && info.joue);
-    var r = vitesse(info && info.bpm);
-    if (Math.abs(film.playbackRate - r) > .01){ try { film.playbackRate = r; } catch (e) {} }
-    if (joue && film.paused) film.play().catch(function(){});
-    else if (!joue && !film.paused) film.pause();
-  }
-  requestAnimationFrame(tour);
-})();
-
 (function(){
   var pk = document.getElementById('picker');
   if (!pk || !PICKER) return;
