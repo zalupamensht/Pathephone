@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=72">
+<link rel="stylesheet" href="style.css?v=73">
 </head>
 <body>
 
@@ -61,7 +61,6 @@
     </button>
     <input id="pkVol" type="range" min="0" max="100" value="85" aria-label="Volume">
   </div>
-  <div class="pk-veil"></div>
 </div>
 
 <div class="bg">
@@ -2513,7 +2512,7 @@ var A4 = [
         { t: 84.64, text: "I'll drop all these hoes for your sake, I'm your only other, girl" },
         { t: 88.18, text: "With my baby, pose for the mags" },
         { t: 89.83, text: "Jaw droppin', all these ladies mad, jaw droppin' off" },
-        { t: 92.91, text: "I got rocks on both of my hands, I'll never [?]" },
+        { t: 92.91, text: "I got rocks on both of my hands, I'll never" },
         { t: 96.28, text: "Where— w-where are my Jack Dan's when you call?" },
         { t: 99.95, text: "And, bae, I like your stance, made me crawl" },
         { t: 103.47, text: "I lay here, under your hands" },
@@ -4041,6 +4040,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   vol.addEventListener('input', function(){
     audio.volume = vol.value / 100;
     vol.style.setProperty('--v', vol.value + '%');
+    /* le son coupe dans le choix du disque se rallume ici : sans cela la
+       musique restait muette et rien sur la page ne la rendait */
+    if (audio.muted) audio.muted = false;
   });
   vol.style.setProperty('--v', vol.value + '%');
 
@@ -4267,7 +4269,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         b.play().catch(function(){});
       }
       var x = b.paused ? 0 : Math.min(1, b.currentTime / FONDU_BOUCLE);
-      var vol = amb.niveau * VOL_AMBIANCE * audio.volume;
+      var vol = audio.muted ? 0 : amb.niveau * VOL_AMBIANCE * audio.volume;
       a.volume = Math.max(0, Math.min(1, vol * Math.cos(x * Math.PI / 2)));
       b.volume = Math.max(0, Math.min(1, vol * Math.sin(x * Math.PI / 2)));
       if (x >= 1){ a.pause(); amb.actif = 1 - amb.actif; }
@@ -4323,11 +4325,11 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     demarre_a = performance.now();
     try { sonSurvolSigne.pause(); } catch (e) {}            // le clic prend la place du survol
     if (!direct){
-      try { sonDepart.currentTime = 0; sonDepart.volume = audio.volume; sonDepart.play().catch(function(){}); } catch (e) {}
+      try { sonDepart.currentTime = 0; sonDepart.volume = audio.muted ? 0 : audio.volume; sonDepart.play().catch(function(){}); } catch (e) {}
     }
     /* sur telephone il n y a pas d animation : la musique part tout de suite */
     if (!MOBILE && !direct){
-      try { sonEclipse.currentTime = 0; sonEclipse.volume = audio.volume; sonEclipse.play().catch(function(){}); } catch (e) {}
+      try { sonEclipse.currentTime = 0; sonEclipse.volume = audio.muted ? 0 : audio.volume; sonEclipse.play().catch(function(){}); } catch (e) {}
     }
     if (amb){ amb.fini = true; amb.aller(0, 1500); }
 
@@ -4481,7 +4483,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var now = performance.now();
       if (now - survole_a < 250) return;     // un passage qui tremble au bord ne rejoue pas
       survole_a = now;
-      try { sonSurvolSigne.currentTime = 0; sonSurvolSigne.volume = audio.volume; sonSurvolSigne.play().catch(function(){}); } catch (err) {}
+      try { sonSurvolSigne.currentTime = 0; sonSurvolSigne.volume = audio.muted ? 0 : audio.volume; sonSurvolSigne.play().catch(function(){}); } catch (err) {}
     });
     window.addEventListener('pointerup', relacher);
     window.addEventListener('pointercancel', relacher);
@@ -4535,6 +4537,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!audio.getAttribute('src')) return;            // album sans fichiers
 
     annulerApresSon();
+    if (audio.muted) audio.muted = false;  // meme raison que pour le volume
     if (audio.paused){ wanted = true; tryPlay(); }
     else { wanted = false; audio.pause(); }
     paintBtn();
@@ -4547,6 +4550,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     e.stopPropagation();
     if (!started) return;                  // on part du signe, pas d ici
     annulerApresSon();
+    if (audio.muted) audio.muted = false;  // meme raison que pour le volume
     if (audio.paused){ wanted = true; tryPlay(); }
     else { wanted = false; audio.pause(); }
     paintBtn();
@@ -4606,10 +4610,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
      (.mp4) glisses entre elles, qui passent en entier avant l image
      suivante. th : la vignette de la bande du bas (pour un film, une belle
      image tiree de lui). Jane et matt proxy : images de passage.
-     jp : une ligne d une de ses chansons, en japonais, et d ou elle vient.
-     eau : la couleur de l eau ou le disque s enfonce */
+     jp : une ligne d une de ses chansons, en japonais, et d ou elle vient. */
   var PK = [
-    { from:5, gain:1, meta:'17 tracks', eau:[.56, .62, .66],
+    { from:5, gain:1, meta:'17 tracks',
       jp:'運なんてない。ただ、愛するものに夢中なだけ。', de:'Tout Naturel',
       media:[{ src:'assets/lucy_bg1.mp4', th:'assets/lucy_th1.webp' },
              { src:'assets/lucy_p2.webp', th:'assets/lucy_tp2.webp' },
@@ -4619,25 +4622,25 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
                 la guitare y tiennent */
              { src:'assets/lucy_p3.webp', th:'assets/lucy_tp3.webp', pos:'center 6%' },
              { src:'assets/lucy_v3.mp4', th:'assets/lucy_th3.webp?v=4' }] },
-    { from:30, gain:.97, meta:'13 tracks', eau:[.36, .07, .04],
+    { from:30, gain:.97, meta:'13 tracks',
       media:[{ src:'assets/jane_v1.mp4?v=2', th:'assets/jane_tv1.webp?v=2' },
              { src:'assets/jane_v2.mp4', th:'assets/jane_tv2.webp' },
              { src:'assets/jane_p3.webp?v=2', th:'assets/jane_tp3.webp?v=2' },
              { src:'assets/jane_v4.mp4', th:'assets/jane_tv4.webp' },
              { src:'assets/jane_v5.mp4?v=2', th:'assets/jane_tv5.webp?v=2' }] },
     /* plus fort que les deux autres une fois filtre : ramene a leur niveau */
-    { from:20, gain:.6, meta:'12 tracks', eau:[.42, .35, .23],
+    { from:20, gain:.6, meta:'12 tracks',
       media:[{ src:'assets/bg3.jpg', th:'assets/matt_th1.webp' }, { src:'assets/cover3.jpg', th:'assets/matt_th2.webp' },
              { src:'assets/trk3.jpg', th:'assets/matt_th3.webp' }] },
     /* le nouvel album n a encore ni films ni photos : sa pochette et le fond
        tire d elle font tout le tour */
     { from:8, gain:.9, meta:'15 tracks',
-      media:[{ src:'assets/bg4.jpg?v=5', th:'assets/alb4.jpg' },
-             { src:'assets/cover4.jpg', th:'assets/alb4.jpg' }] }
+            media:[{ src:'assets/bg4.jpg?v=5', th:'assets/c_th1.webp' },
+             { src:'assets/cover4.jpg', th:'assets/c_th2.webp' }] }
   ];
 
   var cur = CUR_ALBUM, occupe = false, parti = false, plongeEnAttente = false;
-  var tAttente = 0, tDefile = 0, tCharge = 0, tFilm = 0, tArret = 0, vue = 0, surA = true;
+  var tAttente = 0, tDefile = 0, tCharge = 0, tFilm = 0, tArret = 0, tSuivant = 0, vue = 0, surA = true;
 
   /* les disques et les pochettes des trois albums sont pris d avance :
      sans cela, en changeant d album, l ancien disque restait affiche le
@@ -4827,8 +4830,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
        l animation a chaque nouvelle image */
     el.classList.remove('on'); void el.offsetWidth;
     el.classList.add('on'); autre.classList.remove('on');
-    setTimeout(function(){
-      if (autre.classList.contains('on')) return;
+    clearTimeout(tSuivant);
+    tSuivant = setTimeout(function(){
+      if (parti || autre.classList.contains('on')) return;
       eteindre(autre);
       /* le suivant se prepare des maintenant, pour partir sans attendre */
       var p = PK[cur], suiv = p && p.media[(j + 1) % p.media.length];
@@ -4886,9 +4890,12 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         pk.classList.add(dir > 0 ? 'in-u' : 'in-d');
         setTimeout(function(){
           pk.classList.remove('in-u', 'in-d'); occupe = false;
-          if (plongeEnAttente){ plongeEnAttente = false; plonger(); return; }
+          /* d abord on arrive la ou les appuis menaient ; le clic sur le
+             disque donne entre temps part ensuite, depuis cet album la —
+             sinon on partait de l album de passage */
           if (viseEnAttente != null){ var q = viseEnAttente; viseEnAttente = null; allerA(q); }
           else if (enAttente){ var d = enAttente > 0 ? 1 : -1; enAttente -= d; feuilleter(d); }
+          else if (plongeEnAttente){ plongeEnAttente = false; plonger(); }
           else attendre();
         }, 520);
       }, 420);
@@ -4933,7 +4940,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     parti = true;
     /* plus rien ne tourne derriere : minuteries, films, ecoute des gestes */
     clearTimeout(tAttente); clearTimeout(tDefile); clearTimeout(tCharge);
-    clearTimeout(tFilm); clearTimeout(tArret); clearTimeout(tRoue); clearTimeout(tVoisins);
+    clearTimeout(tFilm); clearTimeout(tArret); clearTimeout(tRoue); clearTimeout(tVoisins); clearTimeout(tSuivant);
     eteindre(bgA); eteindre(bgB);
     if (window.__ui) window.__ui('select', true);
     if (liste && !liste.hidden) fermerListe();   // la liste ne reste pas ouverte
@@ -4996,6 +5003,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   /* l ecran du choix a fini de partir : on le retire */
   function fini(){
     body.classList.remove('is-picking', 'is-sortie');
+    son.dormir();
     pk.style.transition = 'none';
     pk.style.transform = '';
   }
@@ -5034,7 +5042,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       /* une fleche, les barres ou la liste ont le clavier : la touche leur appartient */
       var t = e.target;
       if (t && t.classList && (t.classList.contains('pk-arrow') || t.classList.contains('pk-menu') ||
-          t.classList.contains('pk-ligne') || t.classList.contains('pk-peek'))) return;
+          t.classList.contains('pk-ligne') || t.classList.contains('pk-peek') ||
+          t.classList.contains('pk-tile'))) return;
       e.preventDefault();
       if (!e.repeat) plonger();
     }
@@ -5157,7 +5166,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     monter();
     /* le curseur de volume vient de bouger */
     function regler(){ if (ctx && voulu) rampe(niveau(), .08); }
-    return { jouer: jouer, couper: couper, sombrer: sombrer, regler: regler, etat: function(){
+    /* la page du choix est partie : le circuit n a plus rien a rendre */
+    function dormir(){ if (ctx && ctx.state === 'running') ctx.suspend().catch(function(){}); }
+    return { jouer: jouer, couper: couper, sombrer: sombrer, regler: regler, dormir: dormir, etat: function(){
       return { joue: !lecteur.paused, temps: +lecteur.currentTime.toFixed(2), piste: lecteur.getAttribute('src'),
                circuit: ctx ? ctx.state : null, niveau: maitre ? +maitre.gain.value.toFixed(3) : 0 };
     } };
@@ -5166,7 +5177,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   /* le curseur de volume : il regle le site entier, l apercu compris, et
      la page de l album le retrouve tel quel */
   var volSite = document.getElementById('vol');
-  curseur.value = Math.round((theme.volume || .85) * 100);
+  curseur.value = Math.round((theme.volume != null ? theme.volume : .85) * 100);
   curseur.style.setProperty('--v', curseur.value + '%');
   curseur.addEventListener('input', function(){
     var v = curseur.value / 100;
