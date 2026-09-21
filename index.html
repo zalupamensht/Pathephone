@@ -4622,6 +4622,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       .then(function(){ if (encours === ici) encours = null; });
   }
 
+  window.__prechargerPiste = charger;
   document.addEventListener('mouseover', function(e){
     var trk = e.target && e.target.closest ? e.target.closest('.trk') : null;
     clearTimeout(tSurvol);
@@ -4656,24 +4657,33 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!film || MOBILE) return;
   var corps = document.body;
   var CYCLE = 3, ARRIVEE = .82;          // fin du tour de roue, dans chaque seconde du film
-  var demande = false, dernier = 0;
+  var charge = false, dernier = 0;
+  /* Le film se telecharge d avance : des qu on s attarde sur « C » dans le
+     choix du disque (voir ce module-la). Ainsi, quand on choisit l album,
+     il est deja la et tourne des le glissement, avec la musique ; sinon
+     les rouages restaient immobiles pendant que la piste demarrait. */
+  function charger(){
+    if (charge) return;
+    charge = true;
+    if (film.preload !== 'auto'){ film.preload = 'auto'; film.load(); }
+  }
+  window.__prechargerRouages = charger;
   function ici(){
-    /* pas avant que le choix soit parti : se telecharger et se decoder au
-       milieu du glissement faisait accrocher l animation */
-    return corps.classList.contains('alb-crypt') && !corps.classList.contains('is-picking') &&
-      (corps.classList.contains('is-stage') || corps.classList.contains('is-lighten'));
+    if (!corps.classList.contains('alb-crypt')) return false;
+    if (!corps.classList.contains('is-stage') && !corps.classList.contains('is-lighten')) return false;
+    if (!corps.classList.contains('is-picking')) return true;
+    /* pendant que le choix glisse : seulement si le film est deja pret —
+       le lancer ne coute alors que le decodage, fait par la carte graphique.
+       Le telecharger a ce moment la, lui, ferait accrocher l animation. */
+    return corps.classList.contains('is-sortie') && film.readyState >= 3;
   }
   function tour(){
     requestAnimationFrame(tour);
     if (!ici()){
-      if (demande){ try { film.pause(); } catch (e) {} demande = false; }
+      if (!film.paused){ try { film.pause(); } catch (e) {} }
       return;
     }
-    /* il ne se telecharge qu ici : ailleurs il prendrait la ligne pour rien */
-    if (!demande){
-      demande = true;
-      if (film.preload !== 'auto'){ film.preload = 'auto'; film.load(); }
-    }
+    charger();                                   // si on est arrive sans passer par le choix
     var info = window.__trackInfo ? window.__trackInfo() : null;
     if (!info || !info.joue){ if (!film.paused) film.pause(); return; }
     if (film.readyState < 2) return;
@@ -4969,17 +4979,33 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
   function suivant(){ if (parti) return; vue = (vue + 1) % PK[cur].media.length; montrer(vue); }
 
+  var tAvance = 0;
   function ouvrir(){
     if (occupe || parti) return;
     pk.classList.add('is-open');
     vue = 0; montrer(0);
+    /* un album a fond anime (« C ») : si on reste un peu dessus, son film et
+       la piste qui ouvre sa page se preparent — une fois le choix fait, tout
+       part ensemble, sans attente. Une seconde et demie : le temps que le
+       fond du choix et sa musique soient lances, pour ne pas leur voler la
+       ligne. */
+    clearTimeout(tAvance);
+    if (ALBUMS[cur].theme === 'crypt'){
+      var a = ALBUMS[cur];
+      tAvance = setTimeout(function(){
+        if (parti) return;
+        if (window.__prechargerRouages) window.__prechargerRouages();
+        var t = a.tracks[a.start];
+        if (t && window.__prechargerPiste) window.__prechargerPiste(t.audio);
+      }, 1500);
+    }
   }
   /* referme le monde de l album : le disque revient au centre, sa musique
      continue */
   /* on quitte cet album : son fond s arrete, mais la page garde sa forme —
      la pochette reste a sa place, c est l album qui change, pas la page */
   function fermer(){
-    clearTimeout(tAttente); clearTimeout(tDefile);
+    clearTimeout(tAttente); clearTimeout(tDefile); clearTimeout(tAvance);
     bgA.classList.remove('on'); bgB.classList.remove('on');
     /* on n arrete que les couches qui ne montrent plus rien : sans cela,
        cet arret differe tombait sur le film du nouvel album, qui venait de
@@ -5066,7 +5092,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     parti = true;
     /* plus rien ne tourne derriere : minuteries, films, ecoute des gestes */
     clearTimeout(tAttente); clearTimeout(tDefile); clearTimeout(tCharge);
-    clearTimeout(tFilm); clearTimeout(tArret); clearTimeout(tRoue); clearTimeout(tVoisins); clearTimeout(tSuivant);
+    clearTimeout(tFilm); clearTimeout(tArret); clearTimeout(tRoue); clearTimeout(tVoisins); clearTimeout(tSuivant); clearTimeout(tAvance);
     eteindre(bgA); eteindre(bgB);
     if (window.__ui) window.__ui('select', true);
     if (liste && !liste.hidden) fermerListe();   // la liste ne reste pas ouverte
