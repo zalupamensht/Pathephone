@@ -2898,7 +2898,7 @@ var ALBUMS = [
      (alb-crypt) : retoucher celui d un autre album ne le touchera pas. */
   { title:'C', by:'Lucy Bedroque', theme:'crypt',
     disc:'assets/disc4.webp?v=3', cover:'assets/cover4.jpg', thumb:'assets/alb4.jpg',
-    art:'assets/trk4.jpg?v=2', artFill:true,
+    art:'assets/trk4.jpg?v=3', artFill:true,
     start:0,                                  /* All Speakers Go To Heaven ouvre l album */
     tracks: A4 }
 ];
@@ -4752,7 +4752,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
        fond, comme chez Jane. Les deux films verticaux sont recadres sur leur
        image : ils portaient de grandes bandes noires, que le plein ecran
        aurait agrandies. */
-    { from:8, gain:.9, meta:'15 tracks',
+    { piste:2, from:11, gain:.9, meta:'15 tracks',         /* SPEED DEMON, des l entree du chant */
       media:[{ src:'assets/c_v1.mp4', th:'assets/c_tv1.webp', poster:'assets/c_pv1.webp' },
              { src:'assets/c_v2.mp4', th:'assets/c_tv2.webp', poster:'assets/c_pv2.webp' },
              { src:'assets/c_p3.webp', th:'assets/c_tp3.webp' },
@@ -5232,7 +5232,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     function jouer(){
       voulu = true;
       clearTimeout(arret);
-      var a = ALBUMS[cur], t = a.tracks[a.start];
+      /* piste : celle qui joue dans le choix, si l album en veut une autre
+         que sa piste d ouverture ; la page de l album, elle, n en change pas */
+      var a = ALBUMS[cur], t = a.tracks[PK[cur].piste != null ? PK[cur].piste : a.start];
       if (!t || !t.audio) return;
       if (charge !== cur){
         /* on quitte un album : on retient ou il en etait */
