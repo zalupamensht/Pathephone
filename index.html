@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=74">
+<link rel="stylesheet" href="style.css?v=75">
 </head>
 <body>
 
@@ -4635,8 +4635,10 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var ecart = cible - film.currentTime;
     if (ecart > CYCLE / 2) ecart -= CYCLE;
     if (ecart < -CYCLE / 2) ecart += CYCLE;
-    if (Math.abs(ecart) > .25){ try { film.currentTime = cible; } catch (e) {} }
-    var r = base * (1 + Math.max(-.12, Math.min(.12, ecart * .6)));
+    /* un saut coute un decodage : on ne saute que si l ecart est franc
+       (debut de piste, retour en arriere) ; le reste se rattrape en vitesse */
+    if (Math.abs(ecart) > .6){ try { film.currentTime = cible; } catch (e) {} return; }
+    var r = base * (1 + Math.max(-.06, Math.min(.06, ecart * .4)));
     if (Math.abs(film.playbackRate - r) > .004){ try { film.playbackRate = r; } catch (e) {} }
   }
   requestAnimationFrame(tour);

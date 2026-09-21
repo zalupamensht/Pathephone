@@ -1318,8 +1318,12 @@ body.alb-crypt .disc{filter:drop-shadow(0 6px 10px rgba(20,18,15,.45))}
 body.alb-crypt .crypt-film{
   display:block;position:absolute;left:0;top:50%;transform:translateY(-50%);
   width:100%;height:auto;z-index:0;pointer-events:none;
-  opacity:0;transition:opacity 1.4s ease .3s;
+  opacity:0;transition:opacity 1.4s ease .3s;will-change:opacity;
 }
+/* sous le film, l image ne derive plus : deplacer un fond plein ecran le
+   fait repeindre a chaque image, et avec le film par dessus la page hachait.
+   On ne la voit d ailleurs plus qu en haut et en bas. */
+body.alb-crypt .deco{animation:none}
 body.alb-crypt.is-stage .crypt-film,
 body.alb-crypt.is-lighten .crypt-film{opacity:1}
 
