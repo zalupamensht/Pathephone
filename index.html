@@ -2898,7 +2898,7 @@ var ALBUMS = [
      (alb-crypt) : retoucher celui d un autre album ne le touchera pas. */
   { title:'C', by:'Lucy Bedroque', theme:'crypt',
     disc:'assets/disc4.webp?v=3', cover:'assets/cover4.jpg', thumb:'assets/alb4.jpg',
-    art:'assets/trk4.jpg', artFill:true,
+    art:'assets/trk4.jpg?v=2', artFill:true,
     start:0,                                  /* All Speakers Go To Heaven ouvre l album */
     tracks: A4 }
 ];
@@ -4748,11 +4748,14 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     { from:20, gain:.6, meta:'12 tracks',
       media:[{ src:'assets/bg3.jpg', th:'assets/matt_th1.webp' }, { src:'assets/cover3.jpg', th:'assets/matt_th2.webp' },
              { src:'assets/trk3.jpg', th:'assets/matt_th3.webp' }] },
-    /* le nouvel album n a encore ni films ni photos : sa pochette et le fond
-       tire d elle font tout le tour */
+    /* « C » : les quatre films de l auteur, dans son ordre (le 3 manque).
+       Les deux films verticaux sont recadres sur leur image : ils portaient
+       de grandes bandes noires, que le plein ecran aurait agrandies. */
     { from:8, gain:.9, meta:'15 tracks',
-            media:[{ src:'assets/bg4.jpg?v=5', th:'assets/c_th1.webp' },
-             { src:'assets/cover4.jpg', th:'assets/c_th2.webp' }] }
+      media:[{ src:'assets/c_v1.mp4', th:'assets/c_tv1.webp' },
+             { src:'assets/c_v2.mp4', th:'assets/c_tv2.webp' },
+             { src:'assets/c_v4.mp4', th:'assets/c_tv4.webp' },
+             { src:'assets/c_v5.mp4', th:'assets/c_tv5.webp' }] }
   ];
 
   var cur = CUR_ALBUM, occupe = false, parti = false, plongeEnAttente = false;
