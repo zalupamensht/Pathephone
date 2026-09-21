@@ -2054,8 +2054,14 @@ body.is-picking .fit,body.is-picking .intro-hint{visibility:hidden}
 /* le decor du site (trois taches floutees de 170 px, la lueur) et deux de
    ses trames sont entierement couverts par le choix du disque : les peindre
    pour rien coutait des images par seconde, et le disque saccadait */
-body.is-picking:not(.is-sortie) .bg,body.is-picking:not(.is-sortie) .halftone,
-body.is-picking:not(.is-sortie) .scan,body.is-picking:not(.is-sortie) .noise{display:none}
+/* pendant que le choix glisse, la page dessous a deja son decor (.bg) ;
+   le grain, les lignes et la trame n arrivent qu apres : ce sont des
+   couches plein ecran melangees par-dessus tout, et les recomposer a chaque
+   image sur l ecran qui part faisait tomber le nombre d images */
+body.is-picking:not(.is-sortie) .bg,
+body.is-picking .halftone,body.is-picking .scan,body.is-picking .noise{display:none}
+/* l ecran qui part glisse d un bloc, sur sa propre couche */
+.picker.is-part{will-change:transform}
 
 .pk-glow{position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(55% 60% at 50% 48%,rgba(255,255,255,.3),transparent 70%)}

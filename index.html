@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=76">
+<link rel="stylesheet" href="style.css?v=77">
 </head>
 <body>
 
@@ -4658,7 +4658,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var CYCLE = 3, ARRIVEE = .82;          // fin du tour de roue, dans chaque seconde du film
   var demande = false, dernier = 0;
   function ici(){
-    return corps.classList.contains('alb-crypt') &&
+    /* pas avant que le choix soit parti : se telecharger et se decoder au
+       milieu du glissement faisait accrocher l animation */
+    return corps.classList.contains('alb-crypt') && !corps.classList.contains('is-picking') &&
       (corps.classList.contains('is-stage') || corps.classList.contains('is-lighten'));
   }
   function tour(){
