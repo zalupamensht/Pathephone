@@ -4592,8 +4592,10 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
    L ecran d accueil de cet album suit — ou l album lui meme, s il n a pas
    encore d ecran d accueil. */
 /* ---- Les rouages du fond de « C » ----
-   Le film dure trois secondes et donne un a-coup par seconde, qui commence
-   a ATTAQUE apres le debut de chaque seconde. On ne se contente pas de sa
+   Le film dure trois secondes et donne un a-coup par seconde : repos,
+   puis le tour de roue de .47 a .80, puis un petit amorti. C est la FIN du
+   tour qui est posee sur le temps (ARRIVEE) : le rouage tourne juste avant
+   le clap et s arrete dessus, l amorti faisant rebond. On ne se contente pas de sa
    vitesse : a chaque image on calcule ou il devrait en etre pour que
    l a-coup tombe sur le temps du morceau, et on le rattrape doucement (ou
    d un saut, s il s est trop ecarte). Au dela de 100 bpm, un a-coup tous
@@ -4602,7 +4604,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var film = document.getElementById('cryptFilm');
   if (!film || MOBILE) return;
   var corps = document.body;
-  var CYCLE = 3, ATTAQUE = .47;
+  var CYCLE = 3, ARRIVEE = .82;          // fin du tour de roue, dans chaque seconde du film
   var demande = false, dernier = 0;
   function ici(){
     return corps.classList.contains('alb-crypt') &&
@@ -4632,7 +4634,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var parCoup = bpm > 100 ? 2 : 1;                       // temps par a-coup
     var base = bpm / (60 * parCoup);
     var coups = (info.temps - (info.phase || 0)) * bpm / 60 / parCoup;
-    var cible = ((coups + ATTAQUE) % CYCLE + CYCLE) % CYCLE;
+    var cible = ((coups + ARRIVEE) % CYCLE + CYCLE) % CYCLE;
     var ecart = cible - film.currentTime;
     if (ecart > CYCLE / 2) ecart -= CYCLE;
     if (ecart < -CYCLE / 2) ecart += CYCLE;
