@@ -4748,14 +4748,16 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     { from:20, gain:.6, meta:'12 tracks',
       media:[{ src:'assets/bg3.jpg', th:'assets/matt_th1.webp' }, { src:'assets/cover3.jpg', th:'assets/matt_th2.webp' },
              { src:'assets/trk3.jpg', th:'assets/matt_th3.webp' }] },
-    /* « C » : les quatre films de l auteur, dans son ordre (le 3 manque).
-       Les deux films verticaux sont recadres sur leur image : ils portaient
-       de grandes bandes noires, que le plein ecran aurait agrandies. */
+    /* « C » : les films de l auteur et, en troisieme, la pochette comme
+       fond, comme chez Jane. Les deux films verticaux sont recadres sur leur
+       image : ils portaient de grandes bandes noires, que le plein ecran
+       aurait agrandies. */
     { from:8, gain:.9, meta:'15 tracks',
-      media:[{ src:'assets/c_v1.mp4', th:'assets/c_tv1.webp' },
-             { src:'assets/c_v2.mp4', th:'assets/c_tv2.webp' },
-             { src:'assets/c_v4.mp4', th:'assets/c_tv4.webp' },
-             { src:'assets/c_v5.mp4', th:'assets/c_tv5.webp' }] }
+      media:[{ src:'assets/c_v1.mp4', th:'assets/c_tv1.webp', poster:'assets/c_pv1.webp' },
+             { src:'assets/c_v2.mp4', th:'assets/c_tv2.webp', poster:'assets/c_pv2.webp' },
+             { src:'assets/c_p3.webp', th:'assets/c_tp3.webp' },
+             { src:'assets/c_v4.mp4', th:'assets/c_tv4.webp', poster:'assets/c_pv4.webp' },
+             { src:'assets/c_v5.mp4', th:'assets/c_tv5.webp', poster:'assets/c_pv5.webp' }] }
   ];
 
   var cur = CUR_ALBUM, occupe = false, parti = false, plongeEnAttente = false;
@@ -4906,8 +4908,11 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var v = film(m);
       if (v.parentNode !== el) el.appendChild(v);
       /* sous le film, son image : tant qu il n a pas commence, on voit
-         deja quelque chose au lieu du noir */
-      el.style.backgroundImage = 'url(\'' + (PK[cur].media[j].th || m) + '\')';
+         deja quelque chose au lieu du noir. poster : la premiere image du
+         film, a sa taille — le film repart de zero, si bien que le passage
+         de l une a l autre ne se voit pas. Sans elle, la vignette carree de
+         la bande etait etiree sur tout l ecran et sautait au depart. */
+      el.style.backgroundImage = 'url(\'' + (PK[cur].media[j].poster || PK[cur].media[j].th || m) + '\')';
       el.style.backgroundPosition = 'center';
       v.classList.remove('is-la');
       try { v.currentTime = 0; } catch (e) {}
