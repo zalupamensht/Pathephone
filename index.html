@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=75">
+<link rel="stylesheet" href="style.css?v=76">
 </head>
 <body>
 
@@ -215,7 +215,7 @@
    de piste ; les autres numeros du menage restent muets pour le moment */
 /* le ?v= force le navigateur a relire le fichier : sans lui il ressert
    l ancienne version gardee en cache, et on entend la mauvaise piste */
-var AV = '?v=2';
+var AV = '?v=3';                  // les pistes allegees : a changer quand un mp3 change
 var TRACK_AUDIO = {
   0: 'assets/track0.mp3' + AV,  1: 'assets/track1.mp3' + AV,  2: 'assets/track2.mp3' + AV,
   3: 'assets/track3.mp3' + AV,  4: 'assets/track4.mp3' + AV,  5: 'assets/track5.mp3' + AV,
@@ -950,7 +950,7 @@ var A1_LYRICS = {};
 
 /* ---- Revengeseekerz : pistes, paroles et tempo releves des fichiers ---- */
 var A2 = [
-    { name: "TWICE REMOVED", bpm: 77, audio: "assets/b2_1.mp3",
+    { name: "TWICE REMOVED", bpm: 77, audio: "assets/b2_1.mp3" + AV,
       lyrics: [
         { t: 15.10, text: "And that shit was three years ago, it feels like a million" },
         { t: 19.40, text: "Three years ago, I could've touched a million" },
@@ -1018,7 +1018,7 @@ var A2 = [
         { t: 213.79, text: "Ja-" },
         { t: 213.82, music: true }
       ] },
-    { name: "Psychoboost ft danny brown", bpm: 75, audio: "assets/b2_2.mp3",
+    { name: "Psychoboost ft danny brown", bpm: 75, audio: "assets/b2_2.mp3" + AV,
       lyrics: [
         { t: 4.54, text: "It feels like you a part of me" },
         { t: 6.37, text: "Part of me, part of me, part of me, part of me" },
@@ -1100,7 +1100,7 @@ var A2 = [
         { t: 241.36, text: "It feels like you a part of me" },
         { t: 242.56, music: true }
       ] },
-    { name: "Star people", bpm: 90, audio: "assets/b2_3.mp3",
+    { name: "Star people", bpm: 90, audio: "assets/b2_3.mp3" + AV,
       lyrics: [
         { t: 1.23, text: "Your city burnin' so you flyin' over here" },
         { t: 3.46, text: "I-I just wanna go to sleep and get my cash, yeah" },
@@ -1173,7 +1173,7 @@ var A2 = [
         { t: 234.78, text: "I care beyond idolization" },
         { t: 254.26, music: true }
       ] },
-    { name: "Experimental Skin", bpm: 144, audio: "assets/b2_4.mp3",
+    { name: "Experimental Skin", bpm: 144, audio: "assets/b2_4.mp3" + AV,
       lyrics: [
         { t: 5.79, text: "(Allez, allez)" },
         { t: 7.46, text: "It's better if you can't hear me" },
@@ -1257,7 +1257,7 @@ var A2 = [
         { t: 296.05, text: "You don't even know what you do to me" },
         { t: 300.44, music: true }
       ] },
-    { name: "angels in camo", bpm: 147, audio: "assets/b2_5.mp3",
+    { name: "angels in camo", bpm: 147, audio: "assets/b2_5.mp3" + AV,
       lyrics: [
         { t: 31.96, text: "Yeah, yeah, yeah" },
         { t: 36.94, text: "Yeah, yeah (Sliced apart by Double Edge)" },
@@ -1325,7 +1325,7 @@ var A2 = [
         { t: 212.99, text: "I can't let you bitches win, yeah" },
         { t: 214.99, music: true }
       ] },
-    { name: "Dreamflasher", bpm: 78, audio: "assets/b2_6.mp3",
+    { name: "Dreamflasher", bpm: 78, audio: "assets/b2_6.mp3" + AV,
       lyrics: [
         { t: 6.21, text: "(Jane! Jane! Jane! Jane!)" },
         { t: 15.37, text: "(This song is fucking-) (futuro pianista)" },
@@ -1387,7 +1387,7 @@ var A2 = [
         { t: 210.77, text: "A thousand people scream my fuckin' name" },
         { t: 213.02, music: true }
       ] },
-    { name: "TURN UP OR DIE", bpm: 147, audio: "assets/b2_7.mp3",
+    { name: "TURN UP OR DIE", bpm: 147, audio: "assets/b2_7.mp3" + AV,
       lyrics: [
         { t: 14.46, text: "(Mission failed)" },
         { t: 26.19, text: "You know how hot I g- (Listen)" },
@@ -1453,7 +1453,7 @@ var A2 = [
         { t: 265.91, text: "Hold your breath, I've been through this a thousand times" },
         { t: 271.45, music: true }
       ] },
-    { name: "Dancing with your eyes closed", bpm: 76, audio: "assets/b2_8.mp3",
+    { name: "Dancing with your eyes closed", bpm: 76, audio: "assets/b2_8.mp3" + AV,
       lyrics: [
         { t: 3.13, text: "You're just jealous" },
         { t: 4.98, text: "Jealous? Jealous?" },
@@ -1519,7 +1519,7 @@ var A2 = [
         { t: 212.29, text: "I got the plate hot 'cause we fucked up now" },
         { t: 216.46, music: true }
       ] },
-    { name: "Supernova ft funeral", bpm: 83, audio: "assets/b2_9.mp3",
+    { name: "Supernova ft funeral", bpm: 83, audio: "assets/b2_9.mp3" + AV,
       lyrics: [
         { t: 12.60, text: "Allez, allez (hey)" },
         { t: 17.33, text: "(The end of the battle is gettin' closer by the minute)" },
@@ -1575,7 +1575,7 @@ var A2 = [
         { t: 170.10, text: "Spray paint the Challenger with TKO (uh)" },
         { t: 172.80, music: true }
       ] },
-    { name: "Fadeoutz", bpm: 76, audio: "assets/b2_10.mp3",
+    { name: "Fadeoutz", bpm: 76, audio: "assets/b2_10.mp3" + AV,
       lyrics: [
         { t: 47.32, text: "J- J- J- J-" },
         { t: 50.43, text: "(Allez, allez)" },
@@ -1619,7 +1619,7 @@ var A2 = [
         { t: 175.11, text: "This life fast, love, this life fast- (this life fast-)" },
         { t: 179.50, music: true }
       ] },
-    { name: "Professional Vengeance", bpm: 81, audio: "assets/b2_11.mp3",
+    { name: "Professional Vengeance", bpm: 81, audio: "assets/b2_11.mp3" + AV,
       lyrics: [
         { t: 0.76, text: "(I just wish the media would get hold of this and,)" },
         { t: 3.66, text: "(Quit runnin' it down, it's a good little town)" },
@@ -1698,7 +1698,7 @@ var A2 = [
         { t: 221.65, text: "Let me go, let me go, let me go" },
         { t: 232.56, music: true }
       ] },
-    { name: "Dark night castle", bpm: 121, audio: "assets/b2_12.mp3",
+    { name: "Dark night castle", bpm: 121, audio: "assets/b2_12.mp3" + AV,
       lyrics: [
         { t: 9.54, text: "(I will eat your heart)" },
         { t: 13.70, text: "I'm a SOB, leavin' chemtrails" },
@@ -1750,7 +1750,7 @@ var A2 = [
         { t: 226.92, text: "(I will eat your heart)" },
         { t: 230.12, music: true }
       ] },
-    { name: "JRJRJR", bpm: 77, audio: "assets/b2_13.mp3",
+    { name: "JRJRJR", bpm: 77, audio: "assets/b2_13.mp3" + AV,
       lyrics: [
         { t: 16.04, text: "Work all day, drink all night" },
         { t: 17.66, text: "But it's so hard to lie" },
@@ -2985,6 +2985,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     items = a.tracks.map(function(t, i){
       var el = document.createElement('div');
       el.className = 'trk';
+      el.dataset.i = i;
       el.innerHTML =
         '<button type="button" class="bub' + (a.artFill ? ' is-fill' : '') +
             '" tabindex="-1" aria-label="Track ' + (i+1) + ' - ' + t.name + '">' +
@@ -4591,6 +4592,56 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
    l ecran.
    L ecran d accueil de cet album suit — ou l album lui meme, s il n a pas
    encore d ecran d accueil. */
+/* ---- Les pistes se preparent avant d etre choisies ----
+   Une piste ne commencait a venir qu au clic : on attendait, et pendant ce
+   temps le fond anime n avait plus de ligne pour lui. Desormais une piste
+   sur laquelle le curseur s attarde (un quart de seconde) se telecharge
+   deja, et quand la piste en cours est entierement la, la suivante vient
+   a son tour. Une seule a la fois, en basse priorite ; une piste survolee
+   remplace celle qui se preparait. Pas sur telephone ni en economie de
+   donnees : ce serait du forfait depense pour rien. */
+(function(){
+  if (MOBILE) return;
+  var co = navigator.connection;
+  if (co && (co.saveData || /2g/.test(co.effectiveType || ''))) return;
+  var theme = document.getElementById('theme');
+  var pret = {}, encours = null, tSurvol = 0;
+
+  function charger(url){
+    if (!url || pret[url]) return;
+    if (encours){
+      if (encours.url === url) return;
+      encours.ctl.abort();
+    }
+    var ctl = new AbortController(), ici = { url: url, ctl: ctl };
+    encours = ici;
+    fetch(url, { signal: ctl.signal, priority: 'low' })
+      .then(function(r){ return r.ok ? r.blob() : null; })
+      .then(function(b){ if (b) pret[url] = true; })
+      .catch(function(){})
+      .then(function(){ if (encours === ici) encours = null; });
+  }
+
+  document.addEventListener('mouseover', function(e){
+    var trk = e.target && e.target.closest ? e.target.closest('.trk') : null;
+    clearTimeout(tSurvol);
+    if (!trk || trk.dataset.i == null) return;
+    var t = ALB().tracks[+trk.dataset.i];
+    tSurvol = setTimeout(function(){ charger(t && t.audio); }, 250);
+  });
+
+  /* la piste en cours est toute la : on prepare celle d apres */
+  theme.addEventListener('progress', function(){
+    var src = theme.getAttribute('src'), d = theme.duration;
+    if (!src || !d || !theme.buffered.length) return;
+    if (theme.buffered.end(theme.buffered.length - 1) < d - .5) return;
+    pret[src] = true;
+    var pistes = ALB().tracks, i = -1;
+    for (var k = 0; k < pistes.length; k++) if (pistes[k].audio === src){ i = k; break; }
+    if (i >= 0 && pistes[i + 1]) charger(pistes[i + 1].audio);
+  });
+})();
+
 /* ---- Les rouages du fond de « C » ----
    Le film dure trois secondes et donne un a-coup par seconde : repos,
    puis le tour de roue de .47 a .80, puis un petit amorti. C est la FIN du
