@@ -2324,36 +2324,23 @@ body.alb-che .deco{animation:none}
    neutre : il ne discute ni avec la pochette ni avec le fond, et le disque
    est la seule couleur de la scene. Les boutons sont d un bordeaux
    presque eteint. Rien de tout ceci ne touche les autres albums. */
-body.alb-che .deck-plinth{
-  background:linear-gradient(168deg,#232323 0%,#141414 48%,#080808 100%);
-  box-shadow:
-    0 30px 46px rgba(0,0,0,.6),
-    0 6px 12px rgba(0,0,0,.44),
-    inset 0 1px 0 rgba(255,255,255,.08);
-}
-body.alb-che .deck-face{
-  background:linear-gradient(178deg,#303030 0%,#1f1f1f 42%,#262626 70%,#121212 100%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.09),inset 0 -2px 8px rgba(0,0,0,.6);
-}
+body.alb-che .deck-plinth{background:linear-gradient(168deg,#0b0b0b 0%,#040404 48%,#000 100%);
+  box-shadow:0 30px 46px rgba(0,0,0,.7),0 6px 12px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.07);}
+body.alb-che .deck-face{background:linear-gradient(178deg,#101010 0%,#070707 45%,#0b0b0b 72%,#020202 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),inset 0 -2px 8px rgba(0,0,0,.8);}
 body.alb-che .deck-face::after{display:none}
 /* le plateau, un cran plus clair que le bati : le disque doit s y poser */
-body.alb-che .platter::before{
-  background:radial-gradient(circle at 38% 30%,#3a3a3a 0%,#212121 46%,#0e0e0e 100%);
-  box-shadow:0 10px 20px rgba(0,0,0,.52),inset 0 0 0 1px rgba(226,226,226,.12);
-}
+body.alb-che .platter::before{background:radial-gradient(circle at 38% 30%,#161616 0%,#0a0a0a 50%,#000 100%);
+  box-shadow:0 10px 20px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.08);}
 /* le bras est du meme metal que le bati, a peine plus clair : l argent
    neuf faisait une barre brillante en travers d une platine mate */
-body.alb-che .arm-tube{background:linear-gradient(180deg,#6a6a6a,#444444 52%,#252525)}
-body.alb-che .arm-pivot{
-  background:radial-gradient(circle at 36% 30%,#707070,#454545 60%,#242424 100%);
-}
-body.alb-che .arm-head{background:linear-gradient(180deg,#303030,#131313)}
-body.alb-che .spindle{background:linear-gradient(180deg,#8a8a8a,#3d3d3d)}
+body.alb-che .arm-tube{background:linear-gradient(180deg,#ffffff,#d9d9d9 52%,#9a9a9a);}
+body.alb-che .arm-pivot{background:radial-gradient(circle at 36% 30%,#fff,#cfcfcf 60%,#8c8c8c 100%);}
+body.alb-che .arm-head{background:linear-gradient(180deg,#f2f2f2,#b5b5b5);}
+body.alb-che .spindle{background:linear-gradient(180deg,#fff,#aaa);}
 /* les boutons ne sont plus qu un relief du bati : le bordeaux sautait aux yeux */
-body.alb-che .deck-knob{
-  background:linear-gradient(180deg,#434343,#1e1e1e);
-  box-shadow:0 2px 4px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.12);
-}
+body.alb-che .deck-knob{background:linear-gradient(180deg,#1a1a1a,#030303);
+  box-shadow:0 2px 4px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.12);}
 /* ---- le son, en bas de page : le bouton et la glissiere suivent l album ---- */
 body.alb-che .sound{
   border-color:rgba(236,236,236,.24);
@@ -2492,3 +2479,5 @@ body.alb-che .lyr-echo{
 body.alb-che .lyr.is-now{
   text-shadow:0 0 1px #000,0 0 3px #000,0 0 7px rgba(255,255,255,.7),0 0 30px rgba(214,40,40,.55),0 1px 3px #000;
 }
+/* la platine de Che : au plus noir, un disque et un bras blancs — rien
+   d autre que du noir et du blanc */
