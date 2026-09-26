@@ -2481,3 +2481,31 @@ body.alb-che .lyr.is-now{
 }
 /* la platine de Che : au plus noir, un disque et un bras blancs — rien
    d autre que du noir et du blanc */
+
+/* ---- les pastilles des albums, sur ordinateur : rangees par defaut ----
+   Elles ne montent plus d elles-memes avec la page ; un bouton a barres les
+   fait sortir du bas, un clic ailleurs les y renvoie. Le telephone garde
+   sa rangee telle quelle. */
+@media (min-width:821px){
+  body.is-stage .albums{opacity:0;transform:translateY(46px) scale(.96);
+    transition:opacity .35s ease,transform .5s cubic-bezier(.2,.72,.2,1)}
+  body.is-stage .alb{pointer-events:none}
+  body.is-stage.is-albums .albums{opacity:1;transform:none}
+  body.is-stage.is-albums .alb{pointer-events:auto}
+
+  .albums-btn{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);z-index:9;
+    display:flex;flex-direction:column;gap:5px;align-items:center;
+    padding:10px 16px;border:0;background:none;cursor:pointer;color:var(--ink,#14120f);
+    opacity:0;pointer-events:none;transition:opacity .35s ease,transform .35s ease}
+  body.is-stage .albums-btn{opacity:.45;pointer-events:auto}
+  body.is-stage .albums-btn:hover,body.is-stage .albums-btn:focus-visible{opacity:.9;outline:none}
+  body.is-stage.is-albums .albums-btn{opacity:0;pointer-events:none;transform:translate(-50%,10px)}
+  .albums-btn i{display:block;width:16px;height:2px;border-radius:1px;background:currentColor;opacity:.5;
+    transition:width .25s,opacity .25s}
+  .albums-btn i.on{width:28px;opacity:1}
+  /* sur les pages sombres, les barres passent au clair */
+  body.alb-red .albums-btn,body.alb-crypt .albums-btn,body.alb-che .albums-btn{
+    color:#fff;filter:drop-shadow(0 1px 2px rgba(0,0,0,.85))}
+}
+.albums-btn{display:none}
+@media (min-width:821px){ .albums-btn{display:flex} }

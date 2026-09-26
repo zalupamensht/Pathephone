@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=83">
+<link rel="stylesheet" href="style.css?v=84">
 </head>
 <body>
 
@@ -185,6 +185,9 @@
 
   <!-- choix de l album : les pastilles sont remplies par le script -->
   <div class="albums" id="albums"></div>
+  <!-- les pastilles des albums restent rangees en bas : ce bouton a barres,
+       comme celui du choix du disque, les fait monter -->
+  <button class="albums-btn" id="albumsBtn" type="button" aria-label="Albums" aria-expanded="false"></button>
 
   <div class="controls">
     <button class="sound" id="sound" type="button" aria-label="Play / pause">
@@ -4245,6 +4248,36 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     return el;
   });
 
+  /* Les pastilles ne sont plus la d office : un bouton a barres, comme celui
+     du choix du disque (une barre par album, la plus longue pour celui qui
+     est ouvert), les fait monter du bas ; un clic ailleurs ou Echap les
+     range. Choisir un album les range aussi. */
+  var bouton = document.getElementById('albumsBtn');
+  function barres(){
+    if (!bouton) return;
+    bouton.innerHTML = ALBUMS.map(function(a, j){
+      return '<i' + (j === CUR_ALBUM ? ' class="on"' : '') + '></i>';
+    }).join('');
+  }
+  function montrerAlbums(v){
+    document.body.classList.toggle('is-albums', !!v);
+    if (bouton) bouton.setAttribute('aria-expanded', v ? 'true' : 'false');
+  }
+  if (bouton){
+    barres();
+    bouton.addEventListener('click', function(e){
+      e.stopPropagation();
+      montrerAlbums(!document.body.classList.contains('is-albums'));
+    });
+    bouton.addEventListener('mousedown', function(e){ e.preventDefault(); });   // l espace reste a la lecture
+    document.addEventListener('click', function(e){
+      if (!document.body.classList.contains('is-albums')) return;
+      if (box.contains(e.target) || bouton.contains(e.target)) return;
+      montrerAlbums(false);
+    });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') montrerAlbums(false); });
+  }
+
   /* son : le temps que met le son de changement d album a se taire ; la
      premiere piste part juste apres lui, pas en meme temps */
   /* attendre : l album est pose, sa piste chargee, mais rien ne part — c est
@@ -4260,6 +4293,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     /* le signe de l ecran d accueil, pour les albums qui en ont un */
     if (signe && a.sign) signe.src = a.sign;
     items.forEach(function(el, j){ el.classList.toggle('is-current', j === i); });
+    barres(); montrerAlbums(false);        // l album choisi : les pastilles se rangent
 
     /* le decor de la page suit l album : une seule classe sur le corps,
        la feuille de style s occupe du reste */
