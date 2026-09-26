@@ -2277,3 +2277,202 @@ body.is-direct .intro-logo,body.is-direct .eclipse,body.is-direct .intro-hint{di
 body.is-direct .disc-fly{animation:none;opacity:1;transform:none}
 body.is-direct .disc-fly::after,
 body.is-direct.is-armed.sans-eclipse .disc-fly::after{animation:none;opacity:0}
+
+/* ==================================================================
+   ALBUM « EMPTY CLIP » (Che) — noir et blanc, une lueur rouge.
+   Tiree de la theme de « C » et repeinte ; elle ne depend d aucun autre
+   album et aucun autre n en depend.
+   ================================================================== */
+/* ==================================================================
+   ALBUM « C » — le climat crypte : noir sanguine, argent terni.
+   Il ne touche a rien des autres albums : toutes ses regles passent
+   par alb-che, et lui seul les porte.
+   ================================================================== */
+
+body.alb-che{
+  --paper:#2b2b2b;
+  --ink:#050505;
+  background:
+    radial-gradient(120% 90% at 50% 10%, #3d3d3d 0%, #1d1d1d 46%, #0a0a0a 100%);
+  color:#050505;
+}
+/* la pochette porte deja sa lumiere : les taches pastel n ont rien a y faire */
+body.alb-che .blob,
+body.alb-che .glow,
+body.alb-che .swoosh,
+body.alb-che .halftone{display:none}
+body.alb-che.is-stage .deco,
+body.alb-che.is-lighten .deco{opacity:1}
+/* l image est deja grenue : un voile suffit */
+body.alb-che .scan{opacity:.04}
+body.alb-che .noise{opacity:.12}
+body.alb-che .vignette{
+  background:radial-gradient(ellipse at 50% 46%,rgba(0,0,0,0) 52%,rgba(0,0,0,.46) 100%);
+}
+/* la pochette reste en couleur ici — ailleurs elle passe en noir et blanc */
+body.alb-che .sleeve{filter:contrast(1.04)}
+/* le disque est rendu tel qu il a ete fait : l assombrissement et le
+   contraste du site le transformaient en un objet plus dur et plus sombre
+   que l image d origine. On ne garde que son ombre portee. */
+body.alb-che .disc{filter:drop-shadow(0 6px 10px rgba(20,18,15,.45))}
+/* sous le film, l image ne derive plus : deplacer un fond plein ecran le
+   fait repeindre a chaque image, et avec le film par dessus la page hachait.
+   On ne la voit d ailleurs plus qu en haut et en bas. */
+body.alb-che .deco{animation:none}
+/* ---- la platine : graphite, sans rougeur ----
+   Le creme d origine tirait tout l ecran a lui. Ici un gris de plomb
+   neutre : il ne discute ni avec la pochette ni avec le fond, et le disque
+   est la seule couleur de la scene. Les boutons sont d un bordeaux
+   presque eteint. Rien de tout ceci ne touche les autres albums. */
+body.alb-che .deck-plinth{
+  background:linear-gradient(168deg,#232323 0%,#141414 48%,#080808 100%);
+  box-shadow:
+    0 30px 46px rgba(0,0,0,.6),
+    0 6px 12px rgba(0,0,0,.44),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+body.alb-che .deck-face{
+  background:linear-gradient(178deg,#303030 0%,#1f1f1f 42%,#262626 70%,#121212 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09),inset 0 -2px 8px rgba(0,0,0,.6);
+}
+body.alb-che .deck-face::after{display:none}
+/* le plateau, un cran plus clair que le bati : le disque doit s y poser */
+body.alb-che .platter::before{
+  background:radial-gradient(circle at 38% 30%,#3a3a3a 0%,#212121 46%,#0e0e0e 100%);
+  box-shadow:0 10px 20px rgba(0,0,0,.52),inset 0 0 0 1px rgba(226,226,226,.12);
+}
+/* le bras est du meme metal que le bati, a peine plus clair : l argent
+   neuf faisait une barre brillante en travers d une platine mate */
+body.alb-che .arm-tube{background:linear-gradient(180deg,#6a6a6a,#444444 52%,#252525)}
+body.alb-che .arm-pivot{
+  background:radial-gradient(circle at 36% 30%,#707070,#454545 60%,#242424 100%);
+}
+body.alb-che .arm-head{background:linear-gradient(180deg,#303030,#131313)}
+body.alb-che .spindle{background:linear-gradient(180deg,#8a8a8a,#3d3d3d)}
+/* les boutons ne sont plus qu un relief du bati : le bordeaux sautait aux yeux */
+body.alb-che .deck-knob{
+  background:linear-gradient(180deg,#434343,#1e1e1e);
+  box-shadow:0 2px 4px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.12);
+}
+/* ---- le son, en bas de page : le bouton et la glissiere suivent l album ---- */
+body.alb-che .sound{
+  border-color:rgba(236,236,236,.24);
+  background:linear-gradient(180deg,#303030,#101010);
+  box-shadow:0 0 0 2px #0a0a0a,0 12px 20px rgba(0,0,0,.45),inset 0 2px 3px rgba(255,255,255,.2);
+}
+body.alb-che .sound:hover{box-shadow:0 0 0 2px #0a0a0a,0 18px 26px rgba(0,0,0,.55)}
+body.alb-che .sound:focus-visible{outline-color:#eeeeee}
+body.alb-che .ico-pause i{background:#eeeeee}
+body.alb-che .ico-play{border-left-color:#eeeeee}
+body.alb-che .sound.is-waiting{animation:waitcrypt 1.6s ease-in-out infinite}
+body.alb-che #vol{
+  background:linear-gradient(90deg,#d6d6d6 0 var(--v,85%),rgba(214,214,214,.26) var(--v,85%) 100%);
+}
+body.alb-che #vol::-webkit-slider-thumb{
+  border-color:rgba(236,236,236,.3);
+  background:linear-gradient(180deg,#434343,#171717);
+  box-shadow:0 4px 8px rgba(0,0,0,.5),inset 0 1px 2px rgba(255,255,255,.26);
+}
+body.alb-che #vol::-moz-range-thumb{
+  border-color:rgba(236,236,236,.3);
+  background:linear-gradient(180deg,#434343,#171717);
+}
+body.alb-che #vol:focus-visible{outline-color:#eeeeee}
+/* ---- pastilles : un rond sombre, cercle de sanguine ---- */
+body.alb-che .trk .bub,
+body.alb-che .alb-t-che .bub{
+  border-color:rgba(0,0,0,.55);
+  background:#141414;
+  box-shadow:
+    0 0 0 2px rgba(220,220,220,.32),
+    0 16px 26px rgba(0,0,0,.55);
+}
+body.alb-che .trk .bub-glass,
+body.alb-che .alb-t-che .bub-glass{display:none}
+body.alb-che .trk .bub::after,
+body.alb-che .alb-t-che .bub::after{
+  background:none;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.5);
+}
+body.alb-che .trk .bub-art,
+body.alb-che .alb-t-che .bub-art{opacity:1}
+body.alb-che .trk .bub:hover,
+body.alb-che .alb-t-che .bub:hover{
+  box-shadow:
+    0 0 0 2px rgba(0,0,0,.85),
+    0 26px 40px rgba(0,0,0,.6);
+}
+body.alb-che .trk .bub-num{
+  color:rgba(236,236,236,.85);
+  text-shadow:0 1px 3px rgba(0,0,0,.9);
+}
+body.alb-che .trk.is-current .bub,
+body.alb-che .alb-t-che.is-current .bub{
+  box-shadow:
+    0 0 0 3px #050505,
+    0 0 0 5px rgba(228,228,228,.7),
+    0 16px 26px rgba(0,0,0,.55);
+}
+/* ---- les textes : sur cette page sombre, l encre noire disparaissait ----
+   Paroles et titres passent au clair, avec le halo sanguine de l album. */
+body.alb-che .lyr{
+  color:rgba(242,242,242,.5);
+  text-shadow:0 0 12px rgba(242,242,242,.3),0 1px 2px rgba(0,0,0,.7);
+}
+body.alb-che .lyr:hover{
+  color:rgba(255,255,255,.84);
+  text-shadow:0 0 16px rgba(242,242,242,.55),0 1px 2px rgba(0,0,0,.7);
+}
+body.alb-che .lyr.is-past{
+  color:rgba(242,242,242,.32);
+  text-shadow:0 0 10px rgba(242,242,242,.2),0 1px 2px rgba(0,0,0,.6);
+}
+body.alb-che .lyr.is-now{
+  color:#fff;
+  text-shadow:
+    0 0 7px rgba(255,255,255,.95),
+    0 0 24px rgba(255,255,255,.65),
+    0 0 52px rgba(214,96,102,.6),
+    0 2px 3px rgba(0,0,0,.75);
+}
+body.alb-che .lyr-echo{
+  color:rgba(242,242,242,.42);
+  text-shadow:0 0 10px rgba(242,242,242,.28),0 1px 2px rgba(0,0,0,.6);
+}
+body.alb-che .lyr.is-now .lyr-echo{
+  color:rgba(255,255,255,.88);
+  text-shadow:0 0 14px rgba(242,242,242,.6),0 1px 2px rgba(0,0,0,.6);
+}
+body.alb-che .lyr-note{
+  color:rgba(242,242,242,.8);
+  filter:drop-shadow(0 0 9px rgba(242,242,242,.6))
+         drop-shadow(0 0 26px rgba(214,96,102,.5));
+}
+body.alb-che .lyrics.is-tuning{box-shadow:inset 0 0 0 1px rgba(242,242,242,.4)}
+/* l album ouvert, sous sa pastille : la regle commune le repassait au noir,
+   plus precise que la notre */
+body.alb-che .alb.is-current .alb-name{
+  color:#fff;
+  text-shadow:0 0 8px rgba(255,255,255,.9),
+              0 0 26px rgba(214,96,102,.55),
+              0 1px 2px rgba(0,0,0,.7);
+}
+/* les titres sous les pastilles, en haut et en bas */
+body.alb-che .trk-name,
+body.alb-che .alb-name{
+  color:rgba(244,244,244,.82);font-weight:700;
+  text-shadow:0 0 10px rgba(244,244,244,.45),
+              0 0 24px rgba(214,96,102,.35),
+              0 1px 2px rgba(0,0,0,.8);
+}
+
+/* son fond de page (provisoire, en attendant celui de l auteur) */
+body.alb-che .deco{
+  display:block;position:absolute;inset:0;z-index:0;overflow:hidden;
+  background:url("assets/bg5.jpg") center center / cover no-repeat;
+  pointer-events:none;opacity:0;transition:opacity 1.4s ease .3s;
+}
+body.alb-che.is-stage .deco,body.alb-che.is-lighten .deco{opacity:1}
+/* dans le choix du disque */
+.picker[data-alb="4"]{--pk-tone:#141414;--pk-ink:#efefef}
+.picker[data-alb="4"] .pk-glow{background:radial-gradient(55% 60% at 50% 48%,rgba(255,255,255,.1),transparent 70%)}
