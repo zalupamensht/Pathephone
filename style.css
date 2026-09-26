@@ -2469,10 +2469,26 @@ body.alb-che .alb-name{
 /* son fond de page (provisoire, en attendant celui de l auteur) */
 body.alb-che .deco{
   display:block;position:absolute;inset:0;z-index:0;overflow:hidden;
-  background:url("assets/bg5.jpg") center center / cover no-repeat;
+  background:url("assets/bg5.jpg?v=2") center center / cover no-repeat;
   pointer-events:none;opacity:0;transition:opacity 1.4s ease .3s;
 }
 body.alb-che.is-stage .deco,body.alb-che.is-lighten .deco{opacity:1}
 /* dans le choix du disque */
 .picker[data-alb="4"]{--pk-tone:#141414;--pk-ink:#efefef}
 .picker[data-alb="4"] .pk-glow{background:radial-gradient(55% 60% at 50% 48%,rgba(255,255,255,.1),transparent 70%)}
+
+/* Sur le fond de Che, blanc par endroits, les titres blancs disparaissaient.
+   Le fond reste tel quel ; ce sont les lettres qui prennent un liseré noir
+   serre, lisible sur le blanc, le noir et le rouge a la fois. */
+body.alb-che .trk-name,
+body.alb-che .alb-name{
+  text-shadow:0 0 1px #000,0 0 2px #000,0 0 3px #000,0 0 6px rgba(0,0,0,.85),0 1px 2px #000;
+}
+body.alb-che .trk-name{color:#f6f6f6}
+body.alb-che .lyr,
+body.alb-che .lyr-echo{
+  text-shadow:0 0 1px #000,0 0 3px #000,0 0 8px rgba(0,0,0,.8),0 1px 2px #000;
+}
+body.alb-che .lyr.is-now{
+  text-shadow:0 0 1px #000,0 0 3px #000,0 0 7px rgba(255,255,255,.7),0 0 30px rgba(214,40,40,.55),0 1px 3px #000;
+}
