@@ -17,3 +17,6 @@ matt proxy trojan horse/
 
 # sources des sons d interface (le site en utilise les mp3 de assets/)
 звуки/
+
+# l atelier SoundCloud : outil personnel, il ne part pas sur le site
+outils/soundcloud/
