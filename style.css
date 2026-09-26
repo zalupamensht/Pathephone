@@ -2279,7 +2279,7 @@ body.is-direct .disc-fly::after,
 body.is-direct.is-armed.sans-eclipse .disc-fly::after{animation:none;opacity:0}
 
 /* ==================================================================
-   ALBUM « EMPTY CLIP » (Che) — noir et blanc, une lueur rouge.
+   ALBUM « EMPTY CLIP » (Che) — noir et blanc, rien d autre.
    Tiree de la theme de « C » et repeinte ; elle ne depend d aucun autre
    album et aucun autre n en depend.
    ================================================================== */
@@ -2419,7 +2419,7 @@ body.alb-che .lyr.is-now{
   text-shadow:
     0 0 7px rgba(255,255,255,.95),
     0 0 24px rgba(255,255,255,.65),
-    0 0 52px rgba(214,96,102,.6),
+    0 0 52px rgba(255,255,255,0.42),
     0 2px 3px rgba(0,0,0,.75);
 }
 body.alb-che .lyr-echo{
@@ -2433,7 +2433,7 @@ body.alb-che .lyr.is-now .lyr-echo{
 body.alb-che .lyr-note{
   color:rgba(242,242,242,.8);
   filter:drop-shadow(0 0 9px rgba(242,242,242,.6))
-         drop-shadow(0 0 26px rgba(214,96,102,.5));
+         drop-shadow(0 0 26px rgba(255,255,255,0.35));
 }
 body.alb-che .lyrics.is-tuning{box-shadow:inset 0 0 0 1px rgba(242,242,242,.4)}
 /* l album ouvert, sous sa pastille : la regle commune le repassait au noir,
@@ -2441,7 +2441,7 @@ body.alb-che .lyrics.is-tuning{box-shadow:inset 0 0 0 1px rgba(242,242,242,.4)}
 body.alb-che .alb.is-current .alb-name{
   color:#fff;
   text-shadow:0 0 8px rgba(255,255,255,.9),
-              0 0 26px rgba(214,96,102,.55),
+              0 0 26px rgba(255,255,255,0.39),
               0 1px 2px rgba(0,0,0,.7);
 }
 /* les titres sous les pastilles, en haut et en bas */
@@ -2449,7 +2449,7 @@ body.alb-che .trk-name,
 body.alb-che .alb-name{
   color:rgba(244,244,244,.82);font-weight:700;
   text-shadow:0 0 10px rgba(244,244,244,.45),
-              0 0 24px rgba(214,96,102,.35),
+              0 0 24px rgba(255,255,255,0.24),
               0 1px 2px rgba(0,0,0,.8);
 }
 
@@ -2477,7 +2477,7 @@ body.alb-che .lyr-echo{
   text-shadow:0 0 1px #000,0 0 3px #000,0 0 8px rgba(0,0,0,.8),0 1px 2px #000;
 }
 body.alb-che .lyr.is-now{
-  text-shadow:0 0 1px #000,0 0 3px #000,0 0 7px rgba(255,255,255,.7),0 0 30px rgba(214,40,40,.55),0 1px 3px #000;
+  text-shadow:0 0 1px #000,0 0 3px #000,0 0 7px rgba(255,255,255,.7),0 0 30px rgba(255,255,255,0.39),0 1px 3px #000;
 }
 /* la platine de Che : au plus noir, un disque et un bras blancs — rien
    d autre que du noir et du blanc */
