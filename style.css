@@ -2504,8 +2504,144 @@ body.alb-che .lyr.is-now{
     transition:width .25s,opacity .25s}
   .albums-btn i.on{width:28px;opacity:1}
   /* sur les pages sombres, les barres passent au clair */
-  body.alb-red .albums-btn,body.alb-crypt .albums-btn,body.alb-che .albums-btn{
+  body.alb-red .albums-btn,body.alb-crypt .albums-btn,body.alb-che .albums-btn,body.alb-psy .albums-btn{
     color:#fff;filter:drop-shadow(0 1px 2px rgba(0,0,0,.85))}
 }
 .albums-btn{display:none}
 @media (min-width:821px){ .albums-btn{display:flex} }
+
+/* ==================================================================
+   ALBUM « PSYKOTIC » (OsamaSon) — noir de suie, rouge de braise.
+   Le fond est deja tout rouge : la platine est noire, ses boutons d un
+   rouge sombre, le bras de metal fonce ; seules les paroles s allument,
+   en rouge. Rien ici ne touche les autres albums.
+   ================================================================== */
+body.alb-psy{
+  --paper:#2a0b0b;
+  --ink:#050303;
+  background:radial-gradient(120% 90% at 50% 10%,#5a1010 0%,#2a0707 46%,#0c0303 100%);
+  color:#050303;
+}
+body.alb-psy .blob,
+body.alb-psy .glow,
+body.alb-psy .swoosh,
+body.alb-psy .halftone{display:none}
+body.alb-psy .scan{opacity:.04}
+body.alb-psy .noise{opacity:.12}
+body.alb-psy .vignette{
+  background:radial-gradient(ellipse at 50% 46%,rgba(0,0,0,0) 50%,rgba(0,0,0,.5) 100%);
+}
+body.alb-psy .sleeve{filter:contrast(1.04)}
+body.alb-psy .disc{filter:drop-shadow(0 6px 10px rgba(10,0,0,.5))}
+body.alb-psy .deco{
+  display:block;position:absolute;inset:0;z-index:0;overflow:hidden;
+  background:url("assets/bg6.jpg") center center / cover no-repeat;
+  pointer-events:none;opacity:0;transition:opacity 1.4s ease .3s;animation:none;
+}
+body.alb-psy.is-stage .deco,body.alb-psy.is-lighten .deco{opacity:1}
+
+/* ---- la platine : noire, un reflet a peine rouge sur l arete ---- */
+body.alb-psy .deck-plinth{background:linear-gradient(168deg,#0e0a0a 0%,#050303 48%,#000 100%);
+  box-shadow:0 30px 46px rgba(0,0,0,.72),0 6px 12px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,90,90,.08);}
+body.alb-psy .deck-face{background:linear-gradient(178deg,#120d0d 0%,#080505 45%,#0c0808 72%,#030202 100%);
+  box-shadow:inset 0 1px 0 rgba(255,120,120,.06),inset 0 -2px 8px rgba(0,0,0,.8);}
+body.alb-psy .deck-face::after{display:none}
+body.alb-psy .platter::before{background:radial-gradient(circle at 38% 30%,#1a1414 0%,#0b0808 50%,#000 100%);
+  box-shadow:0 10px 20px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.06);}
+/* le bras : du rouge du disque, un fil de lumiere sur le dessus */
+body.alb-psy .arm-tube{background:linear-gradient(180deg,#e0403c,#b3171a 52%,#6a0a0c);}
+body.alb-psy .arm-pivot{background:radial-gradient(circle at 36% 30%,#e8504a,#a8161a 60%,#4e0708 100%);}
+body.alb-psy .arm-head{background:linear-gradient(180deg,#c42226,#5e090b);}
+body.alb-psy .spindle{background:linear-gradient(180deg,#8a8484,#2a2626);}
+/* les boutons de la platine : rouge sombre, comme le sang seche du fond */
+body.alb-psy .deck-knob{background:linear-gradient(180deg,#7a1414,#2c0505);
+  box-shadow:0 2px 4px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,140,140,.22);}
+
+/* ---- le son, en bas de page ---- */
+body.alb-psy .sound{
+  border-color:rgba(255,120,120,.28);
+  background:linear-gradient(180deg,#6e1212,#240404);
+  box-shadow:0 0 0 2px #0b0303,0 12px 20px rgba(0,0,0,.5),inset 0 2px 3px rgba(255,160,160,.22);
+}
+body.alb-psy .sound:hover{box-shadow:0 0 0 2px #0b0303,0 18px 26px rgba(0,0,0,.6)}
+body.alb-psy .sound:focus-visible{outline-color:#ff5a4e}
+body.alb-psy .ico-pause i{background:#f4e4e4}
+body.alb-psy .ico-play{border-left-color:#f4e4e4}
+body.alb-psy .sound.is-waiting{animation:waitpsy 1.6s ease-in-out infinite}
+@keyframes waitpsy{
+  0%,100%{box-shadow:0 0 0 2px #0b0303,0 12px 20px rgba(0,0,0,.5),0 0 0 0 rgba(255,70,60,.35)}
+  50%    {box-shadow:0 0 0 2px #0b0303,0 12px 20px rgba(0,0,0,.5),0 0 0 12px rgba(255,70,60,0)}
+}
+body.alb-psy #vol{
+  background:linear-gradient(90deg,#e0413a 0 var(--v,85%),rgba(224,65,58,.26) var(--v,85%) 100%);
+}
+body.alb-psy #vol::-webkit-slider-thumb{
+  border-color:rgba(255,140,140,.3);
+  background:linear-gradient(180deg,#7a1616,#2a0505);
+  box-shadow:0 4px 8px rgba(0,0,0,.5),inset 0 1px 2px rgba(255,160,160,.26);
+}
+body.alb-psy #vol::-moz-range-thumb{
+  border-color:rgba(255,140,140,.3);
+  background:linear-gradient(180deg,#7a1616,#2a0505);
+}
+body.alb-psy #vol:focus-visible{outline-color:#ff5a4e}
+
+/* ---- pastilles : rond noir, cercle rouge ---- */
+body.alb-psy .trk .bub,
+body.alb-psy .alb-t-psy .bub{
+  border-color:rgba(0,0,0,.6);
+  background:#140606;
+  box-shadow:0 0 0 2px rgba(210,50,44,.45),0 16px 26px rgba(0,0,0,.55);
+}
+body.alb-psy .trk .bub-glass,
+body.alb-psy .alb-t-psy .bub-glass{display:none}
+body.alb-psy .trk .bub::after,
+body.alb-psy .alb-t-psy .bub::after{background:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.5)}
+body.alb-psy .trk .bub-art,
+body.alb-psy .alb-t-psy .bub-art{opacity:1}
+body.alb-psy .trk .bub:hover,
+body.alb-psy .alb-t-psy .bub:hover{box-shadow:0 0 0 2px rgba(0,0,0,.85),0 26px 40px rgba(0,0,0,.6)}
+body.alb-psy .trk .bub-num{color:rgba(250,230,230,.88);text-shadow:0 1px 3px rgba(0,0,0,.9)}
+body.alb-psy .trk.is-current .bub,
+body.alb-psy .alb-t-psy.is-current .bub{
+  box-shadow:0 0 0 3px #050202,0 0 0 5px rgba(240,60,50,.85),0 0 18px rgba(255,50,40,.45),0 16px 26px rgba(0,0,0,.55);
+}
+
+/* ---- les textes : clairs, liseres de noir pour le fond rouge, et le halo
+   de braise sur la ligne chantee ---- */
+body.alb-psy .lyr{
+  color:rgba(246,232,232,.55);
+  text-shadow:0 0 1px #000,0 0 3px #000,0 0 8px rgba(0,0,0,.8),0 1px 2px #000;
+}
+body.alb-psy .lyr:hover{color:rgba(255,240,240,.88)}
+body.alb-psy .lyr.is-past{color:rgba(246,232,232,.34)}
+body.alb-psy .lyr.is-now{
+  color:#fff4f2;
+  text-shadow:0 0 1px #000,0 0 3px #000,
+    0 0 8px rgba(255,60,48,.95),0 0 24px rgba(255,40,30,.7),0 0 52px rgba(230,20,10,.5),0 1px 3px #000;
+}
+body.alb-psy .lyr-echo{
+  color:rgba(246,232,232,.45);
+  text-shadow:0 0 1px #000,0 0 3px #000,0 0 8px rgba(0,0,0,.8),0 1px 2px #000;
+}
+body.alb-psy .lyr.is-now .lyr-echo{
+  color:rgba(255,236,232,.9);
+  text-shadow:0 0 1px #000,0 0 14px rgba(255,50,40,.6),0 1px 2px #000;
+}
+body.alb-psy .lyr-note{
+  color:rgba(255,120,110,.9);
+  filter:drop-shadow(0 0 9px rgba(255,50,40,.7)) drop-shadow(0 0 26px rgba(230,20,10,.4));
+}
+body.alb-psy .lyrics.is-tuning{box-shadow:inset 0 0 0 1px rgba(255,90,80,.45)}
+body.alb-psy .trk-name,
+body.alb-psy .alb-name{
+  color:rgba(248,236,236,.86);font-weight:700;
+  text-shadow:0 0 1px #000,0 0 2px #000,0 0 3px #000,0 0 6px rgba(0,0,0,.85),0 1px 2px #000;
+}
+body.alb-psy .alb.is-current .alb-name{
+  color:#fff;
+  text-shadow:0 0 1px #000,0 0 3px #000,0 0 10px rgba(255,50,40,.85),0 0 26px rgba(230,20,10,.45),0 1px 2px #000;
+}
+/* dans le choix du disque */
+.picker[data-alb="5"]{--pk-tone:#3a0707;--pk-ink:#f4e6e6}
+.picker[data-alb="5"] .pk-glow{background:radial-gradient(55% 60% at 50% 48%,rgba(255,60,40,.16),transparent 70%)}
