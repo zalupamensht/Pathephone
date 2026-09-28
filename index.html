@@ -4071,7 +4071,7 @@ var ALBUMS = [
   { title:'Empty Clip', by:'Che', theme:'che',
     disc:'assets/disc5.webp?v=2', cover:'assets/cover5.jpg', thumb:'assets/alb5.jpg',
     art:'assets/trk5.jpg', artFill:true,
-    start:0,
+    start:1,                                  /* Tuesday ouvre l album */
     tracks: A5 },
 
   /* « psykotic », d OsamaSon : climat a lui (alb-psy). Vinyle rouge uni,
@@ -5982,7 +5982,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
              { src:'assets/c_v4.mp4', th:'assets/c_tv4.webp', poster:'assets/c_pv4.webp' },
              { src:'assets/c_v5.mp4', th:'assets/c_tv5.webp', poster:'assets/c_pv5.webp' }] },
     /* « Empty Clip » : pas encore de films ; le fond et la pochette */
-    { from:20, gain:.9, meta:'5 tracks',
+    { piste:0, from:20, gain:.9, meta:'5 tracks',          /* au menu, toujours Like Lil Mexico */
       media:[{ src:'assets/bg5.jpg?v=3', th:'assets/che_th1.webp?v=3' },
              { src:'assets/cover5.jpg', th:'assets/che_th2.webp' }] },
     /* « psykotic » : les films de l auteur coupes a leurs meilleures secondes,
