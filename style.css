@@ -2655,4 +2655,6 @@ body.alb-che .che-film{
 }
 body.alb-che.is-film-che .che-film{opacity:1}
 /* le film arrive avec la page, pas apres elle : l image de fond ne passe pas */
-body.alb-che.is-film-che .deco{opacity:0 !important;transition:none}
+/* le film vit DANS .deco : on n eteint pas le bloc (le film s eteindrait
+   avec), on lui retire seulement son image, et il parait tout de suite */
+body.alb-che.is-film-che .deco{opacity:1 !important;transition:none;background:#000}
