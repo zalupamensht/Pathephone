@@ -2658,3 +2658,20 @@ body.alb-che.is-film-che .che-film{opacity:1}
 /* le film vit DANS .deco : on n eteint pas le bloc (le film s eteindrait
    avec), on lui retire seulement son image, et il parait tout de suite */
 body.alb-che.is-film-che .deco{opacity:1 !important;transition:none;background:#000}
+
+/* ==== ESSAI : le film de Che en noir et blanc, facon vieux televiseur ====
+   Tout l essai tient dans ce bloc : pour revenir en couleur, supprimer le
+   bloc (ou annuler le commit qui l a ajoute). */
+body.alb-che .che-film{filter:grayscale(1) contrast(1.25) brightness(.92)}
+body.alb-che.is-film-che .deco::after{
+  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 55%,rgba(0,0,0,.55) 100%);
+  animation:tvche 5s steps(60) infinite;
+}
+@keyframes tvche{
+  0%,100%{opacity:.9}
+  47%{opacity:.9} 48%{opacity:.72} 49%{opacity:.95} 50%{opacity:.8}
+}
+/* ==== fin de l essai ==== */
