@@ -2658,3 +2658,12 @@ body.alb-che.is-film-che .che-film{opacity:1}
 /* le film vit DANS .deco : on n eteint pas le bloc (le film s eteindrait
    avec), on lui retire seulement son image, et il parait tout de suite */
 body.alb-che.is-film-che .deco{opacity:1 !important;transition:none;background:#000}
+
+/* ---- le film de Get Away (psykotic) : plein ecran derriere la platine,
+   seulement pendant ce morceau ; ailleurs, l arbre rouge reste ---- */
+.psy-film{display:none}
+body.alb-psy .psy-film{
+  display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  z-index:0;pointer-events:none;opacity:0;transition:opacity .5s ease;will-change:opacity;
+}
+body.alb-psy.is-film-psy .psy-film{opacity:1}

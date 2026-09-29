@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=91">
+<link rel="stylesheet" href="style.css?v=92">
 </head>
 <body>
 
@@ -88,6 +88,12 @@
          par le temps de chaque piste -->
     <video class="che-film" id="cheFilm" src="assets/che_tuesday.mp4?v=2"
            poster="assets/che_tuesday_p.webp"
+           muted loop playsinline preload="none"
+           disablepictureinpicture aria-hidden="true"></video>
+    <!-- le film de fond de Get Away (psykotic) : quatre mesures, en boucle,
+         menees par le temps du morceau ; il ne parait que sur lui -->
+    <video class="psy-film" id="psyFilm" src="assets/psy_getaway.mp4"
+           poster="assets/psy_getaway_p.webp"
            muted loop playsinline preload="none"
            disablepictureinpicture aria-hidden="true"></video>
     <!-- ce qui vit par dessus le fond : fleurs, traits de lumiere, braises -->
@@ -3379,7 +3385,7 @@ var A6 = [
         { t: 123.19, text: "Change of plot, I already got the location, bitch, you dead" },
         { t: 125.56, music: true }
     ] },
-  { name:"Get Away", audio:"assets/b6_4.mp3" + AV, bpm:153.01, phase:0.029, lyrics:[
+  { name:"Get Away", audio:"assets/b6_4.mp3" + AV, bpm:153, phase:0.029, lyrics:[
         { t: 0.95, text: "(Ooh, ooh, yeah, yeah)" },
         { t: 3.14, text: "You know I'm all for it (ooh), that's just all noise (yeah, yeah, let's go)" },
         { t: 6.51, text: "No, I can't fall for it, can't take the fall for it" },
@@ -5928,39 +5934,42 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   requestAnimationFrame(tour);
 })();
 
-/* ---- Le film de fond de Che ----
-   Monte par l auteur sur Tuesday (148 bpm) : son image 0 est l instant 0 de
-   ce morceau, et il dure seize mesures. Il sert de fond a tout l album : pour
-   chaque piste, ses seize mesures sont calees sur celles du morceau, a partir
-   de son premier temps — le film va donc un peu plus vite ou plus lentement
-   (entre 96 et 104 %), et ses coupes tombent sur les temps de chaque piste.
-   Sous 100 bpm (Los Santos), on compte en double temps. Comme pour les
-   rouages de « C », on rattrape en vitesse, et on ne saute que si l ecart
-   est franc. */
-(function(){
-  var film = document.getElementById('cheFilm');
-  if (!film || MOBILE) return;
-  var corps = document.body;
-  var ORIGINE = 'Tuesday', MESURES = 16;
-  var dernier = 0;
+/* ---- Les films de fond menes par le tempo ----
+   Un film en boucle, monte sur un morceau : sa boucle dure un nombre juste
+   de temps. Pour chaque piste ou il parait, sa boucle est calee sur celle du
+   morceau a partir du premier temps — le film va un peu plus vite ou plus
+   lentement, et ses coupes tombent sur les temps. Sous 100 bpm on compte en
+   double temps. Comme pour les rouages de « C », on rattrape en vitesse, et
+   on ne saute que si l ecart est franc.
+     theme    : l album (classe alb-...)
+     classe   : posee sur body tant que le film est visible
+     pistes   : les morceaux ou il parait (null : tout l album)
+     origine  : le morceau sur lequel il a ete monte, dont l instant 0 est
+                l image 0 (null : on part du premier temps de la piste)
+     temps    : la longueur de la boucle, en temps
+   Che : monte sur Tuesday, seize mesures, sur tout l album.
+   psykotic : monte sur Get Away, quatre mesures, sur ce morceau seul. */
+function filmDeFond(o){
+  var film = document.getElementById(o.id);
+  if (!film || MOBILE) return null;
+  var corps = document.body, dernier = 0;
   function charger(){
     if (film.preload !== 'auto'){ film.preload = 'auto'; film.load(); }
   }
-  window.__prechargerTuesday = charger;         // appele du choix du disque
   function tour(){
     requestAnimationFrame(tour);
     var info = window.__trackInfo ? window.__trackInfo() : null;
-    /* sur la page, ou deja pendant que le choix s en va : l album s ouvre
-       sur le film et non sur l image de fond */
-    var ici = corps.classList.contains('alb-che') &&
+    /* sur la page, ou deja pendant que le choix s en va */
+    var scene = corps.classList.contains('alb-' + o.theme) &&
       (corps.classList.contains('is-stage') || corps.classList.contains('is-lighten')) &&
       (!corps.classList.contains('is-picking') || corps.classList.contains('is-sortie'));
-    if (ici) charger();
-    corps.classList.toggle('is-film-che', !!ici);
-    /* pendant l arrivee la piste n a pas encore change : on attend qu elle
-       soit la sienne et qu elle joue */
+    if (scene) charger();                              // pret avant qu on arrive au morceau
     var arrivee = corps.classList.contains('is-picking') || !corps.classList.contains('is-landed');
-    if (!ici || !info || !info.joue || arrivee){
+    var ouvre = ALB().tracks[ALB().start];
+    var nom = arrivee && ouvre ? ouvre.name : (info && info.nom);   // a l arrivee : la piste qui ouvre
+    var ici = scene && (!o.pistes || o.pistes.indexOf(nom) >= 0);
+    corps.classList.toggle(o.classe, !!ici);
+    if (!ici || !info || !info.joue || arrivee || (o.pistes && o.pistes.indexOf(info.nom) < 0)){
       if (!film.paused){ try { film.pause(); } catch (e) {} }
       return;
     }
@@ -5969,13 +5978,11 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var maintenant = performance.now();
     if (maintenant - dernier < 200) return;
     dernier = maintenant;
-    var bpm = info.bpm || 148;
-    if (bpm < 100) bpm *= 2;                            // double temps
-    /* Tuesday part de l instant 0, comme le film ; les autres de leur
-       premier temps. Le fichier (25,90 s) est etire a la mesure. */
-    var depart = info.nom === ORIGINE ? 0 : (info.phase || 0);
-    var cycle = MESURES * 4 * 60 / bpm;
-    var duree = film.duration || cycle, base = duree / cycle;
+    var bpm = info.bpm || 120;
+    if (bpm < 100) bpm *= 2;                           // double temps
+    var depart = info.nom === o.origine ? 0 : (info.phase || 0);
+    var cycle = o.temps * 60 / bpm;
+    var duree = film.duration || cycle, base = duree / cycle;   // le fichier est etire a la boucle
     var cible = (((info.temps - depart) % cycle + cycle) % cycle) * base;
     var ecart = cible - film.currentTime;
     if (ecart > duree / 2) ecart -= duree;
@@ -5990,7 +5997,12 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (Math.abs(film.playbackRate - r) > .004){ try { film.playbackRate = r; } catch (e) {} }
   }
   requestAnimationFrame(tour);
-})();
+  return charger;
+}
+window.__prechargerTuesday = filmDeFond({ id:'cheFilm', theme:'che', classe:'is-film-che',
+  pistes:null, origine:'Tuesday', temps:64 });
+filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film-psy',
+  pistes:['Get Away'], origine:null, temps:16 });
 
 (function(){
   var pk = document.getElementById('picker');
