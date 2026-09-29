@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=87">
+<link rel="stylesheet" href="style.css?v=88">
 </head>
 <body>
 
@@ -84,8 +84,8 @@
     <video class="crypt-film" id="cryptFilm" src="assets/bg4_film.mp4?v=3"
            muted loop playsinline preload="none"
            disablepictureinpicture aria-hidden="true"></video>
-    <!-- le film de Tuesday (album de Che) : seize mesures, en boucle, menees
-         par le temps de la piste ; il ne parait que pendant ce morceau -->
+    <!-- le film de fond de l album de Che : seize mesures, en boucle, menees
+         par le temps de chaque piste -->
     <video class="che-film" id="cheFilm" src="assets/che_tuesday.mp4"
            poster="assets/che_tuesday_p.webp"
            muted loop playsinline preload="none"
@@ -5928,17 +5928,20 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   requestAnimationFrame(tour);
 })();
 
-/* ---- Le film de Tuesday, chez Che ----
-   Monte par l auteur sur le morceau lui meme : son image 0 est l instant 0
-   de la piste, et il dure seize mesures (16 x 4 temps). On le mene donc par
-   le temps de la piste, modulo ces seize mesures : a chaque passage il
-   retombe sur la meme mesure que la musique. Comme pour les rouages de
-   « C », on rattrape en vitesse, et on ne saute que si l ecart est franc. */
+/* ---- Le film de fond de Che ----
+   Monte par l auteur sur Tuesday (148 bpm) : son image 0 est l instant 0 de
+   ce morceau, et il dure seize mesures. Il sert de fond a tout l album : pour
+   chaque piste, ses seize mesures sont calees sur celles du morceau, a partir
+   de son premier temps — le film va donc un peu plus vite ou plus lentement
+   (entre 96 et 104 %), et ses coupes tombent sur les temps de chaque piste.
+   Sous 100 bpm (Los Santos), on compte en double temps. Comme pour les
+   rouages de « C », on rattrape en vitesse, et on ne saute que si l ecart
+   est franc. */
 (function(){
   var film = document.getElementById('cheFilm');
   if (!film || MOBILE) return;
   var corps = document.body;
-  var MORCEAU = 'Tuesday', MESURES = 16;
+  var ORIGINE = 'Tuesday', MESURES = 16;
   var dernier = 0;
   function charger(){
     if (film.preload !== 'auto'){ film.preload = 'auto'; film.load(); }
@@ -5949,18 +5952,15 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var info = window.__trackInfo ? window.__trackInfo() : null;
     /* sur la page, ou deja pendant que le choix s en va : l album s ouvre
        sur le film et non sur l image de fond */
-    var surScene = corps.classList.contains('alb-che') &&
+    var ici = corps.classList.contains('alb-che') &&
       (corps.classList.contains('is-stage') || corps.classList.contains('is-lighten')) &&
       (!corps.classList.contains('is-picking') || corps.classList.contains('is-sortie'));
-    if (surScene) charger();                    // pret avant qu on arrive au morceau
-    /* pendant l arrivee, la piste n est pas encore passee a Tuesday : si c est
-       elle qui ouvre l album, le film est deja la */
-    var ouvre = ALB().tracks[ALB().start];
-    var arrivee = corps.classList.contains('is-picking') || !corps.classList.contains('is-landed');
-    var ici = surScene && info && (info.nom === MORCEAU ||
-              (arrivee && ouvre && ouvre.name === MORCEAU));
+    if (ici) charger();
     corps.classList.toggle('is-film-che', !!ici);
-    if (!ici || !info.joue || info.nom !== MORCEAU){
+    /* pendant l arrivee la piste n a pas encore change : on attend qu elle
+       soit la sienne et qu elle joue */
+    var arrivee = corps.classList.contains('is-picking') || !corps.classList.contains('is-landed');
+    if (!ici || !info || !info.joue || arrivee){
       if (!film.paused){ try { film.pause(); } catch (e) {} }
       return;
     }
@@ -5969,11 +5969,14 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var maintenant = performance.now();
     if (maintenant - dernier < 200) return;
     dernier = maintenant;
-    /* le fichier fait 25,90 s pour 25,95 s de musique : on l etire a la
-       mesure, sinon il repartait un peu avant la seizieme mesure */
-    var cycle = MESURES * 4 * 60 / (info.bpm || 148);
+    var bpm = info.bpm || 148;
+    if (bpm < 100) bpm *= 2;                            // double temps
+    /* Tuesday part de l instant 0, comme le film ; les autres de leur
+       premier temps. Le fichier (25,90 s) est etire a la mesure. */
+    var depart = info.nom === ORIGINE ? 0 : (info.phase || 0);
+    var cycle = MESURES * 4 * 60 / bpm;
     var duree = film.duration || cycle, base = duree / cycle;
-    var cible = ((info.temps % cycle + cycle) % cycle) * base;
+    var cible = (((info.temps - depart) % cycle + cycle) % cycle) * base;
     var ecart = cible - film.currentTime;
     if (ecart > duree / 2) ecart -= duree;
     if (ecart < -duree / 2) ecart += duree;

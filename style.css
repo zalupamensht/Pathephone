@@ -2646,13 +2646,13 @@ body.alb-psy .alb.is-current .alb-name{
 .picker[data-alb="5"]{--pk-tone:#3a0707;--pk-ink:#f4e6e6}
 .picker[data-alb="5"] .pk-glow{background:radial-gradient(55% 60% at 50% 48%,rgba(255,60,40,.16),transparent 70%)}
 
-/* ---- le film de Tuesday, chez Che : plein ecran derriere la platine,
-   seulement pendant ce morceau ; ailleurs, le fond reste l image ---- */
+/* ---- le film de fond de Che : plein ecran derriere la platine, sur tout
+   l album ---- */
 .che-film{display:none}
 body.alb-che .che-film{
   display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
   z-index:0;pointer-events:none;opacity:0;transition:opacity .5s ease;will-change:opacity;
 }
 body.alb-che.is-film-che .che-film{opacity:1}
-/* a l ouverture sur Tuesday, le film arrive avec la page, pas apres elle */
+/* le film arrive avec la page, pas apres elle : l image de fond ne passe pas */
 body.alb-che.is-film-che .deco{opacity:0 !important;transition:none}
