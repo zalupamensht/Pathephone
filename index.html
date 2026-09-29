@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=85">
+<link rel="stylesheet" href="style.css?v=86">
 </head>
 <body>
 
@@ -82,6 +82,11 @@
          boucle exacte. Pose en pleine largeur au milieu ; au dessus et au
          dessous reste l image fixe, dont il est tire. -->
     <video class="crypt-film" id="cryptFilm" src="assets/bg4_film.mp4?v=3"
+           muted loop playsinline preload="none"
+           disablepictureinpicture aria-hidden="true"></video>
+    <!-- le film de Tuesday (album de Che) : seize mesures, en boucle, menees
+         par le temps de la piste ; il ne parait que pendant ce morceau -->
+    <video class="che-film" id="cheFilm" src="assets/che_tuesday.mp4"
            muted loop playsinline preload="none"
            disablepictureinpicture aria-hidden="true"></video>
     <!-- ce qui vit par dessus le fond : fleurs, traits de lumiere, braises -->
@@ -5436,7 +5441,8 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   window.__trackInfo = function(){
     var t = ALB().tracks[trackIdx];
     return { bpm: (t && t.bpm) || 100, temps: audio.currentTime || 0, joue: !audio.paused,
-             tempete: (t && t.tempete) || 1, phase: (t && t.phase) || 0 };
+             tempete: (t && t.tempete) || 1, phase: (t && t.phase) || 0,
+             nom: (t && t.name) || '' };
   };
 
   window.__musicPaused = function(){
@@ -5915,6 +5921,59 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     /* un saut coute un decodage : on ne saute que si l ecart est franc
        (debut de piste, retour en arriere) ; le reste se rattrape en vitesse */
     if (Math.abs(ecart) > .6){ try { film.currentTime = cible; } catch (e) {} return; }
+    var r = base * (1 + Math.max(-.06, Math.min(.06, ecart * .4)));
+    if (Math.abs(film.playbackRate - r) > .004){ try { film.playbackRate = r; } catch (e) {} }
+  }
+  requestAnimationFrame(tour);
+})();
+
+/* ---- Le film de Tuesday, chez Che ----
+   Monte par l auteur sur le morceau lui meme : son image 0 est l instant 0
+   de la piste, et il dure seize mesures (16 x 4 temps). On le mene donc par
+   le temps de la piste, modulo ces seize mesures : a chaque passage il
+   retombe sur la meme mesure que la musique. Comme pour les rouages de
+   « C », on rattrape en vitesse, et on ne saute que si l ecart est franc. */
+(function(){
+  var film = document.getElementById('cheFilm');
+  if (!film || MOBILE) return;
+  var corps = document.body;
+  var MORCEAU = 'Tuesday', MESURES = 16;
+  var dernier = 0;
+  function charger(){
+    if (film.preload !== 'auto'){ film.preload = 'auto'; film.load(); }
+  }
+  function tour(){
+    requestAnimationFrame(tour);
+    var info = window.__trackInfo ? window.__trackInfo() : null;
+    var surScene = corps.classList.contains('alb-che') &&
+      (corps.classList.contains('is-stage') || corps.classList.contains('is-lighten')) &&
+      !corps.classList.contains('is-picking');
+    if (surScene) charger();                    // pret avant qu on arrive au morceau
+    var ici = surScene && info && info.nom === MORCEAU;
+    corps.classList.toggle('is-film-che', !!ici);
+    if (!ici || !info.joue){
+      if (!film.paused){ try { film.pause(); } catch (e) {} }
+      return;
+    }
+    if (film.readyState < 2 || film.seeking) return;   // un saut en cours : on le laisse finir
+    if (film.paused) film.play().catch(function(){});
+    var maintenant = performance.now();
+    if (maintenant - dernier < 200) return;
+    dernier = maintenant;
+    /* le fichier fait 25,90 s pour 25,95 s de musique : on l etire a la
+       mesure, sinon il repartait un peu avant la seizieme mesure */
+    var cycle = MESURES * 4 * 60 / (info.bpm || 148);
+    var duree = film.duration || cycle, base = duree / cycle;
+    var cible = ((info.temps % cycle + cycle) % cycle) * base;
+    var ecart = cible - film.currentTime;
+    if (ecart > duree / 2) ecart -= duree;
+    if (ecart < -duree / 2) ecart += duree;
+    /* on saute un peu en avant : le temps de decoder, la musique aura avance */
+    if (Math.abs(ecart) > .35){
+      try { film.currentTime = (cible + .06 * base) % duree; } catch (e) {}
+      dernier = maintenant + 300;                   // et on le laisse repartir avant de juger
+      return;
+    }
     var r = base * (1 + Math.max(-.06, Math.min(.06, ecart * .4)));
     if (Math.abs(film.playbackRate - r) > .004){ try { film.playbackRate = r; } catch (e) {} }
   }
