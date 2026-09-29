@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=86">
+<link rel="stylesheet" href="style.css?v=87">
 </head>
 <body>
 
@@ -87,6 +87,7 @@
     <!-- le film de Tuesday (album de Che) : seize mesures, en boucle, menees
          par le temps de la piste ; il ne parait que pendant ce morceau -->
     <video class="che-film" id="cheFilm" src="assets/che_tuesday.mp4"
+           poster="assets/che_tuesday_p.webp"
            muted loop playsinline preload="none"
            disablepictureinpicture aria-hidden="true"></video>
     <!-- ce qui vit par dessus le fond : fleurs, traits de lumiere, braises -->
@@ -5942,16 +5943,24 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function charger(){
     if (film.preload !== 'auto'){ film.preload = 'auto'; film.load(); }
   }
+  window.__prechargerTuesday = charger;         // appele du choix du disque
   function tour(){
     requestAnimationFrame(tour);
     var info = window.__trackInfo ? window.__trackInfo() : null;
+    /* sur la page, ou deja pendant que le choix s en va : l album s ouvre
+       sur le film et non sur l image de fond */
     var surScene = corps.classList.contains('alb-che') &&
       (corps.classList.contains('is-stage') || corps.classList.contains('is-lighten')) &&
-      !corps.classList.contains('is-picking');
+      (!corps.classList.contains('is-picking') || corps.classList.contains('is-sortie'));
     if (surScene) charger();                    // pret avant qu on arrive au morceau
-    var ici = surScene && info && info.nom === MORCEAU;
+    /* pendant l arrivee, la piste n est pas encore passee a Tuesday : si c est
+       elle qui ouvre l album, le film est deja la */
+    var ouvre = ALB().tracks[ALB().start];
+    var arrivee = corps.classList.contains('is-picking') || !corps.classList.contains('is-landed');
+    var ici = surScene && info && (info.nom === MORCEAU ||
+              (arrivee && ouvre && ouvre.name === MORCEAU));
     corps.classList.toggle('is-film-che', !!ici);
-    if (!ici || !info.joue){
+    if (!ici || !info.joue || info.nom !== MORCEAU){
       if (!film.paused){ try { film.pause(); } catch (e) {} }
       return;
     }
@@ -6273,11 +6282,12 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
        fond du choix et sa musique soient lances, pour ne pas leur voler la
        ligne. */
     clearTimeout(tAvance);
-    if (ALBUMS[cur].theme === 'crypt'){
+    if (ALBUMS[cur].theme === 'crypt' || ALBUMS[cur].theme === 'che'){
       var a = ALBUMS[cur];
       tAvance = setTimeout(function(){
         if (parti) return;
-        if (window.__prechargerRouages) window.__prechargerRouages();
+        if (a.theme === 'crypt' && window.__prechargerRouages) window.__prechargerRouages();
+        if (a.theme === 'che' && window.__prechargerTuesday) window.__prechargerTuesday();
         var t = a.tracks[a.start];
         if (t && window.__prechargerPiste) window.__prechargerPiste(t.audio);
       }, 1500);
