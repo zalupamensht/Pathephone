@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=92">
+<link rel="stylesheet" href="style.css?v=93">
 </head>
 <body>
 
@@ -90,8 +90,8 @@
            poster="assets/che_tuesday_p.webp"
            muted loop playsinline preload="none"
            disablepictureinpicture aria-hidden="true"></video>
-    <!-- le film de fond de Get Away (psykotic) : quatre mesures, en boucle,
-         menees par le temps du morceau ; il ne parait que sur lui -->
+    <!-- le film de fond de psykotic (monte sur Get Away) : quatre mesures, en
+         boucle, menees par le temps de chaque piste -->
     <video class="psy-film" id="psyFilm" src="assets/psy_getaway.mp4?v=2"
            poster="assets/psy_getaway_p.webp?v=2"
            muted loop playsinline preload="none"
@@ -5948,7 +5948,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
                 l image 0 (null : on part du premier temps de la piste)
      temps    : la longueur de la boucle, en temps
    Che : monte sur Tuesday, seize mesures, sur tout l album.
-   psykotic : monte sur Get Away, quatre mesures, sur ce morceau seul. */
+   psykotic : monte sur Get Away, quatre mesures, sur tout l album. */
 function filmDeFond(o){
   var film = document.getElementById(o.id);
   if (!film || MOBILE) return null;
@@ -6001,8 +6001,8 @@ function filmDeFond(o){
 }
 window.__prechargerTuesday = filmDeFond({ id:'cheFilm', theme:'che', classe:'is-film-che',
   pistes:null, origine:'Tuesday', temps:64 });
-filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film-psy',
-  pistes:['Get Away'], origine:null, temps:16 });
+window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film-psy',
+  pistes:null, origine:null, temps:16 });
 
 (function(){
   var pk = document.getElementById('picker');
@@ -6297,12 +6297,13 @@ filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film-psy',
        fond du choix et sa musique soient lances, pour ne pas leur voler la
        ligne. */
     clearTimeout(tAvance);
-    if (ALBUMS[cur].theme === 'crypt' || ALBUMS[cur].theme === 'che'){
+    if (ALBUMS[cur].theme === 'crypt' || ALBUMS[cur].theme === 'che' || ALBUMS[cur].theme === 'psy'){
       var a = ALBUMS[cur];
       tAvance = setTimeout(function(){
         if (parti) return;
         if (a.theme === 'crypt' && window.__prechargerRouages) window.__prechargerRouages();
         if (a.theme === 'che' && window.__prechargerTuesday) window.__prechargerTuesday();
+        if (a.theme === 'psy' && window.__prechargerPsy) window.__prechargerPsy();
         var t = a.tracks[a.start];
         if (t && window.__prechargerPiste) window.__prechargerPiste(t.audio);
       }, 1500);
