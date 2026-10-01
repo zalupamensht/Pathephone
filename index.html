@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=93">
+<link rel="stylesheet" href="style.css?v=94">
 </head>
 <body>
 
@@ -200,6 +200,7 @@
   <!-- les pastilles des albums restent rangees en bas : ce bouton a barres,
        comme celui du choix du disque, les fait monter -->
   <button class="albums-btn" id="albumsBtn" type="button" aria-label="Albums" aria-expanded="false"></button>
+<button class="menu-btn" id="menuBtn" type="button" aria-label="Back to the main menu"><i></i><i></i><i></i><i></i><span>Menu</span></button>
 
   <div class="controls">
     <button class="sound" id="sound" type="button" aria-label="Play / pause">
@@ -6079,7 +6080,12 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
              { src:'assets/psy_v5.mp4', th:'assets/psy_tv5.webp', poster:'assets/psy_pv5.webp' }] }
   ];
 
-  var cur = CUR_ALBUM, occupe = false, parti = false, plongeEnAttente = false;
+  /* retour de la page d un album (bouton « Menu ») : le choix s ouvre sur
+     lui ; l adresse redevient propre */
+  var retour = parseInt((location.search.match(/[?&]menu=(\d+)/) || [])[1], 10);
+  if (!(retour >= 0 && retour < ALBUMS.length)) retour = null;
+  if (retour != null && history.replaceState) history.replaceState(null, '', location.pathname + location.hash);
+  var cur = retour != null ? retour : CUR_ALBUM, occupe = false, parti = false, plongeEnAttente = false;
   var tAttente = 0, tDefile = 0, tCharge = 0, tFilm = 0, tArret = 0, tSuivant = 0, vue = 0, surA = true;
 
   /* les disques et les pochettes des trois albums sont pris d avance :
@@ -6666,6 +6672,15 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
   });
   muet.addEventListener('keydown', function(e){ e.stopPropagation(); });
   peindreMuet();
+
+  /* « Menu » sur la page d un album : retour au choix du disque, sur cet
+     album. Pour l instant un simple fondu ; l animation viendra plus tard. */
+  var menuBtn = document.getElementById('menuBtn');
+  if (menuBtn) menuBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    body.classList.add('is-quitte');
+    setTimeout(function(){ location.href = location.pathname + '?menu=' + CUR_ALBUM; }, 320);
+  });
 
   remplir(cur);
   son.jouer();

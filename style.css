@@ -2668,3 +2668,25 @@ body.alb-psy .psy-film{
 body.alb-psy.is-film-psy .psy-film{opacity:1}
 /* le film vit dans .deco : on garde le bloc allume et on lui retire l arbre */
 body.alb-psy.is-film-psy .deco{opacity:1 !important;transition:none;background:#000}
+
+/* ---- « Menu » : retour au choix du disque, en haut a gauche de la page ----
+   Quatre petits carres (la grille des albums) et le mot ; discret comme le
+   bouton a barres, il se montre au survol. Ordinateur seulement. */
+.menu-btn{display:none}
+@media (min-width:821px){
+  .menu-btn{position:absolute;left:28px;top:24px;z-index:12;display:grid;
+    grid-template-columns:6px 6px;grid-template-rows:6px 6px;gap:3px;align-items:center;
+    padding:9px 12px 9px 11px;border:0;border-radius:999px;background:transparent;cursor:pointer;
+    color:var(--ink,#14120f);opacity:0;pointer-events:none;
+    transition:opacity .35s ease,background-color .25s ease}
+  .menu-btn i{display:block;width:6px;height:6px;border-radius:1.5px;background:currentColor;opacity:.8}
+  .menu-btn span{grid-column:3;grid-row:1 / span 2;margin-left:8px;
+    font-weight:600;font-size:11px;line-height:1;letter-spacing:.18em;text-transform:uppercase}
+  body.is-stage:not(.is-picking) .menu-btn{opacity:.5;pointer-events:auto}
+  body.is-stage .menu-btn:hover,body.is-stage .menu-btn:focus-visible{opacity:1;outline:none;
+    background:rgba(127,127,127,.14)}
+  body.alb-red .menu-btn,body.alb-crypt .menu-btn,body.alb-che .menu-btn,body.alb-psy .menu-btn{
+    color:#fff;filter:drop-shadow(0 1px 2px rgba(0,0,0,.85))}
+}
+/* le fondu du depart vers le menu */
+body.is-quitte{transition:opacity .3s ease;opacity:0}
