@@ -13,7 +13,7 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=98">
+<link rel="stylesheet" href="style.css?v=99">
 </head>
 <body>
 
@@ -238,6 +238,7 @@
     <img class="psyi-sang" id="psyiSang" src="assets/psyi_sang.webp" alt="">
     <img class="psyi-sang miroir" id="psyiSang2" src="assets/psyi_sang.webp" alt="">
     <div class="psyi-consigne" id="psyiConsigne">STAB ×3</div>
+    <div class="psyi-consigne petite" id="psyiPrendre">TAKE THE KNIFE</div>
     <div class="psyi-flash" id="psyiFlash"></div>
   </div>
   <canvas class="psyi-haut" id="psyiHaut"></canvas>
@@ -6738,7 +6739,7 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
   var $ = function(id){ return document.getElementById(id); };
   var noir = $('psyiNoir'), couches = $('psyiCouches'), disque = $('psyiDisque');
   var bas = $('psyiBas'), haut = $('psyiHaut'), flash = $('psyiFlash');
-  var consigne = $('psyiConsigne'), skip = $('psyiSkip');
+  var consigne = $('psyiConsigne'), prendre = $('psyiPrendre'), skip = $('psyiSkip');
   var sang = $('psyiSang'), sang2 = $('psyiSang2');
   var gicl = Array.prototype.slice.call(racine.querySelectorAll('.psyi-gicl'));
   var BEAT = 60 / 153;
@@ -6768,6 +6769,9 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     disque.style.left = (g.cx - D / 2) + 'px'; disque.style.top = (g.cy - D / 2) + 'px';
     consigne.style.left = g.cx + 'px'; consigne.style.top = (g.cy + g.R + 52 * g.f) + 'px';
     consigne.style.fontSize = (28 * g.f) + 'px';
+    // sous le couteau qui traine par terre
+    prendre.style.left = (g.cx + 2.97 * g.R + .45 * 1.28 * g.R) + 'px'; prendre.style.top = (g.cy + .97 * g.R + 46 * g.f) + 'px';
+    prendre.style.fontSize = (20 * g.f) + 'px';
     gicl.forEach(placerGiclee);
   }
   function placerGiclee(v){
@@ -6995,6 +6999,7 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
       var pres = Math.hypot(souris.x - mid[0], souris.y - mid[1]) < .5 * 1.28 * g.R;
       if (pres && !e.survol) e.survol = t;
       if (!pres) e.survol = 0;
+      racine.style.cursor = pres ? 'pointer' : '';
     } else if (e.phase === 'trace'){
       var dx = souris.x - g.cx, dy = souris.y - g.cy, r = Math.hypot(dx, dy);
       if (Math.abs(r - g.R) < .35 * g.R){
@@ -7016,9 +7021,16 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     }
   }
   function clic(ev){
-    if (!e) return;
+    if (!e || ev.target === skip) return;
+    if (e.phase === 'sol'){                       // on prend le couteau : un clic dessus
+      if (!e.survol) return;
+      e.phase = 'trace'; racine.classList.add('sans-souris'); racine.style.cursor = '';
+      prendre.classList.remove('on');
+      if (window.__ui) window.__ui('select', true);        // le meme son que le choix d un album
+      return;
+    }
+    /* le cercle est trace : un clic n importe ou frappe */
     if (e.phase !== 'coups' || e.frappe !== null || e.arrivee !== null) return;
-    if (Math.hypot(ev.clientX - g.cx, ev.clientY - g.cy) > 1.7 * g.R) return;
     var t = maint();
     e.frappe = t; e.phiFrappe = Math.atan2(souris.y - g.cy, souris.x - g.cx);
     var n = e.mien++;
@@ -7100,9 +7112,7 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
       if (e && t >= e.agenda[i][0]){ var fn = e.agenda[i][1]; e.agenda.splice(i--, 1); fn(); }
     }
     if (!e) return;
-    if (e.phase === 'sol' && e.survol && t - e.survol > .35){
-      e.phase = 'trace'; racine.classList.add('sans-souris');
-    }
+
     e.pointille = e.ferme ? Math.max(0, 1 - (t - e.tFerme) / .5) : Math.min(1, (t - e.t0) / .6);
     dessiner(t);
     if (e.tFondu && fondu(t) && t - e.tDrop > 2){ finir(); return; }
@@ -7114,6 +7124,7 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     e = null;
     window.__psyRetenu = false;
     body.classList.remove('psyi-on');
+    prendre.classList.remove('on');
     racine.classList.remove('sans-souris');
     gicl.forEach(function(v){ try { v.pause(); } catch (x) {} });
   }
@@ -7136,6 +7147,7 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     if (d) disque.style.filter = getComputedStyle(d).filter;
     sang.classList.remove('on'); sang2.classList.remove('on');
     consigne.classList.remove('on');
+    prendre.classList.add('on');
     couches.style.webkitMaskImage = couches.style.maskImage = '';
     gicl.forEach(function(v){ v.classList.remove('on'); v.preload = 'auto'; try { v.load(); } catch (x) {} });
     mesurer();

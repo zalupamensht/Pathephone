@@ -2714,6 +2714,7 @@ body.psyi-on .psyi{display:block}
 .psyi-consigne{position:absolute;transform:translate(-50%,-50%);opacity:0;transition:opacity .3s ease;
   font:700 28px/1 "Times New Roman",Times,serif;color:#c81a1e;letter-spacing:.04em;white-space:nowrap}
 .psyi-consigne.on{opacity:1}
+.psyi-consigne.petite{font-size:20px;letter-spacing:.12em;color:#a8171b}
 .psyi-skip{
   position:fixed;right:34px;bottom:32px;z-index:2;cursor:pointer;
   padding:10px 20px;
