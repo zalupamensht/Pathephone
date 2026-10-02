@@ -2690,3 +2690,36 @@ body.alb-psy.is-film-psy .deco{opacity:1 !important;transition:none;background:#
 }
 /* le fondu du depart vers le menu */
 body.is-quitte{transition:opacity .3s ease;opacity:0}
+
+
+/* ---------- l intro de psykotic (le couteau) ---------- */
+.psyi{display:none;position:fixed;inset:0;z-index:18;cursor:default}
+body.psyi-on .psyi{display:block}
+.psyi.sans-souris{cursor:none}
+.psyi-couches{position:absolute;inset:0;pointer-events:none}
+.psyi-noir{position:absolute;inset:0;background:#070505}
+.psyi canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.psyi-disque{position:absolute;display:none}
+/* le trou a juste la taille de l etiquette du disque (80 px sur 260 de rayon) */
+/* le trou a juste la taille de l etiquette (80 px sur 260 de rayon) */
+.psyi-disque.vinyle{display:block;
+  -webkit-mask:radial-gradient(circle closest-side,transparent 0 30.6%,#000 31%);mask:radial-gradient(circle closest-side,transparent 0 30.6%,#000 31%)}
+.psyi-disque.plein{display:block}
+.psyi-gicl{position:absolute;opacity:0;object-fit:fill}
+.psyi-gicl.on{opacity:1}
+.psyi-gicl.miroir,.psyi-sang.miroir{transform:scaleX(-1)}
+.psyi-sang{position:absolute;inset:0;width:100%;height:100%;display:none}
+.psyi-sang.on{display:block}
+.psyi-flash{position:absolute;inset:0;background:#ffd6ce;opacity:0}
+.psyi-consigne{position:absolute;transform:translate(-50%,-50%);opacity:0;transition:opacity .3s ease;
+  font:700 28px/1 "Times New Roman",Times,serif;color:#c81a1e;letter-spacing:.04em;white-space:nowrap}
+.psyi-consigne.on{opacity:1}
+.psyi-skip{
+  position:fixed;right:34px;bottom:32px;z-index:2;cursor:pointer;
+  padding:10px 20px;
+  border:1px solid rgba(255,255,255,.34);border-radius:999px;
+  background:rgba(11,5,5,.42);
+  font:700 11px/1 "Arial Narrow","Helvetica Neue",Helvetica,Arial,sans-serif;
+  letter-spacing:.24em;text-transform:uppercase;color:#fff;
+}
+.psyi.sans-souris .psyi-skip{cursor:none}
