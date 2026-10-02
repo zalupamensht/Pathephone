@@ -238,11 +238,9 @@
     <img class="psyi-sang" id="psyiSang" src="assets/psyi_sang.webp" alt="">
     <img class="psyi-sang miroir" id="psyiSang2" src="assets/psyi_sang.webp" alt="">
     <div class="psyi-consigne" id="psyiConsigne">STAB ×3</div>
-    <div class="psyi-consigne petite" id="psyiPrendre">TAKE THE KNIFE</div>
     <div class="psyi-flash" id="psyiFlash"></div>
   </div>
   <canvas class="psyi-haut" id="psyiHaut"></canvas>
-  <button class="psyi-skip" id="psyiSkip" type="button">skip</button>
 </div>
 
 <div class="halftone"></div>
@@ -6739,10 +6737,11 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
   var $ = function(id){ return document.getElementById(id); };
   var noir = $('psyiNoir'), couches = $('psyiCouches'), disque = $('psyiDisque');
   var bas = $('psyiBas'), haut = $('psyiHaut'), flash = $('psyiFlash');
-  var consigne = $('psyiConsigne'), prendre = $('psyiPrendre'), skip = $('psyiSkip');
+  var consigne = $('psyiConsigne');
   var sang = $('psyiSang'), sang2 = $('psyiSang2');
   var gicl = Array.prototype.slice.call(racine.querySelectorAll('.psyi-gicl'));
   var BEAT = 60 / 153;
+  var coupe = new Audio('assets/psyi_coupe.mp3'); coupe.loop = true; coupe.preload = 'auto';
   var K_IMG = new Image(); K_IMG.src = 'assets/psyi_couteau.webp';
   var C_IMG = new Image(); C_IMG.src = 'assets/psyi_cercle.webp';
   // le couteau : pointe et bout du manche dans l image (405 x 557)
@@ -6769,9 +6768,6 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     disque.style.left = (g.cx - D / 2) + 'px'; disque.style.top = (g.cy - D / 2) + 'px';
     consigne.style.left = g.cx + 'px'; consigne.style.top = (g.cy + g.R + 52 * g.f) + 'px';
     consigne.style.fontSize = (28 * g.f) + 'px';
-    // sous le couteau qui traine par terre
-    prendre.style.left = (g.cx + 2.97 * g.R + .45 * 1.28 * g.R) + 'px'; prendre.style.top = (g.cy + .97 * g.R + 46 * g.f) + 'px';
-    prendre.style.fontSize = (20 * g.f) + 'px';
     gicl.forEach(placerGiclee);
   }
   function placerGiclee(v){
@@ -6812,9 +6808,9 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
   }
 
   /* ------------------------------------------------------------ dessin */
-  function couteau(c, x, y, phi, p, eclat){
+  function couteau(c, x, y, phi, p, eclat, ech){
     if (!K_IMG.complete) return;
-    var k = 1.28 * g.R / K_LONG;
+    var k = 1.28 * g.R / K_LONG * (ech || 1);
     c.save();
     c.translate(x, y); c.rotate(phi);
     if (p > 0){ c.beginPath(); c.rect(p, -2000, 4000, 4000); c.clip(); }    // la part entree dans le disque
@@ -6830,12 +6826,25 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     cb.setTransform(g.dpr, 0, 0, g.dpr, 0, 0); ch.setTransform(g.dpr, 0, 0, g.dpr, 0, 0);
     cb.clearRect(0, 0, innerWidth, innerHeight); ch.clearRect(0, 0, innerWidth, innerHeight);
     var R = g.R;
-    // le pointille, tres fin
-    if (e.pointille > 0){
-      cb.save(); cb.strokeStyle = 'rgba(150,40,40,' + (.6 * e.pointille) + ')'; cb.lineWidth = 2 * g.f;
-      for (var k = 0; k < 60; k++){
-        cb.beginPath(); cb.arc(g.cx, g.cy, R, (k * 6 - 90) * Math.PI / 180, (k * 6 - 90 + 3.2) * Math.PI / 180); cb.stroke();
-      }
+    // l ombre du cercle a tracer : a peine visible, des que le couteau est en main
+    if (e.pointille > 0 && C_IMG.complete){
+      cb.save(); cb.globalAlpha = .09 * e.pointille;
+      var so = 1040 * R / 400;
+      cb.drawImage(C_IMG, g.cx - so / 2, g.cy - so / 2, so, so);
+      cb.restore();
+    }
+    // le sang coule du trait a mesure qu on le trace
+    if (e.gouttes.length){
+      cb.save();
+      e.gouttes.forEach(function(q){
+        var u = t - q[0];
+        var l = (q[3] * (1 - Math.exp(-u * 1.3)) + 6 * Math.max(0, u - 1.2)) * g.f;
+        if (l < 1) return;
+        var x = g.cx + R * Math.sin(q[1]), y = g.cy - R * Math.cos(q[1]) + 2, w = q[2] * g.f;
+        cb.strokeStyle = '#280002'; cb.lineWidth = w + 1.5; cb.beginPath(); cb.moveTo(x, y); cb.lineTo(x, y + l); cb.stroke();
+        cb.strokeStyle = '#8a080d'; cb.lineWidth = w; cb.beginPath(); cb.moveTo(x, y); cb.lineTo(x, y + l); cb.stroke();
+        cb.fillStyle = '#80060b'; cb.beginPath(); cb.ellipse(x, y + l + w * .3, w * .85, w * 1.05, 0, 0, 7); cb.fill();
+      });
       cb.restore();
     }
     // l anneau : la ou la pointe est passee
@@ -6871,7 +6880,7 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     }
     // le couteau
     var k = etatCouteau(t);
-    if (k) couteau(ch, k[0], k[1], k[2], k[3], k[4]);
+    if (k) couteau(ch, k[0], k[1], k[2], k[3], k[4], k[5]);
     // les eclats
     if (e.eclats) eclats(ch, t - e.tDrop);
   }
@@ -6880,10 +6889,17 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
   function etatCouteau(t){
     var R = g.R, f = g.f;
     if (e.phase === 'sol'){
-      var b = e.survol ? (Math.floor(t * 16) % 2 ? 1.35 : .85) : .85;
-      return [e.sol[0], e.sol[1], POSE + 42 * Math.PI / 180, 0, b];
+      var v = e.leve;                               // 0 : couche ; 1 : souleve
+      return [e.sol[0] - 4 * f * v, e.sol[1] - 14 * f * v, POSE + (42 - 6 * v) * Math.PI / 180, 0, .85 + .3 * v, 1 + .12 * v];
     }
-    if (e.phase === 'trace') return [souris.x, souris.y, POSE, 0, 1];
+    if (e.phase === 'trace'){
+      // bouton tenu pres du cercle : la pointe s enfonce dans le trait
+      if (e.appui && e.pres){
+        var aa = Math.atan2(souris.y - g.cy, souris.x - g.cx);
+        return [g.cx + Math.cos(aa) * R, g.cy + Math.sin(aa) * R, POSE, 9 * f, 1];
+      }
+      return [souris.x, souris.y, POSE, 0, 1];
+    }
     if (e.phase === 'coups'){
       var phi = Math.atan2(souris.y - g.cy, souris.x - g.cx);
       if (e.arrivee !== null){                    // il vient du trace vers sa pose
@@ -7002,7 +7018,9 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
       racine.style.cursor = pres ? 'pointer' : '';
     } else if (e.phase === 'trace'){
       var dx = souris.x - g.cx, dy = souris.y - g.cy, r = Math.hypot(dx, dy);
-      if (Math.abs(r - g.R) < .35 * g.R){
+      e.pres = Math.abs(r - g.R) < .35 * g.R;
+      e.tBouge = t;
+      if (e.appui && e.pres){
         var a = (Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360;      // 0 en haut, sens horaire
         /* un geste rapide saute des cases : on remplit l arc depuis le point precedent */
         if (e.dernierAngle !== null){
@@ -7012,6 +7030,11 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
         }
         e.dernierAngle = a;
         e.cases[Math.floor(a / 5) % 72] = true;
+        // une coulure de temps en temps, la ou la lame vient de passer
+        if (t - e.tGoutte > .07 && Math.random() < .5){
+          e.tGoutte = t;
+          e.gouttes.push([t, a * Math.PI / 180, 1.6 + Math.random() * 2.6, 14 + Math.random() * 60]);
+        }
         if (e.cases.filter(Boolean).length >= 62){                         // le cercle est trace
           e.ferme = true; e.phase = 'coups'; e.tFerme = t;
           e.arrivee = t; e.depart = [souris.x, souris.y];
@@ -7021,11 +7044,15 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     }
   }
   function clic(ev){
-    if (!e || ev.target === skip) return;
+    if (!e) return;
+    if (e.phase === 'trace'){                     // on appuie : la lame mord le cercle
+      e.appui = true; e.dernierAngle = null;
+      bouge(ev);
+      return;
+    }
     if (e.phase === 'sol'){                       // on prend le couteau : un clic dessus
       if (!e.survol) return;
-      e.phase = 'trace'; racine.classList.add('sans-souris'); racine.style.cursor = '';
-      prendre.classList.remove('on');
+      e.phase = 'trace'; e.tPris = maint(); e.survol = 0; racine.classList.add('sans-souris'); racine.style.cursor = '';
       if (window.__ui) window.__ui('select', true);        // le meme son que le choix d un album
       return;
     }
@@ -7113,7 +7140,18 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     }
     if (!e) return;
 
-    e.pointille = e.ferme ? Math.max(0, 1 - (t - e.tFerme) / .5) : Math.min(1, (t - e.t0) / .6);
+    e.pointille = e.ferme ? Math.max(0, 1 - (t - e.tFerme) / .5) : (e.tPris ? Math.min(1, (t - e.tPris) / .8) : 0);
+    // le couteau par terre se souleve au survol
+    e.leve += ((e.survol ? 1 : 0) - e.leve) * .22;
+    // le bruit de la lame : il ne sonne que quand elle avance dans le trait
+    var vise = e.phase === 'trace' && e.appui && e.pres && t - e.tBouge < .09 ? .6 : 0;
+    e.volCoupe += (vise - e.volCoupe) * .3;
+    if (coupe){
+      var th = $('theme');
+      coupe.volume = Math.max(0, Math.min(1, e.volCoupe * (th && th.muted ? 0 : (th ? th.volume : 1))));
+      if (e.volCoupe > .01 && coupe.paused) coupe.play().catch(function(){});
+      if (e.volCoupe <= .01 && !coupe.paused) coupe.pause();
+    }
     dessiner(t);
     if (e.tFondu && fondu(t) && t - e.tDrop > 2){ finir(); return; }
     requestAnimationFrame(boucle);
@@ -7124,9 +7162,9 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     e = null;
     window.__psyRetenu = false;
     body.classList.remove('psyi-on');
-    prendre.classList.remove('on');
     racine.classList.remove('sans-souris');
     gicl.forEach(function(v){ try { v.pause(); } catch (x) {} });
+    try { coupe.pause(); } catch (x) {}
   }
   function passer(ev){
     if (ev) ev.stopPropagation();
@@ -7147,7 +7185,6 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     if (d) disque.style.filter = getComputedStyle(d).filter;
     sang.classList.remove('on'); sang2.classList.remove('on');
     consigne.classList.remove('on');
-    prendre.classList.add('on');
     couches.style.webkitMaskImage = couches.style.maskImage = '';
     gicl.forEach(function(v){ v.classList.remove('on'); v.preload = 'auto'; try { v.load(); } catch (x) {} });
     mesurer();
@@ -7155,14 +7192,15 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     for (var i = 0; i < 13; i++) coul.push([(15 + Math.random() * 150) * Math.PI / 180, 0, 25 + Math.random() * 85, 2.5 + Math.random() * 3, Math.random() * .5]);
     e = { phase: 'sol', t0: maint(), survol: 0, cases: new Array(72).fill(false), ferme: false,
           sol: [g.cx + 2.97 * g.R, g.cy + .97 * g.R], mien: 0, frappe: null, arrivee: null,
-          coulures: 0, coul: coul, eclats: null, tFondu: 0, pointille: 0, agenda: [], dernierAngle: null };
+          coulures: 0, coul: coul, eclats: null, tFondu: 0, pointille: 0, agenda: [], dernierAngle: null,
+          leve: 0, tPris: 0, appui: false, pres: false, tBouge: 0, volCoupe: 0, gouttes: [], tGoutte: 0 };
     requestAnimationFrame(boucle);
   };
 
   racine.addEventListener('pointermove', bouge);
   window.addEventListener('pointermove', function(ev){ if (e && e.phase !== 'trace') { souris.x = ev.clientX; souris.y = ev.clientY; } });
   racine.addEventListener('pointerdown', clic);
-  skip.addEventListener('click', passer);
+  window.addEventListener('pointerup', function(){ if (e){ e.appui = false; e.dernierAngle = null; } });
   window.addEventListener('resize', function(){ if (e) mesurer(); });
 })();
 </script>
