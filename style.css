@@ -2715,6 +2715,11 @@ body.psyi-on .psyi{display:block}
 .psyi-consigne{position:absolute;transform:translate(-50%,-50%);opacity:0;transition:opacity .3s ease;
   font:700 28px/1 "Times New Roman",Times,serif;color:#c81a1e;letter-spacing:.04em;white-space:nowrap}
 .psyi-consigne.on{opacity:1}
+.psyi-bas-consigne{position:absolute;left:50%;bottom:56px;transform:translateX(-50%);opacity:0;
+  transition:opacity 1.2s ease;font:700 15px/1 "Times New Roman",Times,serif;letter-spacing:.32em;
+  color:#9c1418;white-space:nowrap;pointer-events:none}
+.psyi-bas-consigne.on{opacity:.85;animation:psyiSouffle 2.6s ease-in-out infinite}
+@keyframes psyiSouffle{50%{opacity:.4}}
 .psyi-consigne.petite{font-size:20px;letter-spacing:.12em;color:#a8171b}
 .psyi-skip{
   position:fixed;right:34px;bottom:32px;z-index:2;cursor:pointer;
