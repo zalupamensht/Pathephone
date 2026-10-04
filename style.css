@@ -2703,7 +2703,7 @@ body.psyi-on .psyi{display:block}
 /* le trou a juste la taille de l etiquette du disque (80 px sur 260 de rayon) */
 /* le trou a juste la taille de l etiquette (80 px sur 260 de rayon) */
 .psyi-disque.vinyle{display:block;
-  -webkit-mask:radial-gradient(circle closest-side,transparent 0 30.6%,#000 31%);mask:radial-gradient(circle closest-side,transparent 0 30.6%,#000 31%)}
+  -webkit-mask:radial-gradient(circle closest-side,transparent 0 32%,#000 32.4%);mask:radial-gradient(circle closest-side,transparent 0 32%,#000 32.4%)}
 .psyi-disque.plein{display:block}
 .psyi-gicl{position:absolute;opacity:0;object-fit:fill}
 .psyi-gicl.on{opacity:1}
