@@ -13,7 +13,14 @@
 <meta property="og:image" content="assets/cover.jpg">
 <meta property="og:type" content="music.album">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=99">
+<!-- les polices de l interface partent tout de suite, avec la page : le texte
+     n apparait qu avec elles, jamais d abord dans une police de secours -->
+<link rel="preload" href="assets/fonts/Rajdhani-Medium.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/Rajdhani-SemiBold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/Kingjola.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/ZenKakuGothicNew-Medium-jp.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css?v=101">
 </head>
 <body>
 
@@ -6801,6 +6808,36 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
       requestAnimationFrame(sec);
     })();
   }
+  /* des taches de sang sur l ecran, partout (pas seulement autour du
+     disque) : posees d un coup, une petite secousse a l arrivee. Trois
+     taches tirees des clips FX Elements, en miroir, tournees, a tailles
+     variees ; celle qui coule (2) reste debout. */
+  var TACHES = ['assets/psyi_tache0.webp', 'assets/psyi_tache1.webp', 'assets/psyi_tache2.webp'];
+  function tacher(n, taille){
+    var W = innerWidth, H = innerHeight, poses = e.taches;
+    for (var k = 0; k < n; k++){
+      var x, y, essai = 0;
+      do {                                          // loin du disque, et pas les unes sur les autres
+        x = W * (.06 + Math.random() * .88); y = H * (.06 + Math.random() * .86); essai++;
+      } while (essai < 40 && (Math.hypot(x - g.cx, y - g.cy) < 1.7 * g.R ||
+               poses.some(function(q){ return Math.hypot(q[0] - x, q[1] - y) < 230 * g.f; })));
+      poses.push([x, y]);
+      var i = Math.floor(Math.random() * TACHES.length);
+      var im = document.createElement('img');
+      im.className = 'psyi-tache'; im.src = TACHES[i]; im.alt = '';
+      var l = (260 + Math.random() * 220) * g.f * taille;
+      var rot = i === 2 ? (Math.random() * 16 - 8) : Math.random() * 360;
+      var m = Math.random() < .5 ? -1 : 1;
+      im.style.width = l + 'px'; im.style.left = (x - l / 2) + 'px'; im.style.top = (y - l / 2) + 'px';
+      im.style.transform = 'rotate(' + rot.toFixed(1) + 'deg) scaleX(' + m + ') scale(1.08)';
+      couches.insertBefore(im, flash);
+      (function(im, rot, m){
+        requestAnimationFrame(function(){ requestAnimationFrame(function(){
+          im.style.transform = 'rotate(' + rot.toFixed(1) + 'deg) scaleX(' + m + ')';
+        }); });
+      })(im, rot, m);
+    }
+  }
   function giclee(i){
     var v = gicl[i]; placerGiclee(v);
     try { v.currentTime = 0; } catch (x) {}
@@ -6833,20 +6870,8 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
       cb.drawImage(C_IMG, g.cx - so / 2, g.cy - so / 2, so, so);
       cb.restore();
     }
-    // le sang coule du trait a mesure qu on le trace
-    if (e.gouttes.length){
-      cb.save();
-      e.gouttes.forEach(function(q){
-        var u = t - q[0];
-        var l = (q[3] * (1 - Math.exp(-u * 1.3)) + 6 * Math.max(0, u - 1.2)) * g.f;
-        if (l < 1) return;
-        var x = g.cx + R * Math.sin(q[1]), y = g.cy - R * Math.cos(q[1]) + 2, w = q[2] * g.f;
-        cb.strokeStyle = '#280002'; cb.lineWidth = w + 1.5; cb.beginPath(); cb.moveTo(x, y); cb.lineTo(x, y + l); cb.stroke();
-        cb.strokeStyle = '#8a080d'; cb.lineWidth = w; cb.beginPath(); cb.moveTo(x, y); cb.lineTo(x, y + l); cb.stroke();
-        cb.fillStyle = '#80060b'; cb.beginPath(); cb.ellipse(x, y + l + w * .3, w * .85, w * 1.05, 0, 0, 7); cb.fill();
-      });
-      cb.restore();
-    }
+    // le sang coule du cercle
+    dessinerCoulures(cb, t);
     // l anneau : la ou la pointe est passee
     if (C_IMG.complete && e.cases.some(Boolean)){
       cb.save();
@@ -6863,26 +6888,94 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
       cb.drawImage(C_IMG, g.cx - s / 2, g.cy - s / 2, s, s);
       cb.restore();
     }
-    // les coulures du cercle
-    if (e.coulures){
-      var u0 = t - e.coulures;
-      cb.save();
-      e.coul.forEach(function(q){
-        var u = Math.max(0, u0 - q[4]);
-        var l = (q[2] * (1 - Math.exp(-u * 1.6)) + 9 * Math.max(0, u - 1)) * g.f;
-        if (l < 1) return;
-        var x = g.cx + R * Math.cos(q[0]), y = g.cy + R * Math.sin(q[0]) - 2, w = q[3] * g.f;
-        cb.strokeStyle = '#280002'; cb.lineWidth = w + 2; cb.beginPath(); cb.moveTo(x, y); cb.lineTo(x, y + l); cb.stroke();
-        cb.strokeStyle = '#82080c'; cb.lineWidth = w; cb.beginPath(); cb.moveTo(x, y); cb.lineTo(x, y + l); cb.stroke();
-        cb.fillStyle = '#7d060a'; cb.beginPath(); cb.ellipse(x, y + l + w * .35, w * .9, w * .95, 0, 0, 7); cb.fill();
-      });
-      cb.restore();
-    }
     // le couteau
     var k = etatCouteau(t);
     if (k) couteau(ch, k[0], k[1], k[2], k[3], k[4], k[5]);
     // les eclats
     if (e.eclats) eclats(ch, t - e.tDrop);
+  }
+
+  /* ------------------------------------------------------- les coulures
+     Une coulure, comme une vraie : la goutte se forme et reste un instant,
+     descend par a-coups, puis sa tete s alourdit et elle accelere ; trop
+     lourde, elle se detache et tombe ; le filet reste, s amincit et brunit
+     en sechant. Un reflet clair court sur le cote, un point sur la tete. */
+  function nouvelleCoulure(a, t, gros){
+    var f = g.f, w = (2.4 + Math.random() * 3.2) * f * (gros || 1);
+    e.gouttes.push({ a: a, t0: t, w: w, l: 0, v: 0,
+      attente: .08 + Math.random() * .25,                 // la goutte se forme
+      lache: (60 + Math.random() * 190) * f,              // longueur ou la tete s en va
+      trac: [], chute: null, fini: false, graine: Math.random() * 100 });
+  }
+  function avancerCoulures(t, dt){
+    var f = g.f;
+    e.gouttes.forEach(function(q){
+      var u = t - q.t0;
+      if (q.chute){                                       // la goutte detachee tombe
+        q.chute.v += 2200 * f * dt; q.chute.y += q.chute.v * dt;
+      }
+      if (q.fini || u < q.attente) return;
+      // une resistance qui varie : elle accroche, puis repart
+      var accroche = .5 + .5 * Math.sin(q.graine + u * 9) * Math.sin(q.graine * 1.7 + u * 3.3);
+      var a = (q.l < 25 * f ? 120 : 520 + q.l * 2.2) * f * (1 - .75 * accroche);
+      q.v = Math.min(q.v + a * dt, 420 * f);
+      q.v *= 1 - .9 * accroche * dt;
+      q.l += q.v * dt;
+      if (q.l >= q.lache){                                // trop lourde : la tete s en va
+        q.chute = { y: q.l, v: q.v };
+        q.fini = true; q.l = q.lache;
+      }
+    });
+  }
+  function couleurSeche(age){
+    var k = Math.min(1, age / 5);                         // 5 s pour brunir
+    var r = Math.round(150 - 75 * k), g2 = Math.round(8 - 4 * k), b2 = Math.round(14 - 6 * k);
+    return 'rgb(' + r + ',' + g2 + ',' + b2 + ')';
+  }
+  function dessinerCoulures(c, t){
+    if (!e.gouttes.length) return;
+    var R = g.R;
+    c.save();
+    e.gouttes.forEach(function(q){
+      var x = g.cx + R * Math.sin(q.a), y = g.cy - R * Math.cos(q.a) + 1, w = q.w, l = q.l, age = t - q.t0;
+      if (l > 1){
+        // le filet : un peu ondule, plus fin pres de la tete quand elle s en est allee
+        var bas = q.fini ? .45 : .8;
+        c.beginPath();
+        var n = Math.max(3, Math.round(l / 6));
+        for (var i = 0; i <= n; i++){
+          var yy = y + l * i / n, ww = w * (1 - (1 - bas) * i / n) * (1 + .18 * Math.sin(q.graine + i * 1.3));
+          if (i === 0) c.moveTo(x - ww / 2, yy); else c.lineTo(x - ww / 2, yy);
+        }
+        for (var j = n; j >= 0; j--){
+          var y2 = y + l * j / n, w2 = w * (1 - (1 - bas) * j / n) * (1 + .18 * Math.sin(q.graine + j * 1.3));
+          c.lineTo(x + w2 / 2, y2);
+        }
+        c.closePath();
+        c.fillStyle = couleurSeche(age); c.fill();
+        c.lineWidth = .8; c.strokeStyle = 'rgba(40,0,3,.85)'; c.stroke();
+        // le reflet, sur le cote
+        c.globalCompositeOperation = 'lighter';
+        c.fillStyle = 'rgba(255,120,120,' + Math.max(0, .28 - age * .05).toFixed(3) + ')';
+        c.fillRect(x - w * .28, y, Math.max(.6, w * .14), l * .92);
+        c.globalCompositeOperation = 'source-over';
+      }
+      // la tete, si elle est encore la
+      if (!q.fini && l > 1){
+        var hr = w * (.75 + Math.min(.6, l / q.lache * .6));
+        c.fillStyle = couleurSeche(age * .5);
+        c.beginPath(); c.ellipse(x, y + l + hr * .35, hr * .82, hr * 1.08, 0, 0, 7); c.fill();
+        c.fillStyle = 'rgba(255,190,190,.45)';
+        c.beginPath(); c.ellipse(x - hr * .3, y + l + hr * .05, hr * .2, hr * .3, 0, 0, 7); c.fill();
+      }
+      // la goutte qui tombe
+      if (q.chute && q.chute.y < innerHeight + 40){
+        var r2 = w * 1.25, vy = y + q.chute.y;
+        c.fillStyle = couleurSeche(0);
+        c.beginPath(); c.ellipse(x, vy, r2 * .75, r2 * (1.1 + Math.min(.8, q.chute.v / (900 * g.f))), 0, 0, 7); c.fill();
+      }
+    });
+    c.restore();
   }
 
   /* ou est le couteau (pointe x, y ; angle du manche ; profondeur ; eclat) */
@@ -7031,11 +7124,11 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
         e.dernierAngle = a;
         e.cases[Math.floor(a / 5) % 72] = true;
         // une coulure de temps en temps, la ou la lame vient de passer
-        if (t - e.tGoutte > .07 && Math.random() < .5){
+        if (t - e.tGoutte > .09 && Math.random() < .42){
           e.tGoutte = t;
-          e.gouttes.push([t, a * Math.PI / 180, 1.6 + Math.random() * 2.6, 14 + Math.random() * 60]);
+          nouvelleCoulure(a * Math.PI / 180, t);
         }
-        if (e.cases.filter(Boolean).length >= 62){                         // le cercle est trace
+        if (e.cases.every(Boolean)){                                       // le cercle est trace, en entier, par la main
           e.ferme = true; e.phase = 'coups'; e.tFerme = t;
           e.arrivee = t; e.depart = [souris.x, souris.y];
           consigne.textContent = 'STAB ×3'; consigne.classList.add('on');
@@ -7068,9 +7161,11 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     if (!e) return;
     eclair(false);
     giclee(n);                                    // nos giclees : en miroir, plus petites
+    tacher(1, .7);
     if (n === 0) disque.className = 'psyi-disque vinyle';
     if (n === 1) disque.className = 'psyi-disque plein';
-    if (n === 2) e.coulures = maint();
+    if (n === 2) for (var i = 0; i < 9; i++)
+      nouvelleCoulure((90 + Math.random() * 180) * Math.PI / 180, maint() + Math.random() * .4, 1.3);
     consigne.textContent = 'STAB ×' + (2 - n);
     if (n === 2){
       consigne.classList.remove('on');
@@ -7099,6 +7194,7 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
   function impactSien(k){
     if (!e) return;
     eclair(true);
+    tacher(k + 2, 1 + .2 * k);
     if (k === 0){ noir.style.opacity = 0; disque.style.visibility = 'hidden'; giclee(3); }
     if (k === 1){ giclee(4); giclee(5); sang.classList.add('on'); }
     if (k === 2){ sang2.classList.add('on'); giclee(6); giclee(7); }
@@ -7140,6 +7236,7 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     }
     if (!e) return;
 
+    avancerCoulures(t, Math.min(.05, t - (e.tPrec || t))); e.tPrec = t;
     e.pointille = e.ferme ? Math.max(0, 1 - (t - e.tFerme) / .5) : (e.tPris ? Math.min(1, (t - e.tPris) / .8) : 0);
     // le couteau par terre se souleve au survol
     e.leve += ((e.survol ? 1 : 0) - e.leve) * .22;
@@ -7184,15 +7281,17 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     var d = document.querySelector('.disc');
     if (d) disque.style.filter = getComputedStyle(d).filter;
     sang.classList.remove('on'); sang2.classList.remove('on');
+    Array.prototype.slice.call(couches.querySelectorAll('.psyi-tache')).forEach(function(t){ t.remove(); });
     consigne.classList.remove('on');
     couches.style.webkitMaskImage = couches.style.maskImage = '';
     gicl.forEach(function(v){ v.classList.remove('on'); v.preload = 'auto'; try { v.load(); } catch (x) {} });
+    TACHES.forEach(function(u){ new Image().src = u; });       // les taches, pretes avant le premier coup
     mesurer();
     var coul = [];
     for (var i = 0; i < 13; i++) coul.push([(15 + Math.random() * 150) * Math.PI / 180, 0, 25 + Math.random() * 85, 2.5 + Math.random() * 3, Math.random() * .5]);
     e = { phase: 'sol', t0: maint(), survol: 0, cases: new Array(72).fill(false), ferme: false,
           sol: [g.cx + 2.97 * g.R, g.cy + .97 * g.R], mien: 0, frappe: null, arrivee: null,
-          coulures: 0, coul: coul, eclats: null, tFondu: 0, pointille: 0, agenda: [], dernierAngle: null,
+          coulures: 0, coul: coul, eclats: null, tFondu: 0, pointille: 0, agenda: [], dernierAngle: null, taches: [],
           leve: 0, tPris: 0, appui: false, pres: false, tBouge: 0, volCoupe: 0, gouttes: [], tGoutte: 0 };
     requestAnimationFrame(boucle);
   };

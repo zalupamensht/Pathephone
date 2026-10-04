@@ -5,20 +5,20 @@
    - Rajdhani : le texte, a la maniere de la police de la PS3 ;
    - Zen Kaku Gothic New : les lignes en japonais. */
 @font-face{font-family:"Rajdhani";src:url("assets/fonts/Rajdhani-Medium.woff2") format("woff2");
-  font-weight:100 550;font-style:normal;font-display:swap}
+  font-weight:100 550;font-style:normal;font-display:block}
 @font-face{font-family:"Rajdhani";src:url("assets/fonts/Rajdhani-SemiBold.woff2") format("woff2");
-  font-weight:551 900;font-style:normal;font-display:swap}
+  font-weight:551 900;font-style:normal;font-display:block}
 /* Kingjola (Lars Manenschijn, dafont ; gratuite pour un usage personnel) :
    une gothique a paraphes, pour le titre et l artiste sur la page du choix
    du disque. En minuscules : les capitales ont des paraphes qui se
    chevauchent. */
 @font-face{font-family:"Kingjola";src:url("assets/fonts/Kingjola.woff2") format("woff2");
-  font-weight:400;font-style:normal;font-display:swap}
+  font-weight:400;font-style:normal;font-display:block}
 /* Instrument Serif : gardee en secours */
 @font-face{font-family:"Instrument Serif";src:url("assets/fonts/InstrumentSerif.woff2") format("woff2");
-  font-weight:400;font-style:normal;font-display:swap}
+  font-weight:400;font-style:normal;font-display:block}
 @font-face{font-family:"Zen Kaku JP";src:url("assets/fonts/ZenKakuGothicNew-Medium-jp.woff2") format("woff2");
-  font-weight:400 700;font-style:normal;font-display:swap}
+  font-weight:400 700;font-style:normal;font-display:block}
 
 :root{
   --paper:#faf9f7;
@@ -2711,6 +2711,7 @@ body.psyi-on .psyi{display:block}
 .psyi-sang{position:absolute;inset:0;width:100%;height:100%;display:none}
 .psyi-sang.on{display:block}
 .psyi-flash{position:absolute;inset:0;background:#ffd6ce;opacity:0}
+.psyi-tache{position:absolute;height:auto;pointer-events:none;transition:transform .09s ease-out}
 .psyi-consigne{position:absolute;transform:translate(-50%,-50%);opacity:0;transition:opacity .3s ease;
   font:700 28px/1 "Times New Roman",Times,serif;color:#c81a1e;letter-spacing:.04em;white-space:nowrap}
 .psyi-consigne.on{opacity:1}
