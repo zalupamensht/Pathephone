@@ -6904,7 +6904,7 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     var f = g.f, w = (2.4 + Math.random() * 3.2) * f * (gros || 1);
     e.gouttes.push({ a: a, t0: t, w: w, l: 0, v: 0,
       attente: .08 + Math.random() * .25,                 // la goutte se forme
-      lache: (60 + Math.random() * 190) * f,              // longueur ou la tete s en va
+      lache: 1e9,                                         // elle descend jusqu en bas de l ecran
       trac: [], chute: null, fini: false, graine: Math.random() * 100 });
   }
   function avancerCoulures(t, dt){
@@ -6918,13 +6918,11 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
       // une resistance qui varie : elle accroche, puis repart
       var accroche = .5 + .5 * Math.sin(q.graine + u * 9) * Math.sin(q.graine * 1.7 + u * 3.3);
       var a = (q.l < 25 * f ? 120 : 520 + q.l * 2.2) * f * (1 - .75 * accroche);
-      q.v = Math.min(q.v + a * dt, 420 * f);
+      q.v = Math.min(q.v + a * dt, (170 + 160 * (q.graine % 1)) * f);   // vite, mais on la voit descendre
       q.v *= 1 - .9 * accroche * dt;
       q.l += q.v * dt;
-      if (q.l >= q.lache){                                // trop lourde : la tete s en va
-        q.chute = { y: q.l, v: q.v };
-        q.fini = true; q.l = q.lache;
-      }
+      var fond = innerHeight + 30 - (g.cy - g.R * Math.cos(q.a));
+      if (q.l >= fond){ q.l = fond; q.fini = true; }      // elle est sortie par le bas de l ecran
     });
   }
   function couleurSeche(age){
@@ -6940,7 +6938,7 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
       var x = g.cx + R * Math.sin(q.a), y = g.cy - R * Math.cos(q.a) + 1, w = q.w, l = q.l, age = t - q.t0;
       if (l > 1){
         // le filet : un peu ondule, plus fin pres de la tete quand elle s en est allee
-        var bas = q.fini ? .45 : .8;
+        var bas = .8;
         c.beginPath();
         var n = Math.max(3, Math.round(l / 6));
         for (var i = 0; i <= n; i++){
@@ -6962,7 +6960,7 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
       }
       // la tete, si elle est encore la
       if (!q.fini && l > 1){
-        var hr = w * (.75 + Math.min(.6, l / q.lache * .6));
+        var hr = w * (.75 + Math.min(.6, l / (180 * g.f) * .6));
         c.fillStyle = couleurSeche(age * .5);
         c.beginPath(); c.ellipse(x, y + l + hr * .35, hr * .82, hr * 1.08, 0, 0, 7); c.fill();
         c.fillStyle = 'rgba(255,190,190,.45)';
@@ -7160,8 +7158,7 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
   function impactMien(n){
     if (!e) return;
     eclair(false);
-    giclee(n);                                    // nos giclees : en miroir, plus petites
-    tacher(1, .7);
+    giclee(n);                                    // nos giclees, sur le disque : en miroir, plus petites
     if (n === 0) disque.className = 'psyi-disque vinyle';
     if (n === 1) disque.className = 'psyi-disque plein';
     if (n === 2) for (var i = 0; i < 9; i++)
