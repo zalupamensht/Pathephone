@@ -6751,6 +6751,7 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
   var gicl = Array.prototype.slice.call(racine.querySelectorAll('.psyi-gicl'));
   var BEAT = 60 / 153;
   var coupe = null;                 // le bruit de la lame : la chair (Flesh Growing), le mouille dessous
+  var fond = null;                  // l ambiance : elle monte jusqu au drop, puis s efface
 
   /* rien de l intro ne se charge avec le site : seulement quand on s arrete
      sur psykotic dans le choix (comme son film), ou au plus tard a l entree */
@@ -6761,6 +6762,7 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     K_IMG.src = 'assets/psyi_couteau.webp'; C_IMG.src = 'assets/psyi_cercle.webp';
     [disque, sang, sang2].forEach(function(im){ if (!im.getAttribute('src')) im.src = im.dataset.src; });
     coupe = new Audio('assets/psyi_coupe.mp3?v=2'); coupe.loop = true; coupe.preload = 'auto';
+    fond = new Audio('assets/psyi_fond.mp3'); fond.loop = true; fond.preload = 'auto';
     TACHES.forEach(function(u){ new Image().src = u; });
     ['assets/psyi_coup1.mp3', 'assets/psyi_coup2.mp3'].forEach(function(u){ var a = new Audio(); a.preload = 'auto'; a.src = u; });
     gicl.forEach(function(v){ v.preload = 'auto'; try { v.load(); } catch (x) {} });
@@ -7306,6 +7308,16 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
 
     avancerCoulures(t, Math.min(.05, t - (e.tPrec || t))); e.tPrec = t;
     e.pointille = e.ferme ? Math.max(0, 1 - (t - e.tFerme) / .5) : (e.tPris ? Math.min(1, (t - e.tPris) / .8) : 0);
+    // l ambiance : tres bas au debut, elle monte longuement ; au drop elle s efface vite
+    if (fond){
+      var thf = $('theme'), base = thf && thf.muted ? 0 : (thf ? thf.volume : 1);
+      var mont = Math.pow(Math.min(1, (t - e.t0) / 32), 1.4);
+      var vf = .14 + .76 * mont;
+      if (e.tDrop && t >= e.tDrop) vf *= Math.max(0, 1 - (t - e.tDrop) / .8);
+      fond.volume = Math.max(0, Math.min(1, vf * base));
+      if (vf > 0 && fond.paused && !(e.tDrop && t >= e.tDrop + .8)) fond.play().catch(function(){});
+      if (e.tDrop && t >= e.tDrop + .8 && !fond.paused) fond.pause();
+    }
     // le couteau par terre se souleve au survol
     e.leve += ((e.survol ? 1 : 0) - e.leve) * .22;
     // le bruit de la lame : il ne sonne que quand elle avance dans le trait
@@ -7331,6 +7343,7 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     racine.classList.remove('sans-souris');
     gicl.forEach(function(v){ try { v.pause(); } catch (x) {} });
     try { coupe.pause(); } catch (x) {}
+    try { fond.pause(); } catch (x) {}
   }
   function passer(ev){
     if (ev) ev.stopPropagation();
@@ -7354,6 +7367,7 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     consigne.classList.remove('on');
     couches.style.webkitMaskImage = couches.style.maskImage = '';
     precharger();
+    try { fond.currentTime = 0; } catch (x) {}
     gicl.forEach(function(v){ v.classList.remove('on'); });
     mesurer();
     var coul = [];
