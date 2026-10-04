@@ -232,7 +232,7 @@
 <div class="psyi" id="psyIntro" aria-hidden="true">
   <div class="psyi-couches" id="psyiCouches">
     <div class="psyi-noir" id="psyiNoir"></div>
-    <img class="psyi-disque" id="psyiDisque" src="assets/disc6.webp?v=2" alt="">
+    <img class="psyi-disque" id="psyiDisque" data-src="assets/disc6.webp?v=2" alt="">
     <canvas class="psyi-bas" id="psyiBas"></canvas>
     <video class="psyi-gicl miroir" data-taille=".65" src="assets/psyi_gicl1.webm" muted playsinline preload="none"></video>
     <video class="psyi-gicl miroir" data-taille=".65" src="assets/psyi_gicl2.webm" muted playsinline preload="none"></video>
@@ -242,8 +242,8 @@
     <video class="psyi-gicl" data-taille="1" src="assets/psyi_gicl2.webm" muted playsinline preload="none"></video>
     <video class="psyi-gicl miroir" data-taille="1.3" src="assets/psyi_gicl0.webm" muted playsinline preload="none"></video>
     <video class="psyi-gicl miroir" data-taille="1.2" src="assets/psyi_gicl2.webm" muted playsinline preload="none"></video>
-    <img class="psyi-sang" id="psyiSang" src="assets/psyi_sang.webp" alt="">
-    <img class="psyi-sang miroir" id="psyiSang2" src="assets/psyi_sang.webp" alt="">
+    <img class="psyi-sang" id="psyiSang" data-src="assets/psyi_sang.webp" alt="">
+    <img class="psyi-sang miroir" id="psyiSang2" data-src="assets/psyi_sang.webp" alt="">
     <div class="psyi-consigne" id="psyiConsigne">STAB ×3</div>
     <div class="psyi-flash" id="psyiFlash"></div>
   </div>
@@ -6340,6 +6340,7 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
         if (a.theme === 'crypt' && window.__prechargerRouages) window.__prechargerRouages();
         if (a.theme === 'che' && window.__prechargerTuesday) window.__prechargerTuesday();
         if (a.theme === 'psy' && window.__prechargerPsy) window.__prechargerPsy();
+        if (a.theme === 'psy' && window.__psyiPrecharger) window.__psyiPrecharger();   // et son intro
         var t = a.tracks[a.start];
         if (t && window.__prechargerPiste) window.__prechargerPiste(t.audio);
       }, 1500);
@@ -6748,9 +6749,23 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
   var sang = $('psyiSang'), sang2 = $('psyiSang2');
   var gicl = Array.prototype.slice.call(racine.querySelectorAll('.psyi-gicl'));
   var BEAT = 60 / 153;
-  var coupe = new Audio('assets/psyi_coupe.mp3?v=2');     // la chair (Flesh Growing) et le mouille dessous coupe.loop = true; coupe.preload = 'auto';
-  var K_IMG = new Image(); K_IMG.src = 'assets/psyi_couteau.webp';
-  var C_IMG = new Image(); C_IMG.src = 'assets/psyi_cercle.webp';
+  var coupe = null;                 // le bruit de la lame : la chair (Flesh Growing), le mouille dessous
+
+  /* rien de l intro ne se charge avec le site : seulement quand on s arrete
+     sur psykotic dans le choix (comme son film), ou au plus tard a l entree */
+  var precharge = false;
+  function precharger(){
+    if (precharge) return;
+    precharge = true;
+    K_IMG.src = 'assets/psyi_couteau.webp'; C_IMG.src = 'assets/psyi_cercle.webp';
+    [disque, sang, sang2].forEach(function(im){ if (!im.getAttribute('src')) im.src = im.dataset.src; });
+    coupe = new Audio('assets/psyi_coupe.mp3?v=2'); coupe.loop = true; coupe.preload = 'auto';
+    TACHES.forEach(function(u){ new Image().src = u; });
+    ['assets/psyi_coup1.mp3', 'assets/psyi_coup2.mp3'].forEach(function(u){ var a = new Audio(); a.preload = 'auto'; a.src = u; });
+    gicl.forEach(function(v){ v.preload = 'auto'; try { v.load(); } catch (x) {} });
+  }
+  window.__psyiPrecharger = precharger;
+  var K_IMG = new Image(), C_IMG = new Image();   // charges seulement quand psykotic est choisi
   // le couteau : pointe et bout du manche dans l image (405 x 557)
   var K_POINTE = [0.5, 556], K_MANCHE = [393.5, 8];
   var K_LONG = Math.hypot(K_MANCHE[0] - K_POINTE[0], K_MANCHE[1] - K_POINTE[1]);
@@ -7281,8 +7296,8 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     Array.prototype.slice.call(couches.querySelectorAll('.psyi-tache')).forEach(function(t){ t.remove(); });
     consigne.classList.remove('on');
     couches.style.webkitMaskImage = couches.style.maskImage = '';
-    gicl.forEach(function(v){ v.classList.remove('on'); v.preload = 'auto'; try { v.load(); } catch (x) {} });
-    TACHES.forEach(function(u){ new Image().src = u; });       // les taches, pretes avant le premier coup
+    precharger();
+    gicl.forEach(function(v){ v.classList.remove('on'); });
     mesurer();
     var coul = [];
     for (var i = 0; i < 13; i++) coul.push([(15 + Math.random() * 150) * Math.PI / 180, 0, 25 + Math.random() * 85, 2.5 + Math.random() * 3, Math.random() * .5]);
