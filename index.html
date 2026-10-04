@@ -7225,13 +7225,16 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
      chargee et ouverte : elle part sur le coup, sans la seconde de retard
      qu il prenait sinon pour la lancer a froid. */
   function chaufferPiste(){
-    var th = $('theme'); if (!th || e.chauffe) return;
-    e.chauffe = { muet: th.muted };
+    var th = $('theme'); if (!th || !e || e.chauffeEnCours) return;
+    if (e.chauffe && th.readyState >= 3) return;      // deja prete : rien a refaire
+    if (!e.chauffe) e.chauffe = { muet: th.muted };
+    e.chauffeEnCours = true;
     th.muted = true;
     try { th.currentTime = 0; } catch (x) {}
     var fait = false;
     var fin = function(){
       if (fait || !e || !e.chauffe) return; fait = true;
+      e.chauffeEnCours = false;
       if (e.phase === 'drop') return;                 // le drop est deja la : il a repris la main
       try { th.pause(); th.currentTime = 0; } catch (x) {}
       th.muted = e.chauffe.muet;
@@ -7335,6 +7338,11 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
           sol: [g.cx + 2.97 * g.R, g.cy + .97 * g.R], mien: 0, frappe: null, arrivee: null,
           coulures: 0, coul: coul, eclats: null, tFondu: 0, pointille: 0, agenda: [], dernierAngle: null, taches: [],
           leve: 0, tPris: 0, appui: false, pres: false, tBouge: 0, volCoupe: 0, gouttes: [], tGoutte: 0 };
+    /* la piste de la page doit etre chargee bien avant le drop : sans geste
+       de lecture, le navigateur la laisse attendre derriere les images et
+       les films ; on la rechauffe des l entree, et encore avant les coups */
+    var th0 = $('theme'); try { th0.preload = 'auto'; th0.load(); } catch (x) {}
+    e.agenda.push([maint() + .8, chaufferPiste]);
     requestAnimationFrame(boucle);
   };
 
