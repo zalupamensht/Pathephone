@@ -7225,13 +7225,20 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
      chargee et ouverte : elle part sur le coup, sans la seconde de retard
      qu il prenait sinon pour la lancer a froid. */
   function chaufferPiste(){
-    var th = $('theme'); if (!th) return;
-    var muet = th.muted;
+    var th = $('theme'); if (!th || e.chauffe) return;
+    e.chauffe = { muet: th.muted };
     th.muted = true;
     try { th.currentTime = 0; } catch (x) {}
-    var fin = function(){ try { th.pause(); th.currentTime = 0; } catch (x) {} th.muted = muet; };
+    var fait = false;
+    var fin = function(){
+      if (fait || !e || !e.chauffe) return; fait = true;
+      if (e.phase === 'drop') return;                 // le drop est deja la : il a repris la main
+      try { th.pause(); th.currentTime = 0; } catch (x) {}
+      th.muted = e.chauffe.muet;
+    };
     var pr = th.play();
-    if (pr && pr.then) pr.then(function(){ setTimeout(fin, 300); }).catch(fin); else setTimeout(fin, 300);
+    if (pr && pr.then) pr.then(function(){ setTimeout(fin, 300); }).catch(fin);
+    setTimeout(fin, 900);                             // filet : meme si la piste tarde a venir
   }
   /* le drop : la musique part, le couteau vole en eclats, tout s efface */
   function drop(){
@@ -7239,6 +7246,7 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     /* la musique d abord : c est elle qui doit tomber pile */
     window.__psyRetenu = false;
     var th = $('theme'); try { th.currentTime = 0; } catch (x) {}
+    if (e.chauffe){ th.muted = e.chauffe.muet; }     // le son rendu, quoi qu il soit arrive au rechauffage
     if (window.__playNow) window.__playNow();
     (window.__psyiJournal = window.__psyiJournal || []).push(['drop', 0, 0, Date.now() / 1000]);
     e.phase = 'drop';
