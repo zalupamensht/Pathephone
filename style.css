@@ -2885,7 +2885,7 @@ body.alb-nett.is-film-nett .deco{opacity:1 !important;transition:none;background
 
 /* ---- la camera, facon Backrooms (camescope VHS) ----
    Sur toute la page, une fois l album ouvert : le filtre #vhs (dans la page)
-   decale le rouge et le bleu, adoucit a l horizontale et jaunit un peu ;
+   decale le rouge et le bleu et adoucit a l horizontale, sans toucher aux couleurs ;
    par-dessus, le bruit de la bande (des traines horizontales qui changent
    30 fois par seconde), les lignes, les coins sombres, la bande de bruit du
    bas de l image et un petit sursaut de l image de temps en temps. */
