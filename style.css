@@ -253,7 +253,7 @@ body.sans-eclipse .eclipse{display:none}
 /* ---------- trois pistes en haut ---------- */
 
 .dock{
-  position:absolute;left:0;right:0;top:26px;z-index:8;
+  position:absolute;left:0;right:0;top:calc(26px - var(--haut, 0px) * .5);z-index:8;
   display:flex;justify-content:center;
   pointer-events:none;                 /* seule la rangee reagit a la souris */
   opacity:0;transform:translateY(-46px) scale(.88);
@@ -2492,6 +2492,9 @@ body.alb-che .lyr.is-now{
   body.is-stage .alb{pointer-events:none}
   body.is-stage.is-albums .albums{opacity:1;transform:none}
   body.is-stage.is-albums .alb{pointer-events:auto}
+  /* sept albums : la rangee passe sous lecture et volume ; ils s effacent le
+     temps qu elle est ouverte */
+  body.is-stage.is-albums .controls{opacity:0;pointer-events:none;transition:opacity .3s ease}
 
   .albums-btn{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);z-index:9;
     display:flex;flex-direction:column;gap:5px;align-items:center;
@@ -2674,7 +2677,7 @@ body.alb-psy.is-film-psy .deco{opacity:1 !important;transition:none;background:#
    bouton a barres, il se montre au survol. Ordinateur seulement. */
 .menu-btn{display:none}
 @media (min-width:821px){
-  .menu-btn{position:absolute;left:28px;top:24px;z-index:12;display:grid;
+  .menu-btn{position:absolute;left:calc(28px - var(--cote, 0px) * .5);top:calc(24px - var(--haut, 0px) * .5);z-index:12;display:grid;
     grid-template-columns:6px 6px;grid-template-rows:6px 6px;gap:3px;align-items:center;
     padding:9px 12px 9px 11px;border:0;border-radius:999px;background:transparent;cursor:pointer;
     color:var(--ink,#14120f);opacity:0;pointer-events:none;
@@ -2730,3 +2733,201 @@ body.psyi-on .psyi{display:block}
   letter-spacing:.24em;text-transform:uppercase;color:#fff;
 }
 .psyi.sans-souris .psyi-skip{cursor:none}
+
+/* ==================================================================
+   ALBUM « EARLY LIFE CRISIS » (Nettspend) — une platine de verre.
+   Cadre d argent, vitre depolie par-dessus le fond, plateau d argent,
+   bras blanc ; pastilles de verre au logo noir. Par-dessus tout, une
+   camera de salon a peine sensible (lignes, grain, bande qui roule,
+   coins sombres) : ses forces sont reglees en haut, pour changer vite.
+   Rien ici ne touche les autres albums.
+   ================================================================== */
+body.alb-nett{
+  --paper:#d9dadc;
+  --ink:#0b0b0d;
+  --cam-lignes:.065;            /* lignes de balayage */
+  --cam-grain:.13;             /* grain */
+  --cam-bande:.065;             /* la bande claire qui roule */
+  --cam-coins:.195;             /* coins sombres */
+  background:#9a9c9f;
+  color:#0b0b0d;
+}
+body.alb-nett .blob,
+body.alb-nett .glow,
+body.alb-nett .swoosh,
+body.alb-nett .halftone{display:none}
+body.alb-nett .sleeve{filter:none}
+body.alb-nett .disc{filter:drop-shadow(0 6px 12px rgba(30,30,40,.28))}
+body.alb-nett .deco{
+  display:block;position:absolute;inset:0;z-index:0;overflow:hidden;
+  background:url("assets/bg7.jpg") center center / cover no-repeat;
+  pointer-events:none;opacity:0;transition:opacity 1.4s ease .3s;animation:none;
+}
+body.alb-nett.is-stage .deco,body.alb-nett.is-lighten .deco{opacity:1}
+
+/* ---- la platine : un cadre d argent, la vitre depolie dedans ---- */
+/* l ombre ne passe pas par un filtre sur .deck : Chrome ne floutait plus
+   rien a travers la vitre. Une ombre de boite sous le cadre, a part */
+body.alb-nett .deck::before{
+  content:"";position:absolute;inset:0;border-radius:8px;pointer-events:none;
+  box-shadow:0 22px 34px rgba(30,30,40,.28),0 6px 12px rgba(30,30,40,.16);
+  opacity:0;transition:opacity 1.25s ease .5s;
+}
+body.alb-nett.is-stage .deck::before{opacity:1}
+body.alb-nett .deck-plinth{
+  background:linear-gradient(168deg,#f1f2f4 0%,#c9ccd1 35%,#eceef1 60%,#a9adb3 100%);
+  padding:16px;box-sizing:border-box;box-shadow:none;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+}
+body.alb-nett .deck-face{
+  background:rgba(255,255,255,.22);
+  -webkit-backdrop-filter:blur(10px) saturate(1.15);backdrop-filter:blur(10px) saturate(1.15);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8),inset 0 0 0 1px rgba(255,255,255,.4);
+}
+body.alb-nett .deck-face::after{display:none}
+body.alb-nett .platter::before{
+  background:radial-gradient(circle at 38% 30%,rgba(255,255,255,.75),rgba(190,194,200,.55) 60%,rgba(150,154,160,.6));
+  box-shadow:0 6px 14px rgba(30,30,40,.25),inset 0 0 0 1px rgba(255,255,255,.6);
+}
+body.alb-nett .platter-mat{background:rgba(40,40,46,.35);box-shadow:none}
+body.alb-nett .arm-tube{background:linear-gradient(180deg,#fff,#d6d8dc 52%,#8d9096)}
+body.alb-nett .arm-pivot{background:radial-gradient(circle at 36% 30%,#fff,#cfd2d6 60%,#868a90 100%)}
+body.alb-nett .arm-head{background:linear-gradient(180deg,#fff,#9a9ea4)}
+body.alb-nett .spindle{background:linear-gradient(180deg,#fff,#aaa)}
+body.alb-nett .deck-knob{background:linear-gradient(180deg,#f4f5f7,#a7abb1);
+  box-shadow:0 2px 4px rgba(30,30,40,.35),inset 0 1px 0 #fff}
+
+/* ---- le son, en bas de page : argent ---- */
+body.alb-nett .sound{
+  border-color:rgba(255,255,255,.6);
+  background:linear-gradient(180deg,#f1f2f4,#a9adb3);
+  box-shadow:0 0 0 2px #c9ccd1,0 12px 20px rgba(30,30,40,.3);
+}
+body.alb-nett .sound:hover{box-shadow:0 0 0 2px #c9ccd1,0 18px 26px rgba(30,30,40,.38)}
+body.alb-nett .ico-pause i{background:#55585e}
+body.alb-nett .ico-play{border-left-color:#55585e}
+body.alb-nett #vol{
+  background:linear-gradient(90deg,#f4f5f7 0 var(--v,85%),rgba(244,245,247,.35) var(--v,85%) 100%);
+}
+body.alb-nett #vol::-webkit-slider-thumb{
+  border-color:rgba(255,255,255,.6);
+  background:linear-gradient(180deg,#f4f5f7,#a7abb1);
+  box-shadow:0 4px 8px rgba(30,30,40,.35),inset 0 1px 2px #fff;
+}
+body.alb-nett #vol::-moz-range-thumb{
+  border-color:rgba(255,255,255,.6);
+  background:linear-gradient(180deg,#f4f5f7,#a7abb1);
+}
+
+/* ---- pastilles : verre depoli, le logo noir dedans ---- */
+body.alb-nett .trk .bub,
+body.alb-nett .alb-t-nett .bub{
+  border-color:rgba(255,255,255,.55);
+  background:rgba(255,255,255,.26);
+  -webkit-backdrop-filter:blur(8px) saturate(1.1);backdrop-filter:blur(8px) saturate(1.1);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8),inset 0 0 0 1px rgba(255,255,255,.45),0 6px 14px rgba(30,30,40,.18);
+}
+body.alb-nett .trk .bub-glass,
+body.alb-nett .alb-t-nett .bub-glass{display:none}
+body.alb-nett .trk .bub::after,
+body.alb-nett .alb-t-nett .bub::after{background:none;box-shadow:none}
+body.alb-nett .trk .bub-art{
+  width:80%;height:auto;top:47%;opacity:1;object-fit:contain;
+}
+body.alb-nett .trk .bub:hover,
+body.alb-nett .alb-t-nett .bub:hover{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 0 0 1px rgba(255,255,255,.55),0 16px 28px rgba(30,30,40,.26);
+}
+body.alb-nett .trk .bub-num{color:rgba(11,11,13,.5);text-shadow:none}
+body.alb-nett .trk.is-current .bub,
+body.alb-nett .alb-t-nett.is-current .bub{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 0 0 2px rgba(255,255,255,.85),0 6px 14px rgba(30,30,40,.22);
+}
+
+/* ---- les textes : le fond passe du blanc de la brume au noir des bois ;
+   des lettres claires, au fin liseré sombre ---- */
+body.alb-nett .lyr,
+body.alb-nett .lyr-echo{
+  color:rgba(250,250,252,.72);
+  text-shadow:0 0 1px #000,0 0 3px rgba(0,0,0,.75),0 0 9px rgba(0,0,0,.45),0 1px 2px rgba(0,0,0,.8);
+}
+body.alb-nett .lyr:hover{color:rgba(255,255,255,.9)}
+body.alb-nett .lyr.is-past{color:rgba(250,250,252,.5)}
+body.alb-nett .lyr.is-now{
+  color:#fff;
+  text-shadow:0 0 1px #000,0 0 3px rgba(0,0,0,.7),0 0 10px rgba(255,255,255,.6),0 0 30px rgba(255,255,255,.35),0 1px 3px #000;
+}
+body.alb-nett .lyr.is-now .lyr-echo{color:rgba(255,255,255,.9)}
+body.alb-nett .lyr-note{
+  color:rgba(255,255,255,.85);
+  filter:drop-shadow(0 0 1px rgba(0,0,0,.8)) drop-shadow(0 0 12px rgba(255,255,255,.5));
+}
+body.alb-nett .lyrics.is-tuning{box-shadow:inset 0 0 0 1px rgba(255,255,255,.5)}
+body.alb-nett .trk-name,
+body.alb-nett .alb-name{
+  color:#f6f6f7;font-weight:700;
+  text-shadow:0 0 1px #000,0 0 2px #000,0 0 3px rgba(0,0,0,.8),0 0 6px rgba(0,0,0,.6),0 1px 2px #000;
+}
+body.alb-nett .alb.is-current .alb-name{color:#fff}
+@media (min-width:821px){
+  body.alb-nett .menu-btn,body.alb-nett .albums-btn{
+    color:#fff;filter:drop-shadow(0 1px 2px rgba(0,0,0,.85))}
+}
+
+/* ---- le film de you ready? : plein ecran derriere la platine ---- */
+.nett-film{display:none}
+body.alb-nett .nett-film{
+  display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  z-index:0;pointer-events:none;opacity:0;transition:opacity .5s ease;will-change:opacity;
+}
+body.alb-nett.is-film-nett .nett-film{opacity:1}
+body.alb-nett.is-film-nett .deco{opacity:1 !important;transition:none;background:#000}
+
+/* ---- la camera de salon, par-dessus tout, presque rien ---- */
+body.alb-nett .scan{
+  opacity:var(--cam-lignes);mix-blend-mode:multiply;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.6) 0 1px,rgba(0,0,0,0) 1px 3px);
+}
+body.alb-nett .noise{opacity:var(--cam-grain);mix-blend-mode:overlay;animation:camgrain .5s steps(4) infinite}
+@keyframes camgrain{
+  0%{background-position:0 0}25%{background-position:-60px 40px}
+  50%{background-position:80px -30px}75%{background-position:-30px -70px}100%{background-position:0 0}
+}
+body.alb-nett .vignette{
+  background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 55%,rgba(0,0,0,calc(var(--cam-coins) * 3)) 100%);
+}
+body.alb-nett .vignette::after{
+  content:"";position:absolute;left:0;right:0;top:0;height:16vh;
+  background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,1) 50%,rgba(255,255,255,0));
+  opacity:var(--cam-bande);mix-blend-mode:screen;
+  animation:cambande 9s linear infinite;
+}
+@keyframes cambande{from{transform:translateY(-20vh)}to{transform:translateY(120vh)}}
+@media (prefers-reduced-motion:reduce){
+  body.alb-nett .noise,body.alb-nett .vignette::after{animation:none}
+}
+/* dans le choix du disque */
+.picker[data-alb="6"]{--pk-tone:#5d6066;--pk-ink:#f4f5f7}
+.picker[data-alb="6"] .pk-glow{background:radial-gradient(55% 60% at 50% 48%,rgba(255,255,255,.16),transparent 70%)}
+
+/* ---- Nettspend : le bouton lecture en verre liquide (facon Apple) ----
+   Verre clair qui deforme a peine ce qu il y a derriere : flou leger, couleurs
+   avivees, un reflet blanc en haut, un rebord lumineux, une ombre douce. */
+body.alb-nett .sound{
+  background:rgba(255,255,255,.14);border:0;
+  -webkit-backdrop-filter:blur(7px) saturate(1.8) brightness(1.08);backdrop-filter:blur(7px) saturate(1.8) brightness(1.08);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.95),inset 0 -1px 1px rgba(255,255,255,.35),
+             inset 0 0 0 1px rgba(255,255,255,.28),inset 0 0 14px rgba(255,255,255,.22),0 8px 22px rgba(20,22,30,.18);
+  overflow:hidden;
+}
+body.alb-nett .sound::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(120% 70% at 30% 0%,rgba(255,255,255,.55),rgba(255,255,255,0) 55%),
+             radial-gradient(90% 60% at 70% 110%,rgba(255,255,255,.22),rgba(255,255,255,0) 60%);
+}
+body.alb-nett .sound:hover{transform:scale(1.08);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.95),inset 0 -1px 1px rgba(255,255,255,.35),
+             inset 0 0 0 1px rgba(255,255,255,.28),inset 0 0 14px rgba(255,255,255,.22),0 14px 28px rgba(20,22,30,.24)}
+body.alb-nett .ico-pause i{position:relative;background:rgba(255,255,255,.95);box-shadow:0 1px 3px rgba(0,0,0,.35)}
+body.alb-nett .ico-play{position:relative;border-left-color:rgba(255,255,255,.95);filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
