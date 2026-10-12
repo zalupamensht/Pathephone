@@ -2746,7 +2746,7 @@ body.alb-nett{
   --paper:#d9dadc;
   --ink:#0b0b0d;
   --cam-lignes:.065;            /* lignes de balayage */
-  --cam-grain:.17;             /* grain */
+  --cam-grain:.24;             /* grain */
   --cam-bande:.065;             /* la bande claire qui roule */
   --cam-coins:.195;             /* coins sombres */
   background:#9a9c9f;
