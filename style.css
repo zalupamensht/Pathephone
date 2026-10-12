@@ -2745,9 +2745,8 @@ body.psyi-on .psyi{display:block}
 body.alb-nett{
   --paper:#d9dadc;
   --ink:#0b0b0d;
-  --cam-lignes:.065;            /* lignes de balayage */
-  --cam-grain:.43;             /* grain : 18 % du PSD, puis +30 %, +30 %, +40 % */
-  --cam-bande:.065;             /* la bande claire qui roule */
+  --cam-lignes:.12;             /* lignes de balayage */
+  --cam-grain:.32;             /* bruit de la bande */
   --cam-coins:.195;             /* coins sombres */
   background:#9a9c9f;
   color:#0b0b0d;
@@ -2884,34 +2883,36 @@ body.alb-nett .nett-film{
 body.alb-nett.is-film-nett .nett-film{opacity:1}
 body.alb-nett.is-film-nett .deco{opacity:1 !important;transition:none;background:#000}
 
-/* ---- la camera de salon, par-dessus tout, presque rien ---- */
+/* ---- la camera, facon Backrooms (camescope VHS) ----
+   Sur toute la page, une fois l album ouvert : le filtre #vhs (dans la page)
+   decale le rouge et le bleu, adoucit a l horizontale et jaunit un peu ;
+   par-dessus, le bruit de la bande (des traines horizontales qui changent
+   30 fois par seconde), les lignes, les coins sombres, la bande de bruit du
+   bas de l image et un petit sursaut de l image de temps en temps. */
+body.alb-nett.is-stage:not(.is-picking){filter:url(#vhs);animation:camsaut 2.3s steps(1) infinite}
+@keyframes camsaut{0%{transform:none}31%{transform:translateX(1px)}33%{transform:none}
+  64%{transform:translateX(-1px)}66%{transform:none}88%{transform:translateX(2px)}89%{transform:none}}
 body.alb-nett .scan{
   opacity:var(--cam-lignes);mix-blend-mode:multiply;
   background:repeating-linear-gradient(0deg,rgba(0,0,0,.6) 0 1px,rgba(0,0,0,0) 1px 3px);
 }
-/* le grain : la meme texture que le calque « grain » du PSD (bruit gris
-   point par point, en incrustation), immobile comme dans Photoshop */
 body.alb-nett .noise{
-  opacity:var(--cam-grain);mix-blend-mode:overlay;animation:none;
-  background-image:url("assets/nett_grain.png");background-size:512px 512px;
-  image-rendering:pixelated;
+  opacity:var(--cam-grain);mix-blend-mode:overlay;
+  background-image:url("assets/nett_vhs_bruit.png");background-size:256px 1536px;
+  animation:camgrain .2s steps(6) infinite;
 }
-@keyframes camgrain{
-  0%{background-position:0 0}25%{background-position:-60px 40px}
-  50%{background-position:80px -30px}75%{background-position:-30px -70px}100%{background-position:0 0}
-}
+@keyframes camgrain{from{background-position:0 0}to{background-position:0 -1536px}}
 body.alb-nett .vignette{
   background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 55%,rgba(0,0,0,calc(var(--cam-coins) * 3)) 100%);
 }
-body.alb-nett .vignette::after{
-  content:"";position:absolute;left:0;right:0;top:0;height:16vh;
-  background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,1) 50%,rgba(255,255,255,0));
-  opacity:var(--cam-bande);mix-blend-mode:screen;
-  animation:cambande 9s linear infinite;
+.vhs-bas{display:none}
+body.alb-nett.is-stage:not(.is-picking) .vhs-bas{
+  display:block;position:fixed;left:0;right:0;bottom:0;height:12px;z-index:24;pointer-events:none;
+  background:url("assets/nett_vhs_bruit.png") 0 0/256px 1536px;opacity:.55;mix-blend-mode:hard-light;
+  transform:skewX(-35deg) translateX(-8px);animation:camgrain .2s steps(6) infinite;
 }
-@keyframes cambande{from{transform:translateY(-20vh)}to{transform:translateY(120vh)}}
 @media (prefers-reduced-motion:reduce){
-  body.alb-nett .noise,body.alb-nett .vignette::after{animation:none}
+  body.alb-nett.is-stage,body.alb-nett .noise,body.alb-nett .vhs-bas{animation:none}
 }
 /* dans le choix du disque */
 .picker[data-alb="6"]{--pk-tone:#5d6066;--pk-ink:#f4f5f7}
