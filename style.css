@@ -669,7 +669,8 @@ body.is-hit .deck{animation:hit 220ms cubic-bezier(.2,.8,.3,1) 1}
 
 
 .controls{
-  position:absolute;right:52px;bottom:44px;z-index:9;
+  /* la distance au bas de l ecran (marge de la scene comprise) reduite de 30 % */
+  position:absolute;right:52px;bottom:calc((44px + var(--haut, 0px)) * .7 - var(--haut, 0px));z-index:9;
   display:flex;align-items:center;gap:16px;
   opacity:0;transform:translateY(24px) scale(.9);pointer-events:none;
   transition:opacity .85s ease 1.08s,transform .95s cubic-bezier(.2,.72,.2,1) 1.08s;
