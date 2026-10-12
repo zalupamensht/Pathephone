@@ -2745,9 +2745,9 @@ body.psyi-on .psyi{display:block}
 body.alb-nett{
   --paper:#d9dadc;
   --ink:#0b0b0d;
-  --cam-lignes:.12;             /* lignes de balayage */
-  --cam-grain:.32;             /* bruit de la bande */
-  --cam-coins:.195;             /* coins sombres */
+  --cam-lignes:.096;             /* lignes de balayage */
+  --cam-grain:.256;             /* bruit de la bande */
+  --cam-coins:.156;             /* coins sombres */
   background:#9a9c9f;
   color:#0b0b0d;
 }
@@ -2890,8 +2890,8 @@ body.alb-nett.is-film-nett .deco{opacity:1 !important;transition:none;background
    30 fois par seconde), les lignes, les coins sombres, la bande de bruit du
    bas de l image et un petit sursaut de l image de temps en temps. */
 body.alb-nett.is-stage:not(.is-picking){filter:url(#vhs);animation:camsaut 2.3s steps(1) infinite}
-@keyframes camsaut{0%{transform:none}31%{transform:translateX(1px)}33%{transform:none}
-  64%{transform:translateX(-1px)}66%{transform:none}88%{transform:translateX(2px)}89%{transform:none}}
+@keyframes camsaut{0%{transform:none}31%{transform:translateX(.8px)}33%{transform:none}
+  64%{transform:translateX(-.8px)}66%{transform:none}88%{transform:translateX(1.6px)}89%{transform:none}}
 body.alb-nett .scan{
   opacity:var(--cam-lignes);mix-blend-mode:multiply;
   background:repeating-linear-gradient(0deg,rgba(0,0,0,.6) 0 1px,rgba(0,0,0,0) 1px 3px);
@@ -2908,7 +2908,7 @@ body.alb-nett .vignette{
 .vhs-bas{display:none}
 body.alb-nett.is-stage:not(.is-picking) .vhs-bas{
   display:block;position:fixed;left:0;right:0;bottom:0;height:12px;z-index:24;pointer-events:none;
-  background:url("assets/nett_vhs_bruit.png") 0 0/256px 1536px;opacity:.55;mix-blend-mode:hard-light;
+  background:url("assets/nett_vhs_bruit.png") 0 0/256px 1536px;opacity:.44;mix-blend-mode:hard-light;
   transform:skewX(-35deg) translateX(-8px);animation:camgrain .2s steps(6) infinite;
 }
 @media (prefers-reduced-motion:reduce){
