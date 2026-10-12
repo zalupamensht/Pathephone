@@ -2746,7 +2746,7 @@ body.alb-nett{
   --paper:#d9dadc;
   --ink:#0b0b0d;
   --cam-lignes:.065;            /* lignes de balayage */
-  --cam-grain:.24;             /* grain */
+  --cam-grain:.43;             /* grain : 18 % du PSD, puis +30 %, +30 %, +40 % */
   --cam-bande:.065;             /* la bande claire qui roule */
   --cam-coins:.195;             /* coins sombres */
   background:#9a9c9f;
@@ -2889,7 +2889,13 @@ body.alb-nett .scan{
   opacity:var(--cam-lignes);mix-blend-mode:multiply;
   background:repeating-linear-gradient(0deg,rgba(0,0,0,.6) 0 1px,rgba(0,0,0,0) 1px 3px);
 }
-body.alb-nett .noise{opacity:var(--cam-grain);mix-blend-mode:overlay;animation:camgrain .5s steps(4) infinite}
+/* le grain : la meme texture que le calque « grain » du PSD (bruit gris
+   point par point, en incrustation), immobile comme dans Photoshop */
+body.alb-nett .noise{
+  opacity:var(--cam-grain);mix-blend-mode:overlay;animation:none;
+  background-image:url("assets/nett_grain.png");background-size:512px 512px;
+  image-rendering:pixelated;
+}
 @keyframes camgrain{
   0%{background-position:0 0}25%{background-position:-60px 40px}
   50%{background-position:80px -30px}75%{background-position:-30px -70px}100%{background-position:0 0}
