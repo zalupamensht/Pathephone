@@ -6245,6 +6245,8 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
       } else i++;
     }
   }
+  var SAFARI = /AppleWebKit/.test(navigator.userAgent) &&
+               !/Chrome|Chromium|CriOS|Edg|OPR|Firefox|FxiOS/.test(navigator.userAgent);
   function eteindre(el){
     var v = el.querySelector('video');
     /* dataset.stop : cette pause la est voulue, il ne faut pas relancer */
@@ -6441,6 +6443,15 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
     clearTimeout(tAttente); clearTimeout(tDefile); clearTimeout(tCharge);
     clearTimeout(tFilm); clearTimeout(tArret); clearTimeout(tRoue); clearTimeout(tVoisins); clearTimeout(tSuivant); clearTimeout(tAvance);
     eteindre(bgA); eteindre(bgB);
+    /* Safari seul : son film demarre plus tard. Choisi a ce moment, il restait
+       en pause sous sa premiere image (presque blanche chez psykotic), qui
+       eclairait tout le depart. La : un film deja parti reste fige sur son
+       image ; sinon son image de fond s eteint dans le noir */
+    if (SAFARI) [bgA, bgB].forEach(function(l){
+      var v = l.querySelector('video');
+      if (v && v.readyState >= 2 && v.currentTime > 0) v.classList.add('is-la');
+      else l.classList.remove('on');
+    });
     if (window.__ui) window.__ui('select', true);
     if (liste && !liste.hidden) fermerListe();   // la liste ne reste pas ouverte
     /* tout le reste — la pochette, les voisins, le monde de l album, les
@@ -6522,17 +6533,21 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
   liste.addEventListener('click', function(e){ e.stopPropagation(); });
   pk.addEventListener('click', function(){ if (pk.classList.contains('is-liste')) fermerListe(); });
 
-  /* la molette : un album par geste, pas un par cran */
-  var roue = 0, tRoue = 0;
+  /* la molette : un album par geste, quelle que soit sa force. Le geste dure
+     tant que les crans arrivent (l elan d un trackpad ou d une Magic Mouse
+     compris) ; il faut un vrai silence pour en commencer un autre. Rien ne
+     s accumule pendant que l album change */
+  var roue = 0, tRoue = 0, roueLibre = true;
   pk.addEventListener('wheel', function(e){
     if (parti || !body.classList.contains('is-picking')) return;
     e.preventDefault();
-    roue += e.deltaY;
     clearTimeout(tRoue);
-    tRoue = setTimeout(function(){ roue = 0; }, 260);
-    if (Math.abs(roue) < 40) return;
-    var d = roue > 0 ? 1 : -1; roue = 0;
-    feuilleter(d);
+    tRoue = setTimeout(function(){ roue = 0; roueLibre = true; }, 220);
+    if (!roueLibre) return;
+    roue += Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (Math.abs(roue) < 8) return;
+    var d = roue > 0 ? 1 : -1; roue = 0; roueLibre = false;
+    if (!occupe) feuilleter(d);
   }, {passive: false});
 
   window.addEventListener('keydown', function(e){
@@ -6749,6 +6764,12 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
   var consigne = $('psyiConsigne'), prendre = $('psyiPrendre');
   var sang = $('psyiSang'), sang2 = $('psyiSang2');
   var gicl = Array.prototype.slice.call(racine.querySelectorAll('.psyi-gicl'));
+  /* Safari ne lit pas la transparence du VP9 (webm) : les giclees y devenaient
+     des rectangles noirs. Pour lui, la meme giclee en HEVC avec alpha (.mov) ;
+     Chrome garde le webm, il ne lit pas l alpha du HEVC */
+  var ua = navigator.userAgent;
+  if (/AppleWebKit/.test(ua) && !/Chrome|Chromium|CriOS|Edg|OPR|Firefox|FxiOS/.test(ua))
+    gicl.forEach(function(v){ v.src = v.getAttribute('src').replace(/\.webm$/, '.mov'); });
   var BEAT = 60 / 153;
   var coupe = null;                 // le bruit de la lame : la chair (Flesh Growing), le mouille dessous
   var fond = null;                  // l ambiance : elle monte jusqu au drop, puis s efface

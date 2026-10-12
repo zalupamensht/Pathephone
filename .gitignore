@@ -20,3 +20,6 @@ matt proxy trojan horse/
 
 # l atelier SoundCloud : outil personnel, il ne part pas sur le site
 outils/soundcloud/
+
+# outils de test local (Playwright WebKit)
+.venv-qa/

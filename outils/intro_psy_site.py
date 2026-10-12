@@ -21,7 +21,8 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 PROJET = os.path.dirname(ICI)
 SRC = os.path.join(PROJET, 'osamason - psykotic')
 A = os.path.join(PROJET, 'assets')
-FF = r'C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v7.1.exe'
+import imageio_ffmpeg
+FF = imageio_ffmpeg.get_ffmpeg_exe()
 SR = 44100
 
 # ------------------------------------------------------------- le couteau

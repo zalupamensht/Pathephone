@@ -12,7 +12,8 @@ import numpy as np
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(os.path.dirname(ICI), 'osamason - psykotic', 'звуки ножа')
-FF = r'C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v7.1.exe'
+import imageio_ffmpeg
+FF = imageio_ffmpeg.get_ffmpeg_exe()
 SR = 44100
 
 
