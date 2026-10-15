@@ -2743,6 +2743,74 @@ body.psyi-on .psyi{display:block}
    coins sombres) : ses forces sont reglees en haut, pour changer vite.
    Rien ici ne touche les autres albums.
    ================================================================== */
+/* les couleurs de la platine et des textes passent par des variables
+   animables : sur les pistes sales (film demoniaque), tout vire au bordeaux
+   en fondu, et revient a l argent ensuite */
+@property --n-m1{syntax:'<color>';inherits:true;initial-value:#f1f2f4}
+@property --n-m2{syntax:'<color>';inherits:true;initial-value:#c9ccd1}
+@property --n-m3{syntax:'<color>';inherits:true;initial-value:#eceef1}
+@property --n-m4{syntax:'<color>';inherits:true;initial-value:#a9adb3}
+@property --n-a1{syntax:'<color>';inherits:true;initial-value:#ffffff}
+@property --n-a2{syntax:'<color>';inherits:true;initial-value:#d6d8dc}
+@property --n-a3{syntax:'<color>';inherits:true;initial-value:#8d9096}
+@property --n-verre{syntax:'<color>';inherits:true;initial-value:rgba(255,255,255,.22)}
+@property --n-bulle{syntax:'<color>';inherits:true;initial-value:rgba(255,255,255,.26)}
+@property --n-bord{syntax:'<color>';inherits:true;initial-value:rgba(255,255,255,.55)}
+@property --n-texte{syntax:'<color>';inherits:true;initial-value:rgba(250,250,252,.72)}
+@property --n-passe{syntax:'<color>';inherits:true;initial-value:rgba(250,250,252,.5)}
+@property --n-actuel{syntax:'<color>';inherits:true;initial-value:#ffffff}
+@property --n-lueur{syntax:'<color>';inherits:true;initial-value:rgba(255,255,255,.6)}
+@property --n-nom{syntax:'<color>';inherits:true;initial-value:#f6f6f7}
+@property --n-vol{syntax:'<color>';inherits:true;initial-value:#f4f5f7}
+@property --n-son{syntax:'<color>';inherits:true;initial-value:rgba(255,255,255,.14)}
+@property --n-plat1{syntax:'<color>';inherits:true;initial-value:rgba(255,255,255,.75)}
+@property --n-plat2{syntax:'<color>';inherits:true;initial-value:rgba(190,194,200,.55)}
+@property --n-plat3{syntax:'<color>';inherits:true;initial-value:rgba(150,154,160,.6)}
+body.alb-nett{
+  --n-m1:#f1f2f4;
+  --n-m2:#c9ccd1;
+  --n-m3:#eceef1;
+  --n-m4:#a9adb3;
+  --n-a1:#ffffff;
+  --n-a2:#d6d8dc;
+  --n-a3:#8d9096;
+  --n-verre:rgba(255,255,255,.22);
+  --n-bulle:rgba(255,255,255,.26);
+  --n-bord:rgba(255,255,255,.55);
+  --n-texte:rgba(250,250,252,.72);
+  --n-passe:rgba(250,250,252,.5);
+  --n-actuel:#ffffff;
+  --n-lueur:rgba(255,255,255,.6);
+  --n-nom:#f6f6f7;
+  --n-vol:#f4f5f7;
+  --n-son:rgba(255,255,255,.14);
+  --n-plat1:rgba(255,255,255,.75);
+  --n-plat2:rgba(190,194,200,.55);
+  --n-plat3:rgba(150,154,160,.6);
+  transition:--n-m1 .9s ease,--n-m2 .9s ease,--n-m3 .9s ease,--n-m4 .9s ease,--n-a1 .9s ease,--n-a2 .9s ease,--n-a3 .9s ease,--n-verre .9s ease,--n-bulle .9s ease,--n-bord .9s ease,--n-texte .9s ease,--n-passe .9s ease,--n-actuel .9s ease,--n-lueur .9s ease,--n-nom .9s ease,--n-vol .9s ease,--n-son .9s ease,--n-plat1 .9s ease,--n-plat2 .9s ease,--n-plat3 .9s ease,opacity .3s ease;
+}
+body.alb-nett.is-film-nettd{
+  --n-m1:#b3202b;
+  --n-m2:#5c0a12;
+  --n-m3:#a51a25;
+  --n-m4:#3d0509;
+  --n-a1:#ff8f8f;
+  --n-a2:#c2232d;
+  --n-a3:#5a070d;
+  --n-verre:rgba(120,8,18,.32);
+  --n-bulle:rgba(140,12,24,.32);
+  --n-bord:rgba(255,110,110,.5);
+  --n-texte:rgba(255,214,214,.8);
+  --n-passe:rgba(255,190,190,.55);
+  --n-actuel:#ffe3e3;
+  --n-lueur:rgba(255,40,40,.75);
+  --n-nom:#ffd6d6;
+  --n-vol:#d12a35;
+  --n-son:rgba(170,20,30,.32);
+  --n-plat1:rgba(230,90,100,.75);
+  --n-plat2:rgba(120,14,24,.6);
+  --n-plat3:rgba(70,6,12,.65);
+}
 body.alb-nett{
   --paper:#d9dadc;
   --ink:#0b0b0d;
@@ -2757,7 +2825,10 @@ body.alb-nett .glow,
 body.alb-nett .swoosh,
 body.alb-nett .halftone{display:none}
 body.alb-nett .sleeve{filter:none}
-body.alb-nett .disc{filter:drop-shadow(0 6px 12px rgba(30,30,40,.28))}
+/* memes fonctions dans les deux etats : le navigateur peut fondre de l un a l autre */
+body.alb-nett .disc{filter:brightness(1) sepia(0) saturate(1) hue-rotate(0deg) brightness(1) contrast(1) drop-shadow(0 6px 12px rgba(30,30,40,.28));transition:filter .9s ease}
+/* le disque blanc vire au bordeaux sur les pistes sales */
+body.alb-nett.is-film-nettd .disc{filter:brightness(.45) sepia(1) saturate(8) hue-rotate(-45deg) brightness(.55) contrast(1.15) drop-shadow(0 6px 12px rgba(40,0,6,.45))}
 body.alb-nett .deco{
   display:block;position:absolute;inset:0;z-index:0;overflow:hidden;
   background:url("assets/bg7.jpg") center center / cover no-repeat;
@@ -2775,27 +2846,27 @@ body.alb-nett .deck::before{
 }
 body.alb-nett.is-stage .deck::before{opacity:1}
 body.alb-nett .deck-plinth{
-  background:linear-gradient(168deg,#f1f2f4 0%,#c9ccd1 35%,#eceef1 60%,#a9adb3 100%);
+  background:linear-gradient(168deg,var(--n-m1) 0%,var(--n-m2) 35%,var(--n-m3) 60%,var(--n-m4) 100%);
   padding:16px;box-sizing:border-box;box-shadow:none;
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
   -webkit-mask-composite:xor;mask-composite:exclude;
 }
 body.alb-nett .deck-face{
-  background:rgba(255,255,255,.22);
+  background:var(--n-verre);
   -webkit-backdrop-filter:blur(10px) saturate(1.15);backdrop-filter:blur(10px) saturate(1.15);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.8),inset 0 0 0 1px rgba(255,255,255,.4);
 }
 body.alb-nett .deck-face::after{display:none}
 body.alb-nett .platter::before{
-  background:radial-gradient(circle at 38% 30%,rgba(255,255,255,.75),rgba(190,194,200,.55) 60%,rgba(150,154,160,.6));
+  background:radial-gradient(circle at 38% 30%,var(--n-plat1),var(--n-plat2) 60%,var(--n-plat3));
   box-shadow:0 6px 14px rgba(30,30,40,.25),inset 0 0 0 1px rgba(255,255,255,.6);
 }
 body.alb-nett .platter-mat{background:rgba(40,40,46,.35);box-shadow:none}
-body.alb-nett .arm-tube{background:linear-gradient(180deg,#fff,#d6d8dc 52%,#8d9096)}
-body.alb-nett .arm-pivot{background:radial-gradient(circle at 36% 30%,#fff,#cfd2d6 60%,#868a90 100%)}
-body.alb-nett .arm-head{background:linear-gradient(180deg,#fff,#9a9ea4)}
-body.alb-nett .spindle{background:linear-gradient(180deg,#fff,#aaa)}
-body.alb-nett .deck-knob{background:linear-gradient(180deg,#f4f5f7,#a7abb1);
+body.alb-nett .arm-tube{background:linear-gradient(180deg,var(--n-a1),var(--n-a2) 52%,var(--n-a3))}
+body.alb-nett .arm-pivot{background:radial-gradient(circle at 36% 30%,var(--n-a1),var(--n-a2) 60%,var(--n-a3) 100%)}
+body.alb-nett .arm-head{background:linear-gradient(180deg,var(--n-a1),var(--n-a3))}
+body.alb-nett .spindle{background:linear-gradient(180deg,var(--n-a1),var(--n-a3))}
+body.alb-nett .deck-knob{background:linear-gradient(180deg,var(--n-m1),var(--n-m4));
   box-shadow:0 2px 4px rgba(30,30,40,.35),inset 0 1px 0 #fff}
 
 /* ---- le son, en bas de page : argent ---- */
@@ -2808,7 +2879,7 @@ body.alb-nett .sound:hover{box-shadow:0 0 0 2px #c9ccd1,0 18px 26px rgba(30,30,4
 body.alb-nett .ico-pause i{background:#55585e}
 body.alb-nett .ico-play{border-left-color:#55585e}
 body.alb-nett #vol{
-  background:linear-gradient(90deg,#f4f5f7 0 var(--v,85%),rgba(244,245,247,.35) var(--v,85%) 100%);
+  background:linear-gradient(90deg,var(--n-vol) 0 var(--v,85%),rgba(244,245,247,.3) var(--v,85%) 100%);
 }
 body.alb-nett #vol::-webkit-slider-thumb{
   border-color:rgba(255,255,255,.6);
@@ -2823,8 +2894,8 @@ body.alb-nett #vol::-moz-range-thumb{
 /* ---- pastilles : verre depoli, le logo noir dedans ---- */
 body.alb-nett .trk .bub,
 body.alb-nett .alb-t-nett .bub{
-  border-color:rgba(255,255,255,.55);
-  background:rgba(255,255,255,.26);
+  border-color:var(--n-bord);
+  background:var(--n-bulle);
   -webkit-backdrop-filter:blur(8px) saturate(1.1);backdrop-filter:blur(8px) saturate(1.1);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.8),inset 0 0 0 1px rgba(255,255,255,.45),0 6px 14px rgba(30,30,40,.18);
 }
@@ -2849,14 +2920,14 @@ body.alb-nett .alb-t-nett.is-current .bub{
    des lettres claires, au fin liseré sombre ---- */
 body.alb-nett .lyr,
 body.alb-nett .lyr-echo{
-  color:rgba(250,250,252,.72);
+  color:var(--n-texte);
   text-shadow:0 0 1px #000,0 0 3px rgba(0,0,0,.75),0 0 9px rgba(0,0,0,.45),0 1px 2px rgba(0,0,0,.8);
 }
 body.alb-nett .lyr:hover{color:rgba(255,255,255,.9)}
-body.alb-nett .lyr.is-past{color:rgba(250,250,252,.5)}
+body.alb-nett .lyr.is-past{color:var(--n-passe)}
 body.alb-nett .lyr.is-now{
-  color:#fff;
-  text-shadow:0 0 1px #000,0 0 3px rgba(0,0,0,.7),0 0 10px rgba(255,255,255,.6),0 0 30px rgba(255,255,255,.35),0 1px 3px #000;
+  color:var(--n-actuel);
+  text-shadow:0 0 1px #000,0 0 3px rgba(0,0,0,.7),0 0 10px var(--n-lueur),0 0 30px var(--n-lueur),0 1px 3px #000;
 }
 body.alb-nett .lyr.is-now .lyr-echo{color:rgba(255,255,255,.9)}
 body.alb-nett .lyr-note{
@@ -2866,7 +2937,7 @@ body.alb-nett .lyr-note{
 body.alb-nett .lyrics.is-tuning{box-shadow:inset 0 0 0 1px rgba(255,255,255,.5)}
 body.alb-nett .trk-name,
 body.alb-nett .alb-name{
-  color:#f6f6f7;font-weight:700;
+  color:var(--n-nom);font-weight:700;
   text-shadow:0 0 1px #000,0 0 2px #000,0 0 3px rgba(0,0,0,.8),0 0 6px rgba(0,0,0,.6),0 1px 2px #000;
 }
 body.alb-nett .alb.is-current .alb-name{color:#fff}
@@ -2931,7 +3002,7 @@ body.alb-nett.is-stage .vhs-bas{
    Verre clair qui deforme a peine ce qu il y a derriere : flou leger, couleurs
    avivees, un reflet blanc en haut, un rebord lumineux, une ombre douce. */
 body.alb-nett .sound{
-  background:rgba(255,255,255,.14);border:0;
+  background:var(--n-son);border:0;
   -webkit-backdrop-filter:blur(7px) saturate(1.8) brightness(1.08);backdrop-filter:blur(7px) saturate(1.8) brightness(1.08);
   box-shadow:inset 0 1px 1px rgba(255,255,255,.95),inset 0 -1px 1px rgba(255,255,255,.35),
              inset 0 0 0 1px rgba(255,255,255,.28),inset 0 0 14px rgba(255,255,255,.22),0 8px 22px rgba(20,22,30,.18);
