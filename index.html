@@ -20,7 +20,7 @@
 <link rel="preload" href="assets/fonts/Kingjola.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ZenKakuGothicNew-Medium-jp.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=120">
+<link rel="stylesheet" href="style.css?v=121">
 </head>
 <body>
 
@@ -108,6 +108,12 @@
          gardent la photo -->
     <video class="nett-film" id="nettFilm" src="assets/nett_film.mp4"
            poster="assets/nett_film_p.webp"
+           muted loop playsinline preload="none"
+           disablepictureinpicture aria-hidden="true"></video>
+    <!-- sa version demoniaque (meme montage, memes coupes, ciel de sang, a
+         l envers dans chaque plan) : sur les pistes sales -->
+    <video class="nett-film-d" id="nettFilmD" src="assets/nett_film_d.mp4"
+           poster="assets/nett_film_d_p.webp"
            muted loop playsinline preload="none"
            disablepictureinpicture aria-hidden="true"></video>
     <!-- ce qui vit par dessus le fond : fleurs, traits de lumiere, braises -->
@@ -7187,6 +7193,9 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
 /* Nettspend : le montage dure tout « you ready? » (73 bpm, compte en double) */
 window.__prechargerNett = filmDeFond({ id:'nettFilm', theme:'nett', classe:'is-film-nett',
   pistes:['you ready?'], origine:'you ready?', elan:1, temps:360.863 });
+/* et sa version demoniaque, sur les pistes sales (pour l instant : sick) */
+window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is-film-nettd',
+  pistes:['sick'], origine:null, temps:360.863 });
 
 (function(){
   var pk = document.getElementById('picker');

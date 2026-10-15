@@ -2883,6 +2883,14 @@ body.alb-nett .nett-film{
 }
 body.alb-nett.is-film-nett .nett-film{opacity:1}
 body.alb-nett.is-film-nett .deco{opacity:1 !important;transition:none;background:#000}
+/* la version demoniaque, sur les pistes sales */
+.nett-film-d{display:none}
+body.alb-nett .nett-film-d{
+  display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  z-index:0;pointer-events:none;opacity:0;transition:opacity .5s ease;will-change:opacity;
+}
+body.alb-nett.is-film-nettd .nett-film-d{opacity:1}
+body.alb-nett.is-film-nettd .deco{opacity:1 !important;transition:none;background:#000}
 
 /* ---- la camera, facon Backrooms (camescope VHS) ----
    Sur toute la page, des que la platine sort du choix (pendant l ouverture) : le filtre #vhs (dans la page)
