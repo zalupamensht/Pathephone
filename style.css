@@ -2743,9 +2743,9 @@ body.psyi-on .psyi{display:block}
    coins sombres) : ses forces sont reglees en haut, pour changer vite.
    Rien ici ne touche les autres albums.
    ================================================================== */
-/* les couleurs de la platine et des textes passent par des variables
-   animables : sur les pistes sales (film demoniaque), tout vire au bordeaux
-   en fondu, et revient a l argent ensuite */
+/* les couleurs de la platine et des textes passent par des variables :
+   sur les pistes sales (film demoniaque), tout bascule d un coup au
+   bordeaux, et revient d un coup a l argent */
 @property --n-m1{syntax:'<color>';inherits:true;initial-value:#f1f2f4}
 @property --n-m2{syntax:'<color>';inherits:true;initial-value:#c9ccd1}
 @property --n-m3{syntax:'<color>';inherits:true;initial-value:#eceef1}
@@ -2787,29 +2787,29 @@ body.alb-nett{
   --n-plat1:rgba(255,255,255,.75);
   --n-plat2:rgba(190,194,200,.55);
   --n-plat3:rgba(150,154,160,.6);
-  transition:--n-m1 .9s ease,--n-m2 .9s ease,--n-m3 .9s ease,--n-m4 .9s ease,--n-a1 .9s ease,--n-a2 .9s ease,--n-a3 .9s ease,--n-verre .9s ease,--n-bulle .9s ease,--n-bord .9s ease,--n-texte .9s ease,--n-passe .9s ease,--n-actuel .9s ease,--n-lueur .9s ease,--n-nom .9s ease,--n-vol .9s ease,--n-son .9s ease,--n-plat1 .9s ease,--n-plat2 .9s ease,--n-plat3 .9s ease,opacity .3s ease;
+  transition:opacity .3s ease;
 }
 body.alb-nett.is-film-nettd{
-  --n-m1:#b3202b;
-  --n-m2:#5c0a12;
-  --n-m3:#a51a25;
-  --n-m4:#3d0509;
-  --n-a1:#ff8f8f;
-  --n-a2:#c2232d;
-  --n-a3:#5a070d;
-  --n-verre:rgba(120,8,18,.32);
-  --n-bulle:rgba(140,12,24,.32);
-  --n-bord:rgba(255,110,110,.5);
-  --n-texte:rgba(255,214,214,.8);
-  --n-passe:rgba(255,190,190,.55);
-  --n-actuel:#ffe3e3;
-  --n-lueur:rgba(255,40,40,.75);
-  --n-nom:#ffd6d6;
-  --n-vol:#d12a35;
-  --n-son:rgba(170,20,30,.32);
-  --n-plat1:rgba(230,90,100,.75);
-  --n-plat2:rgba(120,14,24,.6);
-  --n-plat3:rgba(70,6,12,.65);
+  --n-m1:#5e0f17;
+  --n-m2:#230307;
+  --n-m3:#4a0a12;
+  --n-m4:#120203;
+  --n-a1:#e0403c;
+  --n-a2:#b3171a;
+  --n-a3:#6a0a0c;
+  --n-verre:rgba(70,6,12,.5);
+  --n-bulle:rgba(70,8,14,.72);
+  --n-bord:rgba(230,70,70,.55);
+  --n-texte:rgba(255,226,226,.62);
+  --n-passe:rgba(255,220,220,.38);
+  --n-actuel:#fff2f0;
+  --n-lueur:rgba(255,50,40,.85);
+  --n-nom:rgba(255,232,232,.9);
+  --n-vol:#e0413a;
+  --n-son:rgba(130,16,22,.55);
+  --n-plat1:rgba(110,20,28,.85);
+  --n-plat2:rgba(50,6,10,.88);
+  --n-plat3:rgba(18,2,4,.92);
 }
 body.alb-nett{
   --paper:#d9dadc;
@@ -2826,9 +2826,30 @@ body.alb-nett .swoosh,
 body.alb-nett .halftone{display:none}
 body.alb-nett .sleeve{filter:none}
 /* memes fonctions dans les deux etats : le navigateur peut fondre de l un a l autre */
-body.alb-nett .disc{filter:brightness(1) sepia(0) saturate(1) hue-rotate(0deg) brightness(1) contrast(1) drop-shadow(0 6px 12px rgba(30,30,40,.28));transition:filter .9s ease}
-/* le disque blanc vire au bordeaux sur les pistes sales */
-body.alb-nett.is-film-nettd .disc{filter:brightness(.45) sepia(1) saturate(8) hue-rotate(-45deg) brightness(.55) contrast(1.15) drop-shadow(0 6px 12px rgba(40,0,6,.45))}
+body.alb-nett .disc{filter:brightness(1) sepia(0) saturate(1) hue-rotate(0deg) brightness(1) contrast(1) drop-shadow(0 6px 12px rgba(30,30,40,.28))}
+/* sur les pistes sales le disque change : un vinyle rouge, comme celui de
+   psykotic, l etiquette au visage de la pochette (assets/disc7_d.webp, pose
+   par le script) */
+body.alb-nett.is-film-nettd .disc{filter:brightness(1) sepia(0) saturate(1) hue-rotate(0deg) brightness(1) contrast(1) drop-shadow(0 6px 10px rgba(10,0,0,.5))}
+/* les pastilles : rond sombre, cercle rouge, le logo en blanc (comme psykotic) */
+body.alb-nett.is-film-nettd .trk .bub{box-shadow:0 0 0 2px rgba(210,50,44,.45),0 16px 26px rgba(0,0,0,.55)}
+body.alb-nett.is-film-nettd .trk .bub-art{filter:invert(1)}
+body.alb-nett.is-film-nettd .trk .bub-num{color:rgba(250,230,230,.7)}
+body.alb-nett.is-film-nettd .trk.is-current .bub{box-shadow:0 0 0 3px #050202,0 0 0 5px rgba(240,60,50,.85),0 0 18px rgba(255,50,40,.45),0 16px 26px rgba(0,0,0,.55)}
+/* pas de lisere blanc sur les pistes sales : les reflets de la vitre, du
+   plateau, des boutons et du bouton lecture passent au rouge sombre */
+body.alb-nett.is-film-nettd .deck-face{box-shadow:inset 0 1px 0 rgba(255,90,90,.18),inset 0 0 0 1px rgba(0,0,0,.35)}
+body.alb-nett.is-film-nettd .platter::before{box-shadow:0 10px 20px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.4)}
+body.alb-nett.is-film-nettd .deck-knob{box-shadow:0 2px 4px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,140,140,.2)}
+body.alb-nett.is-film-nettd .sound{box-shadow:inset 0 1px 1px rgba(255,120,120,.3),0 0 0 1px rgba(0,0,0,.4),0 8px 22px rgba(0,0,0,.4)}
+body.alb-nett.is-film-nettd .sound::before{opacity:.25}
+body.alb-nett.is-film-nettd .trk .bub{border-color:transparent}
+body.alb-nett.is-film-nettd #vol{box-shadow:none}
+body.alb-nett.is-film-nettd #vol::-webkit-slider-thumb{background:linear-gradient(180deg,#8a1a1e,#3a0506);box-shadow:0 4px 8px rgba(0,0,0,.5);border-color:rgba(0,0,0,.4)}
+.disc-d{display:none}
+body.alb-nett .disc-d{display:block;position:absolute;inset:0;width:100%;height:100%;
+  opacity:0;filter:drop-shadow(0 6px 10px rgba(10,0,0,.5));pointer-events:none}
+body.alb-nett.is-film-nettd .disc-d{opacity:1}
 body.alb-nett .deco{
   display:block;position:absolute;inset:0;z-index:0;overflow:hidden;
   background:url("assets/bg7.jpg") center center / cover no-repeat;
@@ -2950,7 +2971,7 @@ body.alb-nett .alb.is-current .alb-name{color:#fff}
 .nett-film{display:none}
 body.alb-nett .nett-film{
   display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-  z-index:0;pointer-events:none;opacity:0;transition:opacity .5s ease;will-change:opacity;
+  z-index:0;pointer-events:none;opacity:0;will-change:opacity;
 }
 body.alb-nett.is-film-nett .nett-film{opacity:1}
 body.alb-nett.is-film-nett .deco{opacity:1 !important;transition:none;background:#000}
@@ -2958,7 +2979,7 @@ body.alb-nett.is-film-nett .deco{opacity:1 !important;transition:none;background
 .nett-film-d{display:none}
 body.alb-nett .nett-film-d{
   display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-  z-index:0;pointer-events:none;opacity:0;transition:opacity .5s ease;will-change:opacity;
+  z-index:0;pointer-events:none;opacity:0;will-change:opacity;
 }
 body.alb-nett.is-film-nettd .nett-film-d{opacity:1}
 body.alb-nett.is-film-nettd .deco{opacity:1 !important;transition:none;background:#000}
