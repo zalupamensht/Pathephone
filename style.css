@@ -3041,3 +3041,29 @@ body.alb-nett .sound:hover{transform:scale(1.08);
              inset 0 0 0 1px rgba(255,255,255,.28),inset 0 0 14px rgba(255,255,255,.22),0 14px 28px rgba(20,22,30,.24)}
 body.alb-nett .ico-pause i{position:relative;background:rgba(255,255,255,.95);box-shadow:0 1px 3px rgba(0,0,0,.35)}
 body.alb-nett .ico-play{position:relative;border-left-color:rgba(255,255,255,.95);filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
+
+/* ---------- l intro de Nettspend : le fusil (squelette) ---------- */
+.netti{display:none;position:fixed;inset:0;z-index:18;cursor:none;--x:50%;--y:50%;--r:0px}
+body.netti-on .netti{display:block}
+/* pendant l intro : ni platine, ni pochette, ni pistes, ni textes ; le disque
+   garde sa place (il sert de cible) */
+body.netti-on .deck,body.netti-on .sleeve-slot,body.netti-on .dock,body.netti-on .lyrics,
+body.netti-on .controls,body.netti-on .albums,body.netti-on .albums-btn{visibility:hidden}
+/* le monde rouge, vu seulement par l ouverture autour du viseur */
+.netti-rouge{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;
+  -webkit-mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),#000 72%,transparent 100%);
+          mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),#000 72%,transparent 100%)}
+.netti-cible,.netti-viseur{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+.netti-cible circle{fill:none;stroke:rgba(255,255,255,.45);stroke-width:.6;stroke-dasharray:2 2.5}
+.netti.charge .netti-cible{opacity:0}
+.netti-viseur{will-change:transform}
+.netti-viseur circle,.netti-viseur path{fill:none;stroke:#fff;stroke-width:1.1;vector-effect:non-scaling-stroke;
+  filter:drop-shadow(0 0 2px rgba(0,0,0,.8))}
+.netti-viseur .pt{fill:#fff}
+.netti-eclair{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+.netti-eclair.on{animation:nettiflash .35s ease-out}
+@keyframes nettiflash{0%{opacity:.85}100%{opacity:0}}
+.netti-consigne{position:absolute;left:0;right:0;bottom:9vh;margin:0;text-align:center;color:#fff;
+  font-size:12px;letter-spacing:.32em;opacity:0;transition:opacity .8s ease;pointer-events:none;
+  text-shadow:0 1px 3px rgba(0,0,0,.8)}
+.netti-consigne.on{opacity:.75}

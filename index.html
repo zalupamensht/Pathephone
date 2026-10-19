@@ -20,7 +20,7 @@
 <link rel="preload" href="assets/fonts/Kingjola.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ZenKakuGothicNew-Medium-jp.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=132">
+<link rel="stylesheet" href="style.css?v=133">
 </head>
 <body>
 
@@ -244,6 +244,21 @@
 <audio id="theme" src="assets/track16.mp3?v=2" preload="auto"></audio>
 
 <!-- l intro de psykotic : le couteau, le cercle, les coups (voir le script en bas) -->
+<!-- l intro de Nettspend (« le fusil qui tue le passe ») : un viseur a la
+     taille du disque ; on vise l emplacement du disque, on tient le bouton, et
+     autour du viseur s ouvre le monde rouge ; au bout de la charge, le coup :
+     sick commence, la page apparait. Squelette : la beaute viendra apres -->
+<div class="netti" id="nettIntro" aria-hidden="true">
+  <video class="netti-rouge" id="nettiRouge" src="assets/nett_film_d.mp4?v=2" muted loop playsinline preload="none"
+         disablepictureinpicture></video>
+  <svg class="netti-cible" id="nettiCible" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48"/></svg>
+  <svg class="netti-viseur" id="nettiViseur" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="48"/><circle cx="50" cy="50" r="2.2" class="pt"/>
+    <path d="M50 0V36M50 64V100M0 50H36M64 50H100"/>
+  </svg>
+  <div class="netti-eclair" id="nettiEclair"></div>
+  <p class="netti-consigne" id="nettiConsigne">HOLD TO SHOOT</p>
+</div>
 <div class="psyi" id="psyIntro" aria-hidden="true">
   <div class="psyi-couches" id="psyiCouches">
     <div class="psyi-noir" id="psyiNoir"></div>
@@ -7684,6 +7699,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       /* psykotic : son intro (le couteau) se pose par-dessus, la page se
          prepare dessous et sa musique attend le drop */
       if (ALBUMS[cur].theme === 'psy' && window.__psyIntro) window.__psyIntro();
+      if (ALBUMS[cur].theme === 'nett' && window.__nettIntro) window.__nettIntro();
       if (window.__startIntro) window.__startIntro(true);
     }
   }
@@ -8584,6 +8600,94 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   racine.addEventListener('pointerdown', clic);
   window.addEventListener('pointerup', function(){ if (e){ e.appui = false; e.dernierAngle = null; } });
   window.addEventListener('resize', function(){ if (e) mesurer(); });
+})();
+
+/* ---------------- l intro de Nettspend : le fusil ----------------
+   Squelette. La page s ouvre sur you ready? sans platine ni pistes ; le
+   curseur est un viseur a la taille du disque. Bouton tenu sur le disque :
+   autour du viseur s ouvre le monde rouge (le film demoniaque), de plus en
+   plus grand ; lache trop tot, il se referme. Charge pleine (2,5 s) : le
+   coup, le rouge prend tout l ecran, sick part du debut, la page apparait. */
+(function(){
+  var racine = document.getElementById('nettIntro');
+  if (!racine || MOBILE) return;
+  var body = document.body;
+  var rouge = document.getElementById('nettiRouge'), viseur = document.getElementById('nettiViseur');
+  var cible = document.getElementById('nettiCible'), eclair = document.getElementById('nettiEclair');
+  var consigne = document.getElementById('nettiConsigne');
+  var CHARGE = 2.5, REFERME = .5;            // secondes
+  var tir = new Audio('assets/netti_tir.mp3'); tir.preload = 'auto';
+  var e = null, souris = { x: innerWidth / 2, y: innerHeight / 2 };
+  function disque(){
+    var b = document.getElementById('discFly').getBoundingClientRect();
+    return { x: b.left + b.width / 2, y: b.top + b.height / 2, r: b.width / 2 };
+  }
+  function poser(){
+    var d = disque();
+    cible.style.left = (d.x - d.r) + 'px'; cible.style.top = (d.y - d.r) + 'px';
+    cible.style.width = cible.style.height = (2 * d.r) + 'px';
+    viseur.style.width = viseur.style.height = (2 * d.r) + 'px';
+    return d;
+  }
+  function ouverture(r){
+    racine.style.setProperty('--x', souris.x + 'px'); racine.style.setProperty('--y', souris.y + 'px');
+    racine.style.setProperty('--r', Math.max(0, r) + 'px');
+  }
+  function boucle(t){
+    if (!e) return;
+    if (!body.classList.contains('alb-nett') || body.classList.contains('is-picking') && !body.classList.contains('is-sortie')){ finir(); return; }
+    var dt = Math.min(.05, (t - (e.t || t)) / 1000); e.t = t;
+    var d = e.d || poser(); e.d = d;
+    viseur.style.transform = 'translate(' + (souris.x - d.r) + 'px,' + (souris.y - d.r) + 'px)';
+    if (e.phase === 'vise'){
+      e.charge = e.appui ? Math.min(1, e.charge + dt / CHARGE) : Math.max(0, e.charge - dt / REFERME);
+      var k = e.charge * e.charge * (3 - 2 * e.charge);
+      var rMax = .45 * Math.max(innerWidth, innerHeight);
+      ouverture(e.charge > 0 ? d.r + k * (rMax - d.r) : 0);
+      racine.classList.toggle('charge', e.charge > 0);
+      if (e.charge >= 1) coup();
+    } else if (e.phase === 'coup'){
+      var u = Math.min(1, (t - e.tCoup) / 250);
+      ouverture(.45 * Math.max(innerWidth, innerHeight) + u * Math.hypot(innerWidth, innerHeight));
+      if (u >= 1 && !e.fini){ e.fini = true; setTimeout(finir, 120); }
+    }
+    requestAnimationFrame(boucle);
+  }
+  function coup(){
+    e.phase = 'coup'; e.tCoup = performance.now(); e.appui = false;
+    try { tir.currentTime = 0; tir.volume = .9; tir.play().catch(function(){}); } catch (x) {}
+    eclair.classList.remove('on'); void eclair.offsetWidth; eclair.classList.add('on');
+    consigne.classList.remove('on');
+    /* sick, du debut : la page passe d un coup au rouge */
+    var i = -1; ALB().tracks.forEach(function(tr, j){ if (tr.name === 'sick') i = j; });
+    if (i >= 0 && window.__pickTrack) window.__pickTrack(i, true);
+  }
+  function finir(){
+    if (!e) return;
+    e = null;
+    body.classList.remove('netti-on');
+    racine.classList.remove('charge');
+    try { rouge.pause(); } catch (x) {}
+  }
+  window.__nettIntro = function(){
+    if (e) return;
+    e = { phase: 'vise', charge: 0, appui: false, t: 0, d: null };
+    body.classList.add('netti-on');
+    rouge.preload = 'auto'; try { rouge.currentTime = 0; rouge.play().catch(function(){}); } catch (x) {}
+    ouverture(0);
+    setTimeout(function(){ if (e && e.phase === 'vise') consigne.classList.add('on'); }, 2500);
+    requestAnimationFrame(boucle);
+  };
+  window.addEventListener('resize', function(){ if (e) e.d = null; });
+  racine.addEventListener('pointermove', function(ev){ souris.x = ev.clientX; souris.y = ev.clientY; });
+  racine.addEventListener('pointerdown', function(ev){
+    souris.x = ev.clientX; souris.y = ev.clientY;
+    if (!e || e.phase !== 'vise') return;
+    var d = e.d || poser();
+    /* seulement sur le disque */
+    if (Math.hypot(souris.x - d.x, souris.y - d.y) <= d.r) e.appui = true;
+  });
+  window.addEventListener('pointerup', function(){ if (e) e.appui = false; });
 })();
 </script>
 
