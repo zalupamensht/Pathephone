@@ -20,7 +20,7 @@
 <link rel="preload" href="assets/fonts/Kingjola.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ZenKakuGothicNew-Medium-jp.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=135">
+<link rel="stylesheet" href="style.css?v=136">
 </head>
 <body>
 
@@ -249,8 +249,10 @@
      autour du viseur s ouvre le monde rouge ; au bout de la charge, le coup :
      sick commence, la page apparait. Squelette : la beaute viendra apres -->
 <div class="netti" id="nettIntro" aria-hidden="true">
-  <video class="netti-rouge" id="nettiRouge" src="assets/nett_film_d.mp4?v=2" muted loop playsinline preload="none"
+  <video class="netti-rouge" id="nettiRouge" src="assets/nett_film_r.mp4" muted playsinline preload="none"
          disablepictureinpicture></video>
+  <div class="netti-nuit"></div>
+  <div class="netti-brume"></div>
   <svg class="netti-cible" id="nettiCible" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48"/></svg>
   <svg class="netti-viseur" id="nettiViseur" viewBox="0 0 100 100">
     <circle cx="50" cy="50" r="48"/><circle cx="50" cy="50" r="2.2" class="pt"/>
@@ -8609,11 +8611,13 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
 })();
 
 /* ---------------- l intro de Nettspend : le fusil ----------------
-   Squelette. La page s ouvre sur you ready? sans platine ni pistes ; le
-   curseur est un viseur a la taille du disque. Bouton tenu sur le disque :
-   autour du viseur s ouvre le monde rouge (le film demoniaque), de plus en
-   plus grand ; lache trop tot, il se referme. Charge pleine (2,5 s) : le
-   coup, le rouge prend tout l ecran, sick part du debut, la page apparait. */
+   La page s ouvre sur you ready? sans platine ni pistes ; le curseur est un
+   viseur a la taille du disque. Bouton tenu sur le disque : comme dans le
+   jeu, un anneau de brume arrive des bords et se resserre sur le viseur,
+   l exterieur s assombrit et, dedans, le monde rouge monte peu a peu — le
+   meme film, image pour image, en version demoniaque. Charge pleine : on
+   tient ; on lache, c est le coup (sick, et la page monte). Lache avant :
+   tout repart vers les bords et s eteint. */
 (function(){
   var racine = document.getElementById('nettIntro');
   if (!racine || MOBILE) return;
@@ -8621,9 +8625,11 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   var rouge = document.getElementById('nettiRouge'), viseur = document.getElementById('nettiViseur');
   var cible = document.getElementById('nettiCible'), eclair = document.getElementById('nettiEclair');
   var consigne = document.getElementById('nettiConsigne');
-  var CHARGE = 2.5, REFERME = .5;            // secondes
+  var film = document.getElementById('nettFilm');
+  var CHARGE = 2.5, ANNULE = .65;             // secondes
   var tir = new Audio('assets/netti_tir.mp3'); tir.preload = 'auto';
   var e = null, souris = { x: innerWidth / 2, y: innerHeight / 2 };
+  function ss(x, a, b){ var t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
   function disque(){
     var b = document.getElementById('discFly').getBoundingClientRect();
     return { x: b.left + b.width / 2, y: b.top + b.height / 2, r: b.width / 2 };
@@ -8635,9 +8641,29 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     viseur.style.width = viseur.style.height = (2 * d.r) + 'px';
     return d;
   }
-  function ouverture(r){
+  function loin(){ return Math.hypot(innerWidth, innerHeight) * 1.05; }
+  function pres(){ return .45 * Math.max(innerWidth, innerHeight); }
+  function peindre(v){
     racine.style.setProperty('--x', souris.x + 'px'); racine.style.setProperty('--y', souris.y + 'px');
-    racine.style.setProperty('--r', Math.max(0, r) + 'px');
+    racine.style.setProperty('--r', Math.max(0, v.r) + 'px');
+    racine.style.setProperty('--vu', v.vu.toFixed(3));
+    racine.style.setProperty('--nuit', v.nuit.toFixed(3));
+    racine.style.setProperty('--brume', v.brume.toFixed(3));
+  }
+  function etat(c, t){
+    var k = 1 - Math.pow(1 - c, 3);
+    var r = loin() + (pres() - loin()) * k;
+    if (c >= 1) r *= 1 + .012 * Math.sin(t / 140);          // pret : la bordure respire
+    return { r: r, vu: ss(c, .08, .8), nuit: .6 * ss(c, 0, .55), brume: .38 * ss(c, .04, .35) * (c >= 1 ? .85 + .15 * Math.sin(t / 110) : 1) };
+  }
+  /* le monde rouge suit le film du fond, image pour image */
+  function caler(){
+    if (!film || film.readyState < 2) return;
+    if (rouge.readyState >= 2){
+      if (Math.abs(rouge.currentTime - film.currentTime) > .06){ try { rouge.currentTime = film.currentTime; } catch (x) {} }
+      if (Math.abs(rouge.playbackRate - film.playbackRate) > .001) rouge.playbackRate = film.playbackRate;
+    }
+    if (film.paused !== rouge.paused){ if (film.paused) rouge.pause(); else rouge.play().catch(function(){}); }
   }
   function boucle(t){
     if (!e) return;
@@ -8645,38 +8671,40 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     var dt = Math.min(.05, (t - (e.t || t)) / 1000); e.t = t;
     var d = e.d || poser(); e.d = d;
     viseur.style.transform = 'translate(' + (souris.x - d.r) + 'px,' + (souris.y - d.r) + 'px)';
+    caler();
     if (e.phase === 'vise'){
-      e.charge = e.appui ? Math.min(1, e.charge + dt / CHARGE) : Math.max(0, e.charge - dt / REFERME);
-      /* comme dans le jeu : la bordure part de bien au-dela de l ecran et se
-         resserre sur le viseur ; on lache, elle repart vers les bords */
-      var k = 1 - Math.pow(1 - e.charge, 3);
-      var loin = Math.hypot(innerWidth, innerHeight), pres = .45 * Math.max(innerWidth, innerHeight);
-      ouverture(loin + (pres - loin) * k);
-      racine.style.setProperty('--vu', Math.min(1, e.charge * 6).toFixed(3));
+      if (e.appui) e.charge = Math.min(1, e.charge + dt / CHARGE);
+      var v = e.charge > 0 ? etat(e.charge, t) : { r: loin(), vu: 0, nuit: 0, brume: 0 };
+      e.v = v; peindre(v);
       racine.classList.toggle('charge', e.charge > 0);
-      if (e.charge >= 1) coup();
+      racine.classList.toggle('pret', e.charge >= 1);
+    } else if (e.phase === 'annule'){
+      var u = ss((t - e.tAnnule) / (ANNULE * 1000), 0, 1), v0 = e.v0;
+      peindre({ r: v0.r + (loin() * 1.15 - v0.r) * u, vu: v0.vu * (1 - u), nuit: v0.nuit * (1 - u), brume: v0.brume * (1 - u) * (1 - u) });
+      if (u >= 1){ e.phase = 'vise'; e.charge = 0; racine.classList.remove('charge', 'pret'); }
     } else if (e.phase === 'coup'){
-      var u = Math.min(1, (t - e.tCoup) / 250);
-      ouverture(.45 * Math.max(innerWidth, innerHeight) + u * Math.hypot(innerWidth, innerHeight));
-      if (u >= 1 && !e.fini){ e.fini = true; apparaitre(); }
+      var w = Math.min(1, (t - e.tCoup) / 220);
+      peindre({ r: pres() + w * loin() * 1.2, vu: 1, nuit: e.v.nuit * (1 - w), brume: e.v.brume * (1 - w) });
+      if (w >= 1 && !e.fini){ e.fini = true; apparaitre(); }
     }
     requestAnimationFrame(boucle);
   }
+  function relache(){
+    if (!e || e.phase !== 'vise' || !e.appui) return;
+    e.appui = false;
+    if (e.charge >= 1) coup();
+    else if (e.charge > 0){ e.phase = 'annule'; e.tAnnule = performance.now(); e.v0 = e.v; }
+  }
   function coup(){
-    e.phase = 'coup'; e.tCoup = performance.now(); e.appui = false;
+    e.phase = 'coup'; e.tCoup = performance.now();
     try { tir.currentTime = 0; tir.volume = .9; tir.play().catch(function(){}); } catch (x) {}
     eclair.classList.remove('on'); void eclair.offsetWidth; eclair.classList.add('on');
-    consigne.classList.remove('on');
-    /* sick, du debut : la page passe d un coup au rouge */
+    consigne.classList.remove('on'); racine.classList.remove('pret');
     var i = -1; ALB().tracks.forEach(function(tr, j){ if (tr.name === 'sick') i = j; });
     if (i >= 0 && window.__pickTrack) window.__pickTrack(i, true);
-    if (i >= 0 && window.__dockJump) window.__dockJump(i);   // deja au centre quand les pistes paraissent
+    if (i >= 0 && window.__dockJump) window.__dockJump(i);
   }
-  /* la page monte comme apres l atterrissage du disque : on rejoue l entree
-     en scene (platine, pochette, pistes, textes, commandes, chacun a son
-     heure), le disque se revele avec elle */
   function apparaitre(){
-    /* tout redescend a zero d un coup (sans transition), puis remonte */
     body.classList.add('netti-coupe', 'netti-apparition');
     body.classList.remove('is-stage');
     void body.offsetWidth;
@@ -8685,22 +8713,22 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     body.classList.remove('netti-coupe');
     requestAnimationFrame(function(){ requestAnimationFrame(function(){
       body.classList.add('is-stage');
-      setTimeout(function(){ body.classList.remove('netti-apparition'); }, 2800);
+      setTimeout(function(){ body.classList.remove('netti-apparition'); }, 1500);
     }); });
   }
   function finir(){
     if (!e) return;
     e = null;
     body.classList.remove('netti-on');
-    racine.classList.remove('charge');
+    racine.classList.remove('charge', 'pret');
     try { rouge.pause(); } catch (x) {}
   }
   window.__nettIntro = function(){
     if (e) return;
-    e = { phase: 'vise', charge: 0, appui: false, t: 0, d: null };
+    e = { phase: 'vise', charge: 0, appui: false, t: 0, d: null, v: null };
     body.classList.add('netti-on');
-    rouge.preload = 'auto'; try { rouge.currentTime = 0; rouge.play().catch(function(){}); } catch (x) {}
-    ouverture(0);
+    rouge.preload = 'auto'; try { rouge.load(); } catch (x) {}
+    peindre({ r: loin(), vu: 0, nuit: 0, brume: 0 });
     setTimeout(function(){ if (e && e.phase === 'vise') consigne.classList.add('on'); }, 2500);
     requestAnimationFrame(boucle);
   };
@@ -8710,10 +8738,9 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     souris.x = ev.clientX; souris.y = ev.clientY;
     if (!e || e.phase !== 'vise') return;
     var d = e.d || poser();
-    /* seulement sur le disque */
-    if (Math.hypot(souris.x - d.x, souris.y - d.y) <= d.r) e.appui = true;
+    if (Math.hypot(souris.x - d.x, souris.y - d.y) <= d.r) e.appui = true;   // seulement sur le disque
   });
-  window.addEventListener('pointerup', function(){ if (e) e.appui = false; });
+  window.addEventListener('pointerup', relache);
 })();
 </script>
 

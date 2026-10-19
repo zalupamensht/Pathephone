@@ -3049,10 +3049,16 @@ body.netti-on .netti{display:block}
    garde sa place (il sert de cible) */
 body.netti-on .deck,body.netti-on .sleeve-slot,body.netti-on .dock,body.netti-on .lyrics,
 body.netti-on .controls,body.netti-on .albums,body.netti-on .albums-btn{visibility:hidden}
-/* le monde rouge, vu seulement par l ouverture autour du viseur */
-.netti-rouge{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;
-  -webkit-mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),#000 72%,transparent 100%);
-          mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),#000 72%,transparent 100%)}
+/* le monde rouge, vu seulement dans l anneau autour du viseur, qui monte peu a peu */
+.netti-rouge{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;opacity:var(--vu,0);
+  -webkit-mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),#000 70%,transparent 100%);
+          mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),#000 70%,transparent 100%)}
+/* autour : la nuit tombe sur ce qui est hors de l anneau */
+.netti-nuit,.netti-brume{position:absolute;inset:0;pointer-events:none}
+.netti-nuit{background:radial-gradient(circle at var(--x) var(--y),rgba(0,0,0,0) calc(var(--r) * .8),rgba(0,0,0,var(--nuit,0)) calc(var(--r) * 1.15))}
+/* la bordure : une brume claire qui se resserre */
+.netti-brume{background:radial-gradient(circle at var(--x) var(--y),rgba(255,236,236,0) calc(var(--r) * .78),rgba(255,236,236,var(--brume,0)) calc(var(--r) * .96),rgba(255,236,236,0) calc(var(--r) * 1.12));mix-blend-mode:screen}
+.netti.pret .netti-viseur circle,.netti.pret .netti-viseur path{stroke:#ffd9d9}
 .netti-cible,.netti-viseur{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
 .netti-cible circle{fill:none;stroke:rgba(255,255,255,.45);stroke-width:.6;stroke-dasharray:2 2.5}
 .netti.charge .netti-cible{opacity:0}
@@ -3068,8 +3074,15 @@ body.netti-on .controls,body.netti-on .albums,body.netti-on .albums-btn{visibili
   text-shadow:0 1px 3px rgba(0,0,0,.8)}
 .netti-consigne.on{opacity:.75}
 /* la zone apparait et s efface en fondu (en plus de se resserrer) */
-.netti-rouge{opacity:var(--vu,0)}
 /* apres le coup : le disque se revele avec la platine */
 body.netti-apparition .disc-spin{opacity:0}
-body.netti-apparition.is-stage .disc-spin{opacity:1;transition:opacity 1.2s ease .55s}
+body.netti-apparition.is-stage .disc-spin{opacity:1;transition:opacity .6s ease .28s}
+/* apres le coup, l entree en scene va deux fois plus vite que d ordinaire */
+body.netti-apparition.is-stage .deck-plinth,body.netti-apparition.is-stage .deck-face,body.netti-apparition.is-stage .platter-mat,
+body.netti-apparition.is-stage .spindle,body.netti-apparition.is-stage .arm,body.netti-apparition.is-stage .deck-knob,
+body.netti-apparition.is-stage .platter::before{transition:opacity .62s ease .25s}
+body.netti-apparition.is-stage .sleeve{transition:opacity .65s ease .25s,transform .45s cubic-bezier(.22,.72,.16,1)}
+body.netti-apparition.is-stage .dock{transition:opacity .5s ease .36s,transform .58s cubic-bezier(.2,.72,.2,1) .36s}
+body.netti-apparition.is-stage .lyrics{transition:opacity .5s ease .45s,transform .55s cubic-bezier(.2,.72,.2,1) .45s}
+body.netti-apparition.is-stage .controls{transition:opacity .43s ease .54s,transform .48s cubic-bezier(.2,.72,.2,1) .54s}
 body.netti-coupe *,body.netti-coupe *::before,body.netti-coupe *::after{transition:none!important}
