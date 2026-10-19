@@ -20,7 +20,7 @@
 <link rel="preload" href="assets/fonts/Kingjola.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ZenKakuGothicNew-Medium-jp.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=133">
+<link rel="stylesheet" href="style.css?v=135">
 </head>
 <body>
 
@@ -5689,6 +5689,12 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
      (fin de piste, piste suivante) : meme glissement pose qu apres un clic,
      sans tic de passage. Si la main fait tourner le manege a ce moment, on
      ne le lui arrache pas. */
+  window.__dockJump = function(i){
+    mark(i);
+    if (MOBILE || !N) return;
+    vel = 0; cible = null; parSurvol = false; pos = i * STEP;
+    render();
+  };
   window.__dockMark = function(i){
     mark(i);
     if (MOBILE){
@@ -8641,15 +8647,18 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     viseur.style.transform = 'translate(' + (souris.x - d.r) + 'px,' + (souris.y - d.r) + 'px)';
     if (e.phase === 'vise'){
       e.charge = e.appui ? Math.min(1, e.charge + dt / CHARGE) : Math.max(0, e.charge - dt / REFERME);
-      var k = e.charge * e.charge * (3 - 2 * e.charge);
-      var rMax = .45 * Math.max(innerWidth, innerHeight);
-      ouverture(e.charge > 0 ? d.r + k * (rMax - d.r) : 0);
+      /* comme dans le jeu : la bordure part de bien au-dela de l ecran et se
+         resserre sur le viseur ; on lache, elle repart vers les bords */
+      var k = 1 - Math.pow(1 - e.charge, 3);
+      var loin = Math.hypot(innerWidth, innerHeight), pres = .45 * Math.max(innerWidth, innerHeight);
+      ouverture(loin + (pres - loin) * k);
+      racine.style.setProperty('--vu', Math.min(1, e.charge * 6).toFixed(3));
       racine.classList.toggle('charge', e.charge > 0);
       if (e.charge >= 1) coup();
     } else if (e.phase === 'coup'){
       var u = Math.min(1, (t - e.tCoup) / 250);
       ouverture(.45 * Math.max(innerWidth, innerHeight) + u * Math.hypot(innerWidth, innerHeight));
-      if (u >= 1 && !e.fini){ e.fini = true; setTimeout(finir, 120); }
+      if (u >= 1 && !e.fini){ e.fini = true; apparaitre(); }
     }
     requestAnimationFrame(boucle);
   }
@@ -8661,6 +8670,23 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     /* sick, du debut : la page passe d un coup au rouge */
     var i = -1; ALB().tracks.forEach(function(tr, j){ if (tr.name === 'sick') i = j; });
     if (i >= 0 && window.__pickTrack) window.__pickTrack(i, true);
+    if (i >= 0 && window.__dockJump) window.__dockJump(i);   // deja au centre quand les pistes paraissent
+  }
+  /* la page monte comme apres l atterrissage du disque : on rejoue l entree
+     en scene (platine, pochette, pistes, textes, commandes, chacun a son
+     heure), le disque se revele avec elle */
+  function apparaitre(){
+    /* tout redescend a zero d un coup (sans transition), puis remonte */
+    body.classList.add('netti-coupe', 'netti-apparition');
+    body.classList.remove('is-stage');
+    void body.offsetWidth;
+    finir();
+    void body.offsetWidth;
+    body.classList.remove('netti-coupe');
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      body.classList.add('is-stage');
+      setTimeout(function(){ body.classList.remove('netti-apparition'); }, 2800);
+    }); });
   }
   function finir(){
     if (!e) return;

@@ -3067,3 +3067,9 @@ body.netti-on .controls,body.netti-on .albums,body.netti-on .albums-btn{visibili
   font-size:12px;letter-spacing:.32em;opacity:0;transition:opacity .8s ease;pointer-events:none;
   text-shadow:0 1px 3px rgba(0,0,0,.8)}
 .netti-consigne.on{opacity:.75}
+/* la zone apparait et s efface en fondu (en plus de se resserrer) */
+.netti-rouge{opacity:var(--vu,0)}
+/* apres le coup : le disque se revele avec la platine */
+body.netti-apparition .disc-spin{opacity:0}
+body.netti-apparition.is-stage .disc-spin{opacity:1;transition:opacity 1.2s ease .55s}
+body.netti-coupe *,body.netti-coupe *::before,body.netti-coupe *::after{transition:none!important}
