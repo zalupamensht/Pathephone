@@ -3086,3 +3086,7 @@ body.netti-apparition.is-stage .dock{transition:opacity .5s ease .36s,transform 
 body.netti-apparition.is-stage .lyrics{transition:opacity .5s ease .45s,transform .55s cubic-bezier(.2,.72,.2,1) .45s}
 body.netti-apparition.is-stage .controls{transition:opacity .43s ease .54s,transform .48s cubic-bezier(.2,.72,.2,1) .54s}
 body.netti-coupe *,body.netti-coupe *::before,body.netti-coupe *::after{transition:none!important}
+/* les trous des balles (provisoires : de simples trous sombres) */
+.netti-trou{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;pointer-events:none;z-index:3;
+  background:radial-gradient(circle,#000 0 38%,#1a0003 52%,rgba(60,0,6,.55) 70%,rgba(0,0,0,0) 100%)}
+.netti-trou.sur-disque{width:3.6%;height:3.6%;margin:-1.8% 0 0 -1.8%}

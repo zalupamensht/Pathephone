@@ -20,7 +20,7 @@
 <link rel="preload" href="assets/fonts/Kingjola.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ZenKakuGothicNew-Medium-jp.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=136">
+<link rel="stylesheet" href="style.css?v=137">
 </head>
 <body>
 
@@ -8627,7 +8627,12 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   var consigne = document.getElementById('nettiConsigne');
   var film = document.getElementById('nettFilm');
   var CHARGE = 2.5, ANNULE = .65;             // secondes
-  var tir = new Audio('assets/netti_tir.mp3'); tir.preload = 'auto';
+  /* trois coups (les trois sons de l auteur), sur les temps de sick (89 bpm),
+     puis le drop sur le quatrieme : sick part a cet instant */
+  var TIRS = ['assets/netti_tir1.mp3', 'assets/netti_tir2.mp3', 'assets/netti_tir3.mp3'].map(function(u){
+    var a = new Audio(u); a.preload = 'auto'; return a; });
+  var TEMPS = 60 / 89, PREMIER = .084;          // le premier temps de sick
+  var trousSpin = [];
   var e = null, souris = { x: innerWidth / 2, y: innerHeight / 2 };
   function ss(x, a, b){ var t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
   function disque(){
@@ -8687,6 +8692,8 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       var u = ss((t - e.tAnnule) / (ANNULE * 1000), 0, 1), v0 = e.v0;
       peindre({ r: v0.r + (loin() * 1.15 - v0.r) * u, vu: v0.vu * (1 - u), nuit: v0.nuit * (1 - u), brume: v0.brume * (1 - u) * (1 - u) });
       if (u >= 1){ e.phase = 'vise'; e.charge = 0; racine.classList.remove('charge', 'pret'); }
+    } else if (e.phase === 'tirs'){
+      peindre(etat(1, t));
     } else if (e.phase === 'coup'){
       var w = Math.min(1, (t - e.tCoup) / 220);
       peindre({ r: pres() + w * loin() * 1.2, vu: 1, nuit: e.v.nuit * (1 - w), brume: e.v.brume * (1 - w) });
@@ -8703,14 +8710,43 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     if (e.charge >= 1 && surDisque) coup();
     else if (e.charge > 0){ e.phase = 'annule'; e.tAnnule = performance.now(); e.v0 = e.v; }
   }
+  /* un trou dans le disque : sur l intro par-dessus, et sur le disque lui-meme
+     (il tourne avec lui et reste apres le drop) */
+  function trou(k){
+    var d = e.d || poser();
+    var a = Math.random() * Math.PI * 2, r = .22 + Math.random() * .38;     // en part du rayon
+    var fx = .5 + .5 * r * Math.cos(a), fy = .5 + .5 * r * Math.sin(a);
+    var t1 = document.createElement('span'); t1.className = 'netti-trou';
+    t1.style.left = (d.x - d.r + fx * 2 * d.r) + 'px'; t1.style.top = (d.y - d.r + fy * 2 * d.r) + 'px';
+    racine.appendChild(t1);
+    var spin = document.getElementById('discSpin');
+    if (spin){
+      var t2 = document.createElement('span'); t2.className = 'netti-trou sur-disque';
+      t2.style.left = (fx * 100) + '%'; t2.style.top = (fy * 100) + '%';
+      spin.appendChild(t2); trousSpin.push(t2);
+    }
+  }
   function coup(){
-    e.phase = 'coup'; e.tCoup = performance.now();
-    try { tir.currentTime = 0; tir.volume = .9; tir.play().catch(function(){}); } catch (x) {}
-    eclair.classList.remove('on'); void eclair.offsetWidth; eclair.classList.add('on');
+    e.phase = 'tirs'; e.tCoup = performance.now();
     consigne.classList.remove('on'); racine.classList.remove('pret');
-    var i = -1; ALB().tracks.forEach(function(tr, j){ if (tr.name === 'sick') i = j; });
-    if (i >= 0 && window.__pickTrack) window.__pickTrack(i, true);
-    if (i >= 0 && window.__dockJump) window.__dockJump(i);
+    /* you ready? se tait au premier coup ; sick se charge aussitot, arrete,
+       pour partir pile au drop */
+    var si = -1; ALB().tracks.forEach(function(tr, j){ if (tr.name === 'sick') si = j; });
+    if (si >= 0 && window.__playTrack) window.__playTrack(si, false, true);
+    if (si >= 0 && window.__dockJump) window.__dockJump(si);
+    [0, 1, 2].forEach(function(k){
+      setTimeout(function(){
+        if (!e) return;
+        var a = TIRS[k]; try { a.currentTime = 0; a.volume = .95; a.play().catch(function(){}); } catch (x) {}
+        trou(k);
+      }, k * TEMPS * 1000);
+    });
+    /* le drop sur le quatrieme temps : sick demarre pour que son premier temps y tombe */
+    setTimeout(function(){
+      if (!e) return;
+      if (window.__playNow) window.__playNow();
+      e.phase = 'coup'; e.tCoup = performance.now();
+    }, (3 * TEMPS - PREMIER) * 1000);
   }
   function apparaitre(){
     body.classList.add('netti-coupe', 'netti-apparition');
@@ -8734,6 +8770,8 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   window.__nettIntro = function(){
     if (e) return;
     e = { phase: 'vise', charge: 0, appui: false, t: 0, d: null, v: null };
+    trousSpin.forEach(function(x){ x.remove(); }); trousSpin = [];
+    Array.prototype.slice.call(racine.querySelectorAll('.netti-trou')).forEach(function(x){ x.remove(); });
     body.classList.add('netti-on');
     rouge.preload = 'auto'; try { rouge.load(); } catch (x) {}
     peindre({ r: loin(), vu: 0, nuit: 0, brume: 0 });
