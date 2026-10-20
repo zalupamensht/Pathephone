@@ -20,7 +20,7 @@
 <link rel="preload" href="assets/fonts/Kingjola.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ZenKakuGothicNew-Medium-jp.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=138">
+<link rel="stylesheet" href="style.css?v=142">
 </head>
 <body>
 
@@ -71,6 +71,12 @@
 </div>
 
 <div class="bg">
+  <!-- l intro de Nettspend : le hublot rouge et son anneau noir, sous la page -->
+  <div class="netti-port" id="nettiPort"><canvas id="nettiToile" width="1280" height="720"></canvas></div>
+  <!-- le film rouge lui-meme reste invisible : deux films affiches ensemble faisaient tomber la page a 30 images/s ;
+       on le recopie image par image dans la toile du hublot -->
+  <video class="netti-source" id="nettiRouge" src="assets/nett_film_r.mp4?v=2" muted playsinline preload="none" disablepictureinpicture></video>
+  <div class="netti-anneau" id="nettiAnneau"></div>
   <span class="blob b1"></span>
   <span class="blob b2"></span>
   <span class="blob b3"></span>
@@ -106,13 +112,13 @@
     <!-- le fond de Nettspend : le montage de l auteur sous « you ready? », du
          debut a la fin du morceau, mene par son temps ; les autres pistes
          gardent la photo -->
-    <video class="nett-film" id="nettFilm" src="assets/nett_film.mp4"
+    <video class="nett-film" id="nettFilm" src="assets/nett_film.mp4?v=2"
            poster="assets/nett_film_p.webp"
            muted loop playsinline preload="none"
            disablepictureinpicture aria-hidden="true"></video>
     <!-- sa version demoniaque (meme montage, memes coupes, ciel de sang, a
          l envers dans chaque plan) : sur les pistes sales -->
-    <video class="nett-film-d" id="nettFilmD" src="assets/nett_film_d.mp4?v=2"
+    <video class="nett-film-d" id="nettFilmD" src="assets/nett_film_d.mp4?v=3"
            poster="assets/nett_film_d_p.webp"
            muted loop playsinline preload="none"
            disablepictureinpicture aria-hidden="true"></video>
@@ -249,10 +255,6 @@
      autour du viseur s ouvre le monde rouge ; au bout de la charge, le coup :
      sick commence, la page apparait. Squelette : la beaute viendra apres -->
 <div class="netti" id="nettIntro" aria-hidden="true">
-  <video class="netti-rouge" id="nettiRouge" src="assets/nett_film_r.mp4" muted playsinline preload="none"
-         disablepictureinpicture></video>
-  <div class="netti-nuit"></div>
-  <div class="netti-brume"></div>
   <svg class="netti-cible" id="nettiCible" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48"/></svg>
   <svg class="netti-viseur" id="nettiViseur" viewBox="0 0 100 100">
     <circle cx="50" cy="50" r="48"/><circle cx="50" cy="50" r="2.2" class="pt"/>
@@ -8665,12 +8667,36 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   }
   function loin(){ return Math.hypot(innerWidth, innerHeight) * 1.05; }
   function pres(){ return .3 * Math.max(innerWidth, innerHeight); }
+  /* le hublot : un disque de taille fixe (R0), deplace et agrandi par
+     transformation ; le film dedans est contre-transforme pour rester fixe */
+  var port = document.getElementById('nettiPort'), anneau = document.getElementById('nettiAnneau');
+  var R0 = 0;
+  var toile = document.getElementById('nettiToile'), pinceau = toile.getContext('2d');
+  /* l image du film rouge, recadree comme un fond « cover » plein ecran */
+  function recopier(){
+    if (rouge.readyState < 2 || !rouge.videoWidth) return;
+    var W = innerWidth, H = innerHeight;
+    if (toile.width !== Math.round(W) || toile.height !== Math.round(H)){ toile.width = Math.round(W); toile.height = Math.round(H); }
+    var k = Math.max(W / rouge.videoWidth, H / rouge.videoHeight);
+    var w = rouge.videoWidth * k, h = rouge.videoHeight * k;
+    pinceau.drawImage(rouge, (W - w) / 2, (H - h) / 2, w, h);
+  }
+  function dimensionner(){
+    R0 = 400;                                   // petit, et agrandi par la carte graphique : une texture geante ramait
+    [port, anneau].forEach(function(el){ el.style.width = el.style.height = (2 * R0) + 'px'; });
+    toile.style.width = innerWidth + 'px'; toile.style.height = innerHeight + 'px';
+  }
   function peindre(v){
+    if (!R0) dimensionner();
+    var s = Math.max(.001, v.r / (R0 * .85));          // le bord doux commence a 70 % du rayon
+    var tx = souris.x - R0, ty = souris.y - R0;
+    port.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + s + ')';
+    anneau.style.transform = port.style.transform;
+    toile.style.transform = 'translate(' + (R0 - souris.x / s) + 'px,' + (R0 - souris.y / s) + 'px) scale(' + (1 / s) + ')';
+    recopier();
+    port.style.opacity = v.vu.toFixed(3);
+    anneau.style.opacity = v.brume.toFixed(3);
     racine.style.setProperty('--x', souris.x + 'px'); racine.style.setProperty('--y', souris.y + 'px');
-    racine.style.setProperty('--r', Math.max(0, v.r) + 'px');
-    racine.style.setProperty('--vu', v.vu.toFixed(3));
-    racine.style.setProperty('--nuit', v.nuit.toFixed(3));
-    racine.style.setProperty('--brume', v.brume.toFixed(3));
   }
   function etat(c, t){
     var k = 1 - Math.pow(1 - c, 3);
@@ -8682,9 +8708,14 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   /* le monde rouge suit le film du fond, image pour image */
   function caler(){
     if (!film || film.readyState < 2) return;
-    if (rouge.readyState >= 2){
-      if (Math.abs(rouge.currentTime - film.currentTime) > .06){ try { rouge.currentTime = film.currentTime; } catch (x) {} }
-      if (Math.abs(rouge.playbackRate - film.playbackRate) > .001) rouge.playbackRate = film.playbackRate;
+    if (rouge.readyState >= 2 && !rouge.seeking){
+      /* on rattrape en vitesse ; on ne saute que si l ecart est franc (un saut coute un decodage) */
+      var ec = film.currentTime - rouge.currentTime;
+      if (Math.abs(ec) > .4){ try { rouge.currentTime = film.currentTime + .05; } catch (x) {} }
+      else {
+        var r = film.playbackRate * (1 + Math.max(-.08, Math.min(.08, ec * .8)));
+        if (Math.abs(rouge.playbackRate - r) > .003) rouge.playbackRate = r;
+      }
     }
     if (film.paused !== rouge.paused){ if (film.paused) rouge.pause(); else rouge.play().catch(function(){}); }
   }
@@ -8719,7 +8750,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     } else if (e.phase === 'coup'){
       var w = Math.min(1, (t - e.tCoup) / 220);
       peindre({ r: pres() + w * loin() * 1.2, vu: 1, nuit: e.v.nuit * (1 - w), brume: e.v.brume * (1 - w) });
-      if (w >= 1 && !e.fini){ e.fini = true; apparaitre(); }
+      if (w >= 1 && !e.fini){ e.fini = true; finir(); setTimeout(function(){ body.classList.remove('netti-apparition'); }, 1200); }
     }
     requestAnimationFrame(boucle);
   }
@@ -8744,9 +8775,6 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     var d = e.d || poser();
     var a = Math.random() * Math.PI * 2, r = .22 + Math.random() * .38;     // en part du rayon
     var fx = .5 + .5 * r * Math.cos(a), fy = .5 + .5 * r * Math.sin(a);
-    var t1 = document.createElement('span'); t1.className = 'netti-trou';
-    t1.style.left = (d.x - d.r + fx * 2 * d.r) + 'px'; t1.style.top = (d.y - d.r + fy * 2 * d.r) + 'px';
-    racine.appendChild(t1);
     var spin = document.getElementById('discSpin');
     if (spin){
       var t2 = document.createElement('span'); t2.className = 'netti-trou sur-disque';
@@ -8762,6 +8790,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     var si = -1; ALB().tracks.forEach(function(tr, j){ if (tr.name === 'sick') si = j; });
     if (si >= 0 && window.__playTrack) window.__playTrack(si, false, true);
     if (si >= 0 && window.__dockJump) window.__dockJump(si);
+    monter();                                   // la page monte pendant les coups : le disque est la au drop
     if (actx && actx.state === 'suspended') actx.resume();
     var t0 = actx ? actx.currentTime + .03 : 0;
     [0, 1, 2].forEach(function(k){
@@ -8775,23 +8804,23 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       e.phase = 'coup'; e.tCoup = performance.now();
     }, 30 + (3 * TEMPS - PREMIER) * 1000);
   }
-  function apparaitre(){
+  /* la page remonte comme apres l atterrissage (deux fois plus vite) ; le
+     viseur et le hublot restent par-dessus jusqu au drop */
+  function monter(){
     body.classList.add('netti-coupe', 'netti-apparition');
     body.classList.remove('is-stage');
     void body.offsetWidth;
-    finir();
+    body.classList.add('netti-revele');
     void body.offsetWidth;
     body.classList.remove('netti-coupe');
-    requestAnimationFrame(function(){ requestAnimationFrame(function(){
-      body.classList.add('is-stage');
-      setTimeout(function(){ body.classList.remove('netti-apparition'); }, 1500);
-    }); });
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ body.classList.add('is-stage'); }); });
   }
   function finir(){
     if (!e) return;
     e = null;
-    body.classList.remove('netti-on');
+    body.classList.remove('netti-on', 'netti-revele');
     body.style.translate = '';
+    port.style.opacity = anneau.style.opacity = 0;
     racine.classList.remove('charge', 'pret');
     try { rouge.pause(); } catch (x) {}
   }
@@ -8807,7 +8836,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     setTimeout(function(){ if (e && e.phase === 'vise') consigne.classList.add('on'); }, 2500);
     requestAnimationFrame(boucle);
   };
-  window.addEventListener('resize', function(){ if (e) e.d = null; });
+  window.addEventListener('resize', function(){ if (e) e.d = null; R0 = 0; });
   racine.addEventListener('pointermove', function(ev){ souris.x = ev.clientX; souris.y = ev.clientY; });
   racine.addEventListener('pointerdown', function(ev){
     souris.x = ev.clientX; souris.y = ev.clientY;

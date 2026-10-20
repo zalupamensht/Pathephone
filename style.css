@@ -2854,7 +2854,7 @@ body.alb-nett .disc-d{display:block;position:absolute;inset:0;width:100%;height:
 body.alb-nett.is-film-nettd .disc-d{opacity:1;filter:brightness(1.22) saturate(1.15) drop-shadow(0 6px 10px rgba(10,0,0,.5))}
 body.alb-nett .deco{
   display:block;position:absolute;inset:0;z-index:0;overflow:hidden;
-  background:url("assets/bg7.jpg") center center / cover no-repeat;
+  background:url("assets/bg7.jpg?v=2") center center / cover no-repeat;
   pointer-events:none;opacity:0;transition:opacity 1.4s ease .3s;animation:none;
 }
 body.alb-nett.is-stage .deco,body.alb-nett.is-lighten .deco{opacity:1}
@@ -2987,23 +2987,28 @@ body.alb-nett.is-film-nettd .nett-film-d{opacity:1}
 body.alb-nett.is-film-nettd .deco{opacity:1 !important;transition:none;background:#000}
 
 /* ---- la camera, facon Backrooms (camescope VHS) ----
-   Sur toute la page, des que la platine sort du choix (pendant l ouverture) : le filtre #vhs (dans la page)
-   decale le rouge et le bleu et adoucit a l horizontale, sans toucher aux couleurs ;
+   Le decalage du rouge et du bleu et la douceur horizontale sont cuits dans
+   les films et l image du fond (un filtre SVG sur toute la page se
+   recalculait a chaque image : la page ramait) ;
    par-dessus, le bruit de la bande (des traines horizontales qui changent
    30 fois par seconde), les lignes, les coins sombres, la bande de bruit du
    bas de l image et un petit sursaut de l image de temps en temps. */
-body.alb-nett.is-stage{filter:url(#vhs);animation:camsaut 2.3s steps(1) infinite}
+body.alb-nett.is-stage{animation:camsaut 2.3s steps(1) infinite}
 @keyframes camsaut{0%{transform:none}31%{transform:translateX(.64px)}33%{transform:none}
   64%{transform:translateX(-.64px)}66%{transform:none}88%{transform:translateX(1.28px)}89%{transform:none}}
 body.alb-nett .scan{
   opacity:var(--cam-lignes);mix-blend-mode:multiply;
   background:repeating-linear-gradient(0deg,rgba(0,0,0,.6) 0 1px,rgba(0,0,0,0) 1px 3px);
 }
+/* le bruit change d image en glissant la couche entiere (transformation,
+   faite par la carte graphique) au lieu de repeindre son fond 30 fois par seconde */
 body.alb-nett .noise{
   opacity:var(--cam-grain);mix-blend-mode:overlay;
   background-image:url("assets/nett_vhs_bruit.png");background-size:256px 1536px;
-  animation:camgrain .2s steps(6) infinite;
+  top:-1536px;height:calc(100% + 1536px);bottom:auto;will-change:transform;
+  animation:camgrainT .2s steps(6) infinite;
 }
+@keyframes camgrainT{from{transform:translateY(0)}to{transform:translateY(1536px)}}
 @keyframes camgrain{from{background-position:0 0}to{background-position:0 -1536px}}
 body.alb-nett .vignette{
   background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 55%,rgba(0,0,0,calc(var(--cam-coins) * 3)) 100%);
@@ -3012,7 +3017,7 @@ body.alb-nett .vignette{
 body.alb-nett.is-stage .vhs-bas{
   display:block;position:fixed;left:0;right:0;bottom:0;height:12px;z-index:24;pointer-events:none;
   background:url("assets/nett_vhs_bruit.png") 0 0/256px 1536px;opacity:.35;mix-blend-mode:hard-light;
-  transform:skewX(-35deg) translateX(-8px);animation:camgrain .2s steps(6) infinite;
+  transform:skewX(-35deg) translateX(-8px);animation:camgrain .2s steps(6) infinite;will-change:transform;
 }
 @media (prefers-reduced-motion:reduce){
   body.alb-nett.is-stage,body.alb-nett .noise,body.alb-nett .vhs-bas{animation:none}
@@ -3047,17 +3052,20 @@ body.alb-nett .ico-play{position:relative;border-left-color:rgba(255,255,255,.95
 body.netti-on .netti{display:block}
 /* pendant l intro : ni platine, ni pochette, ni pistes, ni textes ; le disque
    garde sa place (il sert de cible) */
-body.netti-on .deck,body.netti-on .sleeve-slot,body.netti-on .dock,body.netti-on .lyrics,
-body.netti-on .controls,body.netti-on .albums,body.netti-on .albums-btn{visibility:hidden}
-/* le monde rouge, vu seulement dans l anneau autour du viseur, qui monte peu a peu */
-.netti-rouge{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;opacity:var(--vu,0);
-  -webkit-mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),#000 70%,transparent 100%);
-          mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),#000 70%,transparent 100%)}
-/* autour : la nuit tombe sur ce qui est hors de l anneau */
-.netti-nuit,.netti-brume{position:absolute;inset:0;pointer-events:none}
-.netti-nuit{background:radial-gradient(circle at var(--x) var(--y),rgba(0,0,0,0) calc(var(--r) * .8),rgba(0,0,0,var(--nuit,0)) calc(var(--r) * 1.15))}
-/* la bordure : une brume claire qui se resserre */
-.netti-brume{background:radial-gradient(circle at var(--x) var(--y),rgba(0,0,0,0) calc(var(--r) * .76),rgba(0,0,0,var(--brume,0)) calc(var(--r) * .96),rgba(0,0,0,0) calc(var(--r) * 1.14))}
+body.netti-on:not(.netti-revele) .deck,body.netti-on:not(.netti-revele) .sleeve-slot,body.netti-on:not(.netti-revele) .dock,
+body.netti-on:not(.netti-revele) .lyrics,body.netti-on:not(.netti-revele) .controls,
+body.netti-on:not(.netti-revele) .albums,body.netti-on:not(.netti-revele) .albums-btn{visibility:hidden}
+/* le monde rouge, dans un hublot rond qu on agrandit et deplace par
+   transformation (carte graphique) ; le film dedans, contre-transforme,
+   reste fixe a l ecran. Le hublot vit dans le fond, sous la page */
+.netti-port,.netti-anneau{position:absolute;left:0;top:0;z-index:1;pointer-events:none;border-radius:50%;opacity:0;will-change:transform,opacity;transform-origin:50% 50%}
+.netti-port{overflow:hidden;
+  -webkit-mask-image:radial-gradient(circle closest-side,#000 70%,transparent 100%);mask-image:radial-gradient(circle closest-side,#000 70%,transparent 100%)}
+.netti-port canvas{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+.netti-source{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;pointer-events:none}
+body:not(.netti-on) .netti-source{display:none}
+.netti-anneau{background:radial-gradient(circle closest-side,rgba(0,0,0,0) 66%,#000 84%,rgba(0,0,0,0) 99%)}
+body:not(.netti-on) .netti-port,body:not(.netti-on) .netti-anneau{display:none}
 .netti.pret .netti-viseur circle,.netti.pret .netti-viseur path{stroke:#ffd9d9}
 .netti-cible,.netti-viseur{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
 .netti-cible circle{fill:none;stroke:rgba(255,255,255,.45);stroke-width:.6;stroke-dasharray:2 2.5}
