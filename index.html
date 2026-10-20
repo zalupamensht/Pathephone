@@ -8648,7 +8648,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     g.gain.value = (window.__volume ? window.__volume() : .85);
     src.buffer = TIRS[k]; src.connect(g); g.connect(actx.destination); src.start(quand);
   }
-  var TEMPS = 60 / 89, PREMIER = .084;          // le premier temps de sick
+  var TEMPS = 60 / 89 / 2, PREMIER = .084;      // les coups sur chaque croche (deux fois plus vite que les temps) ; premier temps de sick
   var trousSpin = [];
   var e = null, souris = { x: innerWidth / 2, y: innerHeight / 2 };
   function ss(x, a, b){ var t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
