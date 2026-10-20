@@ -8673,6 +8673,11 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     viseur.style.transform = 'translate(' + (souris.x - d.r) + 'px,' + (souris.y - d.r) + 'px)';
     caler();
     if (e.phase === 'vise'){
+      /* le viseur quitte le disque pendant la charge : tout s annule aussitot */
+      if (e.appui && Math.hypot(souris.x - d.x, souris.y - d.y) > d.r){
+        e.appui = false;
+        if (e.charge > 0){ e.phase = 'annule'; e.tAnnule = performance.now(); e.v0 = e.v || etat(e.charge, t); }
+      }
       if (e.appui) e.charge = Math.min(1, e.charge + dt / CHARGE);
       var v = e.charge > 0 ? etat(e.charge, t) : { r: loin(), vu: 0, nuit: 0, brume: 0 };
       e.v = v; peindre(v);
