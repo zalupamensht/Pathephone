@@ -8692,7 +8692,10 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   function relache(){
     if (!e || e.phase !== 'vise' || !e.appui) return;
     e.appui = false;
-    if (e.charge >= 1) coup();
+    /* le coup ne part que si le viseur est sur le disque au moment ou l on lache */
+    var d = e.d || poser();
+    var surDisque = Math.hypot(souris.x - d.x, souris.y - d.y) <= d.r;
+    if (e.charge >= 1 && surDisque) coup();
     else if (e.charge > 0){ e.phase = 'annule'; e.tAnnule = performance.now(); e.v0 = e.v; }
   }
   function coup(){
