@@ -3079,8 +3079,9 @@ body:not(.netti-on) .netti-port,body:not(.netti-on) .netti-anneau{display:none}
 @keyframes nettiflash{0%{opacity:.85}100%{opacity:0}}
 .netti-consigne{position:absolute;left:0;right:0;bottom:9vh;margin:0;text-align:center;color:#fff;
   font-size:12px;letter-spacing:.32em;opacity:0;transition:opacity .8s ease;pointer-events:none;
-  text-shadow:0 1px 3px rgba(0,0,0,.8)}
-.netti-consigne.on{opacity:.75}
+  text-shadow:0 0 1px #000,0 0 3px #000,0 0 8px rgba(0,0,0,.7),0 1px 3px #000}
+.netti-consigne.on{opacity:.9}
+/* le bouton Menu reste visible et cliquable : la souris redevient fleche dessus */
 /* la zone apparait et s efface en fondu (en plus de se resserrer) */
 /* apres le coup : le disque se revele avec la platine */
 body.netti-apparition .disc-spin{opacity:0}

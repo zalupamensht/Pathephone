@@ -20,7 +20,7 @@
 <link rel="preload" href="assets/fonts/Kingjola.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ZenKakuGothicNew-Medium-jp.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=142">
+<link rel="stylesheet" href="style.css?v=143">
 </head>
 <body>
 
@@ -8788,6 +8788,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     /* you ready? se tait au premier coup ; sick se charge aussitot, arrete,
        pour partir pile au drop */
     var si = -1; ALB().tracks.forEach(function(tr, j){ if (tr.name === 'sick') si = j; });
+    var th1 = document.getElementById('theme'); if (th1) th1.loop = false;
     if (si >= 0 && window.__playTrack) window.__playTrack(si, false, true);
     if (si >= 0 && window.__dockJump) window.__dockJump(si);
     monter();                                   // la page monte pendant les coups : le disque est la au drop
@@ -8819,6 +8820,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     if (!e) return;
     e = null;
     body.classList.remove('netti-on', 'netti-revele');
+    var th2 = document.getElementById('theme'); if (th2) th2.loop = false;
     body.style.translate = '';
     port.style.opacity = anneau.style.opacity = 0;
     racine.classList.remove('charge', 'pret');
@@ -8828,6 +8830,9 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     if (e) return;
     e = { phase: 'vise', charge: 0, appui: false, t: 0, d: null, v: null };
     preparer();
+    /* tant qu on n a pas tire, you ready? tourne en boucle (sinon la piste
+       suivante partait sous l intro et les films s arretaient) */
+    var th = document.getElementById('theme'); if (th) th.loop = true;
     trousSpin.forEach(function(x){ x.remove(); }); trousSpin = [];
     Array.prototype.slice.call(racine.querySelectorAll('.netti-trou')).forEach(function(x){ x.remove(); });
     body.classList.add('netti-on');
@@ -8838,8 +8843,16 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   };
   window.addEventListener('resize', function(){ if (e) e.d = null; R0 = 0; });
   racine.addEventListener('pointermove', function(ev){ souris.x = ev.clientX; souris.y = ev.clientY; });
+  /* pendant l intro, les touches du lecteur (espace : pause) ne jouent pas */
+  window.addEventListener('keydown', function(ev){
+    if (e && (ev.key === ' ' || ev.code === 'Space')){ ev.preventDefault(); ev.stopImmediatePropagation(); }
+  }, true);
   racine.addEventListener('pointerdown', function(ev){
     souris.x = ev.clientX; souris.y = ev.clientY;
+    /* le bouton Menu reste utilisable sous l intro */
+    var mb = document.getElementById('menuBtn');
+    if (mb){ var q = mb.getBoundingClientRect();
+      if (ev.clientX >= q.left && ev.clientX <= q.right && ev.clientY >= q.top && ev.clientY <= q.bottom){ mb.click(); return; } }
     if (!e || e.phase !== 'vise') return;
     var d = e.d || poser();
     if (actx && actx.state === 'suspended') actx.resume();
