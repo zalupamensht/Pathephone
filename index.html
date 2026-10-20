@@ -20,7 +20,7 @@
 <link rel="preload" href="assets/fonts/Kingjola.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ZenKakuGothicNew-Medium-jp.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=137">
+<link rel="stylesheet" href="style.css?v=138">
 </head>
 <body>
 
@@ -8676,7 +8676,8 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     var k = 1 - Math.pow(1 - c, 3);
     var r = loin() + (pres() - loin()) * k;
     if (c >= 1) r *= 1 + .012 * Math.sin(t / 140);          // pret : la bordure respire
-    return { r: r, vu: ss(c, .08, .8), nuit: .6 * ss(c, 0, .55), brume: .38 * ss(c, .04, .35) * (c >= 1 ? .85 + .15 * Math.sin(t / 110) : 1) };
+    /* pas de nuit sur le monde autour ; la bordure est noire, comme dans le jeu */
+    return { r: r, vu: ss(c, .08, .8), nuit: 0, brume: .85 * ss(c, .04, .35) * (c >= 1 ? .9 + .1 * Math.sin(t / 110) : 1) };
   }
   /* le monde rouge suit le film du fond, image pour image */
   function caler(){
@@ -8703,20 +8704,30 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       if (e.appui) e.charge = Math.min(1, e.charge + dt / CHARGE);
       var v = e.charge > 0 ? etat(e.charge, t) : { r: loin(), vu: 0, nuit: 0, brume: 0 };
       e.v = v; peindre(v);
+      /* la camera tremble pendant la charge, de plus en plus fort */
+      trembler(e.charge > 0 ? 1.2 + 4.5 * e.charge : 0, t);
       racine.classList.toggle('charge', e.charge > 0);
       racine.classList.toggle('pret', e.charge >= 1);
     } else if (e.phase === 'annule'){
       var u = ss((t - e.tAnnule) / (ANNULE * 1000), 0, 1), v0 = e.v0;
       peindre({ r: v0.r + (loin() * 1.15 - v0.r) * u, vu: v0.vu * (1 - u), nuit: v0.nuit * (1 - u), brume: v0.brume * (1 - u) * (1 - u) });
+      trembler(4 * (1 - u), t);
       if (u >= 1){ e.phase = 'vise'; e.charge = 0; racine.classList.remove('charge', 'pret'); }
     } else if (e.phase === 'tirs'){
       peindre(etat(1, t));
+      trembler(6, t);
     } else if (e.phase === 'coup'){
       var w = Math.min(1, (t - e.tCoup) / 220);
       peindre({ r: pres() + w * loin() * 1.2, vu: 1, nuit: e.v.nuit * (1 - w), brume: e.v.brume * (1 - w) });
       if (w >= 1 && !e.fini){ e.fini = true; apparaitre(); }
     }
     requestAnimationFrame(boucle);
+  }
+  function trembler(a, t){
+    if (!a){ body.style.translate = ''; return; }
+    var x = (Math.sin(t / 23) + Math.sin(t / 37 + 1.3) * .7) * a * .6;
+    var y = (Math.sin(t / 29 + .5) + Math.sin(t / 41 + 2.1) * .7) * a * .6;
+    body.style.translate = x.toFixed(2) + 'px ' + y.toFixed(2) + 'px';
   }
   function relache(){
     if (!e || e.phase !== 'vise' || !e.appui) return;
@@ -8780,6 +8791,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     if (!e) return;
     e = null;
     body.classList.remove('netti-on');
+    body.style.translate = '';
     racine.classList.remove('charge', 'pret');
     try { rouge.pause(); } catch (x) {}
   }
