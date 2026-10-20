@@ -8629,8 +8629,25 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   var CHARGE = 2.5, ANNULE = .65;             // secondes
   /* trois coups (les trois sons de l auteur), sur les temps de sick (89 bpm),
      puis le drop sur le quatrieme : sick part a cet instant */
-  var TIRS = ['assets/netti_tir1.mp3', 'assets/netti_tir2.mp3', 'assets/netti_tir3.mp3'].map(function(u){
-    var a = new Audio(u); a.preload = 'auto'; return a; });
+  /* les coups sont joues par Web Audio, programmes a l echantillon pres sur
+     la grille (un minuteur derive de quelques millisecondes) */
+  var URLS = ['assets/netti_tir1.mp3?v=2', 'assets/netti_tir2.mp3?v=2', 'assets/netti_tir3.mp3?v=2'];
+  var actx = null, TIRS = [];
+  function preparer(){
+    if (actx) return;
+    try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (x) { return; }
+    URLS.forEach(function(u, k){
+      fetch(u).then(function(r){ return r.arrayBuffer(); })
+        .then(function(b){ return new Promise(function(ok, ko){ actx.decodeAudioData(b, ok, ko); }); })
+        .then(function(buf){ TIRS[k] = buf; }).catch(function(){});
+    });
+  }
+  function jouer(k, quand){
+    if (!actx || !TIRS[k]) return;
+    var src = actx.createBufferSource(), g = actx.createGain();
+    g.gain.value = (window.__volume ? window.__volume() : .85);
+    src.buffer = TIRS[k]; src.connect(g); g.connect(actx.destination); src.start(quand);
+  }
   var TEMPS = 60 / 89, PREMIER = .084;          // le premier temps de sick
   var trousSpin = [];
   var e = null, souris = { x: innerWidth / 2, y: innerHeight / 2 };
@@ -8734,19 +8751,18 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     var si = -1; ALB().tracks.forEach(function(tr, j){ if (tr.name === 'sick') si = j; });
     if (si >= 0 && window.__playTrack) window.__playTrack(si, false, true);
     if (si >= 0 && window.__dockJump) window.__dockJump(si);
+    if (actx && actx.state === 'suspended') actx.resume();
+    var t0 = actx ? actx.currentTime + .03 : 0;
     [0, 1, 2].forEach(function(k){
-      setTimeout(function(){
-        if (!e) return;
-        var a = TIRS[k]; try { a.currentTime = 0; a.volume = .95; a.play().catch(function(){}); } catch (x) {}
-        trou(k);
-      }, k * TEMPS * 1000);
+      jouer(k, t0 + k * TEMPS);
+      setTimeout(function(){ if (e) trou(k); }, 30 + k * TEMPS * 1000);
     });
     /* le drop sur le quatrieme temps : sick demarre pour que son premier temps y tombe */
     setTimeout(function(){
       if (!e) return;
       if (window.__playNow) window.__playNow();
       e.phase = 'coup'; e.tCoup = performance.now();
-    }, (3 * TEMPS - PREMIER) * 1000);
+    }, 30 + (3 * TEMPS - PREMIER) * 1000);
   }
   function apparaitre(){
     body.classList.add('netti-coupe', 'netti-apparition');
@@ -8770,6 +8786,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   window.__nettIntro = function(){
     if (e) return;
     e = { phase: 'vise', charge: 0, appui: false, t: 0, d: null, v: null };
+    preparer();
     trousSpin.forEach(function(x){ x.remove(); }); trousSpin = [];
     Array.prototype.slice.call(racine.querySelectorAll('.netti-trou')).forEach(function(x){ x.remove(); });
     body.classList.add('netti-on');
@@ -8784,6 +8801,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     souris.x = ev.clientX; souris.y = ev.clientY;
     if (!e || e.phase !== 'vise') return;
     var d = e.d || poser();
+    if (actx && actx.state === 'suspended') actx.resume();
     if (Math.hypot(souris.x - d.x, souris.y - d.y) <= d.r) e.appui = true;   // seulement sur le disque
   });
   window.addEventListener('pointerup', relache);
