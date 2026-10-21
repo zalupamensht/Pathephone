@@ -8626,6 +8626,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   var consigne = document.getElementById('nettiConsigne');
   var film = document.getElementById('nettFilm');
   var CHARGE = 2.5, ANNULE = .65;             // secondes
+  var VISEUR = 300 / 2 / 150;                 // image 600 px, grand cercle de rayon 150 px : rayon du cercle = rayon du disque
   /* trois coups (les trois sons de l auteur), sur les temps de sick (89 bpm),
      puis le drop sur le quatrieme : sick part a cet instant */
   /* les coups sont joues par Web Audio, programmes a l echantillon pres sur
@@ -8659,7 +8660,9 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     var d = disque();
     cible.style.left = (d.x - d.r) + 'px'; cible.style.top = (d.y - d.r) + 'px';
     cible.style.width = cible.style.height = (2 * d.r) + 'px';
-    viseur.style.width = viseur.style.height = (2 * d.r) + 'px';
+    /* dans l image du viseur, le grand cercle fait la moitie de la largeur
+       (les branches depassent) : l image fait deux fois le disque */
+    viseur.style.width = viseur.style.height = (4 * d.r * VISEUR) + 'px';
     return d;
   }
   function loin(){ return Math.hypot(innerWidth, innerHeight) * 1.05; }
@@ -8721,7 +8724,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     if (!body.classList.contains('alb-nett') || body.classList.contains('is-picking') && !body.classList.contains('is-sortie')){ finir(); return; }
     var dt = Math.min(.05, (t - (e.t || t)) / 1000); e.t = t;
     var d = e.d || poser(); e.d = d;
-    viseur.style.transform = 'translate(' + (souris.x - d.r) + 'px,' + (souris.y - d.r) + 'px)';
+    viseur.style.transform = 'translate(' + (souris.x - 2 * d.r * VISEUR) + 'px,' + (souris.y - 2 * d.r * VISEUR) + 'px)';
     caler();
     if (e.phase === 'vise'){
       /* le viseur quitte le disque pendant la charge : tout s annule aussitot */
