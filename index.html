@@ -20,7 +20,7 @@
 <link rel="preload" href="assets/fonts/Kingjola.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ZenKakuGothicNew-Medium-jp.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=146">
+<link rel="stylesheet" href="style.css?v=148">
 </head>
 <body>
 
@@ -77,6 +77,10 @@
        on le recopie image par image dans la toile du hublot -->
   <video class="netti-source" id="nettiRouge" src="assets/nett_film_r.mp4?v=2" muted playsinline preload="none" disablepictureinpicture></video>
   <div class="netti-anneau" id="nettiAnneau"></div>
+  <!-- le trou noir de l intro : une lentille (WebGL) qui courbe l image autour de lui
+       et l assombrit de matiere noire, et le disque noir au titre de l album -->
+  <canvas class="netti-lentille" id="nettiLentille"></canvas>
+  <div class="netti-trou-noir" id="nettiTrouNoir"><img src="assets/cover7_d.png?v=2" alt=""></div>
   <span class="blob b1"></span>
   <span class="blob b2"></span>
   <span class="blob b3"></span>
@@ -8671,6 +8675,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
      transformation ; le film dedans est contre-transforme pour rester fixe */
   var port = document.getElementById('nettiPort'), anneau = document.getElementById('nettiAnneau');
   var R0 = 0;
+  var pv = { x: 0, y: 0, R: 1e5, vu: 0, brume: 0 };   // le hublot vu par la lentille
   var toile = document.getElementById('nettiToile'), pinceau = toile.getContext('2d');
   /* l image du film rouge, recadree comme un fond « cover » plein ecran */
   function recopier(){
@@ -8696,6 +8701,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     recopier();
     port.style.opacity = v.vu.toFixed(3);
     anneau.style.opacity = v.brume.toFixed(3);
+    pv.x = souris.x; pv.y = souris.y; pv.R = R0 * s; pv.vu = v.vu; pv.brume = v.brume;
     racine.style.setProperty('--x', souris.x + 'px'); racine.style.setProperty('--y', souris.y + 'px');
   }
   function etat(c, t){
@@ -8719,6 +8725,98 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     }
     if (film.paused !== rouge.paused){ if (film.paused) rouge.pause(); else rouge.play().catch(function(){}); }
   }
+  /* ---- le trou noir : lentille gravitationnelle et matiere noire ----
+     Une toile WebGL carree autour du disque. Elle prend l image du film du
+     fond (et du monde rouge quand il s ouvre), la courbe autour du trou comme
+     une lentille, l assombrit d un halo de matiere noire qui tourne et
+     s effiloche, et laisse s echapper quelques gouttes noires. Hors du carre,
+     rien ne change : la courbure s eteint avant le bord. */
+  var lent = document.getElementById('nettiLentille'), trouNoir = document.getElementById('nettiTrouNoir');
+  var gl = null, prog = null, texA = null, texB = null, U = {}, LTAILLE = 3.6;
+  function initLentille(){
+    if (gl !== null) return !!gl;
+    try { gl = lent.getContext('webgl', { premultipliedAlpha: false, alpha: true }); } catch (x) { gl = false; }
+    if (!gl){ gl = false; return false; }
+    var vs = 'attribute vec2 a;varying vec2 v;void main(){v=a*.5+.5;gl_Position=vec4(a,0.,1.);}';
+    var fs = [
+      'precision highp float;varying vec2 v;',
+      'uniform sampler2D uA,uB;uniform vec2 uRes,uVid,uOrig,uC;uniform float uL,uR,uT,uHaveB,uPR,uPVu,uPBr;uniform vec2 uPC;',
+      'float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
+      'float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}',
+      'float fbm(vec2 p){float s=0.,a=.5;for(int k=0;k<5;k++){s+=a*n(p);p*=2.03;a*=.5;}return s;}',
+      /* l ecran -> l image du film (recadrage « cover ») */
+      'vec2 cov(vec2 q){float k=max(uRes.x/uVid.x,uRes.y/uVid.y);vec2 sz=uVid*k;return (q-(uRes-sz)*.5)/sz;}',
+      'vec3 film(vec2 q){return texture2D(uA,cov(q)).rgb;}',
+      'vec3 monde(vec2 q){vec3 c=film(q);',
+      '  if(uHaveB>.5){float d=length(q-uPC);float m=1.-smoothstep(.7*uPR,uPR,d);c=mix(c,texture2D(uB,cov(q)).rgb,uPVu*m);',
+      '    float r=d/uPR;float an=smoothstep(.66,.84,r)*(1.-smoothstep(.84,.99,r));c*=1.-uPBr*an;}',
+      '  return c;}',
+      'void main(){',
+      '  vec2 p=uOrig+vec2(v.x,1.-v.y)*uL;vec2 dp=p-uC;float d=length(dp);vec2 dir=dp/max(d,1e-3);',
+      '  float R=uR;float bord=uL*.5;',
+      '  float fall=1.-smoothstep(R*1.05,bord*.97,d);',
+      /* la courbure : l image se tire vers le trou, et tourne un peu */
+      '  float bend=R*R*.55/max(d,R)*fall;',
+      '  float ang=.35*fall*fall*sin(uT*.6)+.25*fall*fall;',
+      '  vec2 rd=vec2(dir.x*cos(ang)-dir.y*sin(ang),dir.x*sin(ang)+dir.y*cos(ang));',
+      '  vec2 q=uC+rd*max(d-bend,R*.15);',
+      '  vec3 col=monde(q);',
+      /* la matiere noire : un halo qui tourne et s effiloche */
+      '  float a=atan(dp.y,dp.x);float x=(d-R)/R;',
+      '  float w=fbm(vec2(a*2.2+uT*.35,x*3.2-uT*.55))*1.25;',
+      '  float w2=fbm(vec2(a*5.+uT*.8,x*7.-uT*1.1));',
+      '  float halo=exp(-max(x,0.)*3.2)*(.55+.55*w)+exp(-max(x,0.)*9.)*.5;',
+      '  float filets=smoothstep(.55,.85,w2)*exp(-max(x,0.)*2.2)*.6;',
+      '  float noir=clamp(halo+filets,0.,1.)*fall;',
+      /* des gouttes qui s echappent */
+      '  float g=0.;for(int k=0;k<14;k++){float fk=float(k);float s=fract(uT*.07+h(vec2(fk,1.3)));float aa=h(vec2(fk,7.))*6.2832+uT*.05;',
+      '    vec2 c2=uC+vec2(cos(aa),sin(aa))*R*(1.02+s*.9);float rr=R*(.035+.03*h(vec2(fk,3.)))*(1.-s);',
+      '    g=max(g,(1.-smoothstep(rr*.6,rr,length(p-c2)))*(1.-s));}',
+      '  noir=max(noir,g*.95);',
+      '  col*=1.-noir;',
+      '  float dedans=1.-smoothstep(R-1.5,R+.5,d);col=mix(col,vec3(0.),dedans);',
+      '  float bordA=1.-smoothstep(bord*.9,bord,max(abs(p.x-uC.x),abs(p.y-uC.y)));',
+      '  gl_FragColor=vec4(col,bordA);}'
+    ].join('\n');
+    function sh(t, src){ var o = gl.createShader(t); gl.shaderSource(o, src); gl.compileShader(o);
+      if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)){ console.warn(gl.getShaderInfoLog(o)); return null; } return o; }
+    var a = sh(gl.VERTEX_SHADER, vs), b = sh(gl.FRAGMENT_SHADER, fs);
+    if (!a || !b){ gl = false; return false; }
+    prog = gl.createProgram(); gl.attachShader(prog, a); gl.attachShader(prog, b); gl.linkProgram(prog); gl.useProgram(prog);
+    var buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+    var loc = gl.getAttribLocation(prog, 'a'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    ['uA','uB','uRes','uVid','uOrig','uC','uL','uR','uT','uHaveB','uPR','uPVu','uPBr','uPC'].forEach(function(n){ U[n] = gl.getUniformLocation(prog, n); });
+    function tex(unit){ var t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0,0,0,255])); return t; }
+    texA = tex(0); texB = tex(1);
+    gl.uniform1i(U.uA, 0); gl.uniform1i(U.uB, 1);
+    return true;
+  }
+  function lentille(t, d){
+    var L = Math.round(d.r * LTAILLE), x0 = d.x - L / 2, y0 = d.y - L / 2;
+    lent.style.width = lent.style.height = L + 'px';
+    lent.style.transform = 'translate(' + x0 + 'px,' + y0 + 'px)';
+    trouNoir.style.width = trouNoir.style.height = (2 * d.r) + 'px';
+    trouNoir.style.transform = 'translate(' + (d.x - d.r) + 'px,' + (d.y - d.r) + 'px)';
+    if (!initLentille() || !film || film.readyState < 2) return;
+    var dpr = Math.min(2, window.devicePixelRatio || 1), px = Math.round(L * dpr);
+    if (lent.width !== px){ lent.width = lent.height = px; }
+    gl.viewport(0, 0, px, px);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, texA);
+    try { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, film); } catch (x) {}
+    var avecB = pv.vu > .002 && rouge.readyState >= 2;
+    if (avecB){ gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, texB);
+      try { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, rouge); } catch (x) {} }
+    gl.uniform2f(U.uRes, innerWidth, innerHeight); gl.uniform2f(U.uVid, film.videoWidth || 1280, film.videoHeight || 720);
+    gl.uniform2f(U.uOrig, x0, y0); gl.uniform2f(U.uC, d.x, d.y); gl.uniform1f(U.uL, L); gl.uniform1f(U.uR, d.r);
+    gl.uniform1f(U.uT, t / 1000); gl.uniform1f(U.uHaveB, avecB ? 1 : 0);
+    gl.uniform2f(U.uPC, pv.x, pv.y); gl.uniform1f(U.uPR, pv.R); gl.uniform1f(U.uPVu, pv.vu); gl.uniform1f(U.uPBr, pv.brume);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+
   function boucle(t){
     if (!e) return;
     if (!body.classList.contains('alb-nett') || body.classList.contains('is-picking') && !body.classList.contains('is-sortie')){ finir(); return; }
@@ -8726,6 +8824,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     var d = e.d || poser(); e.d = d;
     viseur.style.transform = 'translate(' + (souris.x - 2 * d.r * VISEUR) + 'px,' + (souris.y - 2 * d.r * VISEUR) + 'px)';
     caler();
+    if (e.phase !== 'tirs' && e.phase !== 'coup') lentille(t, d);
     if (e.phase === 'vise'){
       /* le viseur quitte le disque pendant la charge : tout s annule aussitot */
       if (e.appui && Math.hypot(souris.x - d.x, souris.y - d.y) > d.r){
@@ -8735,7 +8834,6 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       if (e.appui) e.charge = Math.min(1, e.charge + dt / CHARGE);
       var v = e.charge > 0 ? etat(e.charge, t) : { r: loin(), vu: 0, nuit: 0, brume: 0 };
       e.v = v; peindre(v);
-      body.style.setProperty('--netti-disque', ss(e.charge, 0, .9).toFixed(3));
       /* la camera tremble pendant la charge, de plus en plus fort */
       trembler(e.charge > 0 ? 1.2 + 4.5 * e.charge : 0, t);
       racine.classList.toggle('charge', e.charge > 0);
@@ -8794,6 +8892,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     e.phase = 'tirs'; e.tCoup = performance.now();
     consigne.classList.remove('on'); racine.classList.remove('pret');
     racine.classList.add('tire');                       // le viseur disparait
+    body.classList.add('netti-trou-parti');             // le trou noir s efface, le vinyle rouge le remplace
     e.r0 = (e.v && e.v.r) || pres(); e.b0 = (e.v && e.v.brume) || 0; e.ouvert = false;
     body.style.setProperty('--netti-disque', 1);
     /* you ready? se tait au premier coup ; sick se charge aussitot, arrete,
@@ -8830,7 +8929,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   function finir(){
     if (!e) return;
     e = null;
-    body.classList.remove('netti-on', 'netti-revele');
+    body.classList.remove('netti-on', 'netti-revele', 'netti-trou-parti');
     racine.classList.remove('tire');
     body.style.removeProperty('--netti-disque');
     var th2 = document.getElementById('theme'); if (th2) th2.loop = false;

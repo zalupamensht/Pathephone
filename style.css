@@ -3097,8 +3097,14 @@ body.netti-coupe *,body.netti-coupe *::before,body.netti-coupe *::after{transiti
 .netti-trou{position:absolute;pointer-events:none;z-index:3;background:url("assets/netti_trou.png") center/contain no-repeat}
 .netti-trou.sur-disque{width:17%;height:17%;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
 
-/* pendant la visee, seul le disque se devoile, au rythme de la charge */
-body.netti-on:not(.netti-revele) .disc-fly{visibility:visible;opacity:var(--netti-disque,0)}
+/* pendant la visee : pas de disque blanc ni de pointille, le trou noir les remplace */
+.netti-cible{display:none}
+.netti-lentille,.netti-trou-noir{position:absolute;left:0;top:0;z-index:2;pointer-events:none;will-change:transform;display:none}
+body.netti-on .netti-lentille,body.netti-on .netti-trou-noir{display:block}
+.netti-trou-noir{border-radius:50%;overflow:hidden;background:#000;box-shadow:0 0 0 1px #000}
+.netti-trou-noir img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* au coup, le trou noir s eteint vite : le vinyle rouge prend sa place */
+body.netti-trou-parti .netti-lentille,body.netti-trou-parti .netti-trou-noir{opacity:0;transition:opacity .25s ease}
 /* le coup parti : plus de viseur */
 .netti.tire .netti-viseur,.netti.tire .netti-cible{display:none}
 .netti.tire{cursor:default}
