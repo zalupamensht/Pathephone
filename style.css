@@ -3112,4 +3112,3 @@ body.netti-apparition .disc-spin{opacity:1!important;transition:none!important}
 /* le coup parti : plus de viseur */
 .netti.tire .netti-viseur,.netti.tire .netti-cible{display:none}
 .netti.tire{cursor:default}
-.netti-cible{visibility:hidden}
