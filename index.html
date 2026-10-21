@@ -8762,9 +8762,11 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
          (a la fin, tout enroule : spirales blanches du titre dans le noir) ;
          elle arrive par arcs d encre, du bord vers le centre */
       '  float a=atan(dp.y,dp.x);float rr=d/R;',
-      /* la torsion se defait en tournant : a la fin le disque est exactement l image, titre lisible */
-      '  float k1=1.-ss(.05,.97,c);',
-      '  float tw=(11.*k1+.6*sin(uT*1.6)*k1)*pow(max(1.-rr,0.),1.4)+ang*k1;',
+      /* tout tourne dans le meme sens : le centre s enroule d abord (spirale), puis le bord
+         rattrape le centre jusqu a deux tours pleins : a la fin le titre est droit et lisible */
+      '  float e=ss(.62,1.,c);',
+      '  float tw0=(8.*ss(0.,.62,c)+.6*sin(uT*1.6)*c*(1.-e))*pow(max(1.-rr,0.),1.4)+ang;',
+      '  float tw=mix(tw0,12.566371,e);',
       '  vec2 ep=vec2(dp.x*cos(tw)-dp.y*sin(tw),dp.x*sin(tw)+dp.y*cos(tw));',
       '  vec3 disque=texture2D(uE,ep/(2.*R)+.5).rgb;',
       '  float arcs=n(vec2(rr*15.,(a+tw)*1.6+uT*2.))*.62+fbm(vec2(rr*7.,(a+tw)*3.-uT))*.5;',
