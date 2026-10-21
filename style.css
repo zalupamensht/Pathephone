@@ -2993,9 +2993,11 @@ body.alb-nett.is-film-nettd .deco{opacity:1 !important;transition:none;backgroun
    par-dessus, le bruit de la bande (des traines horizontales qui changent
    30 fois par seconde), les lignes, les coins sombres, la bande de bruit du
    bas de l image et un petit sursaut de l image de temps en temps. */
+/* translateX(0) et non none : passer de none a une transformation sur body
+   refaisait toute la page (deux images de ~1/4 s toutes les 2,3 s sur Retina) */
 body.alb-nett.is-stage{animation:camsaut 2.3s steps(1) infinite}
-@keyframes camsaut{0%{transform:none}31%{transform:translateX(.64px)}33%{transform:none}
-  64%{transform:translateX(-.64px)}66%{transform:none}88%{transform:translateX(1.28px)}89%{transform:none}}
+@keyframes camsaut{0%{transform:translateX(0)}31%{transform:translateX(.64px)}33%{transform:translateX(0)}
+  64%{transform:translateX(-.64px)}66%{transform:translateX(0)}88%{transform:translateX(1.28px)}89%{transform:translateX(0)}}
 body.alb-nett .scan{
   opacity:var(--cam-lignes);mix-blend-mode:multiply;
   background:repeating-linear-gradient(0deg,rgba(0,0,0,.6) 0 1px,rgba(0,0,0,0) 1px 3px);
