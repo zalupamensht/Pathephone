@@ -20,7 +20,7 @@
 <link rel="preload" href="assets/fonts/Kingjola.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ZenKakuGothicNew-Medium-jp.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=143">
+<link rel="stylesheet" href="style.css?v=144">
 </head>
 <body>
 
@@ -8730,11 +8730,12 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       /* le viseur quitte le disque pendant la charge : tout s annule aussitot */
       if (e.appui && Math.hypot(souris.x - d.x, souris.y - d.y) > d.r){
         e.appui = false;
-        if (e.charge > 0){ e.phase = 'annule'; e.tAnnule = performance.now(); e.v0 = e.v || etat(e.charge, t); }
+        if (e.charge > 0){ e.phase = 'annule'; e.tAnnule = performance.now(); e.v0 = e.v || etat(e.charge, t); e.dq0 = ss(e.charge, 0, .9); }
       }
       if (e.appui) e.charge = Math.min(1, e.charge + dt / CHARGE);
       var v = e.charge > 0 ? etat(e.charge, t) : { r: loin(), vu: 0, nuit: 0, brume: 0 };
       e.v = v; peindre(v);
+      body.style.setProperty('--netti-disque', ss(e.charge, 0, .9).toFixed(3));
       /* la camera tremble pendant la charge, de plus en plus fort */
       trembler(e.charge > 0 ? 1.2 + 4.5 * e.charge : 0, t);
       racine.classList.toggle('charge', e.charge > 0);
@@ -8743,9 +8744,9 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       var u = ss((t - e.tAnnule) / (ANNULE * 1000), 0, 1), v0 = e.v0;
       peindre({ r: v0.r + (loin() * 1.15 - v0.r) * u, vu: v0.vu * (1 - u), nuit: v0.nuit * (1 - u), brume: v0.brume * (1 - u) * (1 - u) });
       trembler(4 * (1 - u), t);
+      body.style.setProperty('--netti-disque', (e.dq0 * (1 - u)).toFixed(3));
       if (u >= 1){ e.phase = 'vise'; e.charge = 0; racine.classList.remove('charge', 'pret'); }
     } else if (e.phase === 'tirs'){
-      peindre(etat(1, t));
       trembler(6, t);
     } else if (e.phase === 'coup'){
       var w = Math.min(1, (t - e.tCoup) / 220);
@@ -8767,7 +8768,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     var d = e.d || poser();
     var surDisque = Math.hypot(souris.x - d.x, souris.y - d.y) <= d.r;
     if (e.charge >= 1 && surDisque) coup();
-    else if (e.charge > 0){ e.phase = 'annule'; e.tAnnule = performance.now(); e.v0 = e.v; }
+    else if (e.charge > 0){ e.phase = 'annule'; e.tAnnule = performance.now(); e.v0 = e.v; e.dq0 = ss(e.charge, 0, .9); }
   }
   /* un trou dans le disque : sur l intro par-dessus, et sur le disque lui-meme
      (il tourne avec lui et reste apres le drop) */
@@ -8785,6 +8786,9 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   function coup(){
     e.phase = 'tirs'; e.tCoup = performance.now();
     consigne.classList.remove('on'); racine.classList.remove('pret');
+    racine.classList.add('tire');                       // le viseur disparait
+    port.style.opacity = anneau.style.opacity = 0;      // le hublot et l anneau s en vont : tout est rouge
+    body.style.setProperty('--netti-disque', 1);
     /* you ready? se tait au premier coup ; sick se charge aussitot, arrete,
        pour partir pile au drop */
     var si = -1; ALB().tracks.forEach(function(tr, j){ if (tr.name === 'sick') si = j; });
@@ -8802,7 +8806,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     setTimeout(function(){
       if (!e) return;
       if (window.__playNow) window.__playNow();
-      e.phase = 'coup'; e.tCoup = performance.now();
+      finir(); setTimeout(function(){ body.classList.remove('netti-apparition'); }, 1200);
     }, 30 + (3 * TEMPS - PREMIER) * 1000);
   }
   /* la page remonte comme apres l atterrissage (deux fois plus vite) ; le
@@ -8820,6 +8824,8 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     if (!e) return;
     e = null;
     body.classList.remove('netti-on', 'netti-revele');
+    racine.classList.remove('tire');
+    body.style.removeProperty('--netti-disque');
     var th2 = document.getElementById('theme'); if (th2) th2.loop = false;
     body.style.translate = '';
     port.style.opacity = anneau.style.opacity = 0;

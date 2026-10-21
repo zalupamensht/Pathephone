@@ -3084,8 +3084,6 @@ body:not(.netti-on) .netti-port,body:not(.netti-on) .netti-anneau{display:none}
 /* le bouton Menu reste visible et cliquable : la souris redevient fleche dessus */
 /* la zone apparait et s efface en fondu (en plus de se resserrer) */
 /* apres le coup : le disque se revele avec la platine */
-body.netti-apparition .disc-spin{opacity:0}
-body.netti-apparition.is-stage .disc-spin{opacity:1;transition:opacity .6s ease .28s}
 /* apres le coup, l entree en scene va deux fois plus vite que d ordinaire */
 body.netti-apparition.is-stage .deck-plinth,body.netti-apparition.is-stage .deck-face,body.netti-apparition.is-stage .platter-mat,
 body.netti-apparition.is-stage .spindle,body.netti-apparition.is-stage .arm,body.netti-apparition.is-stage .deck-knob,
@@ -3099,3 +3097,9 @@ body.netti-coupe *,body.netti-coupe *::before,body.netti-coupe *::after{transiti
 .netti-trou{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;pointer-events:none;z-index:3;
   background:radial-gradient(circle,#000 0 38%,#1a0003 52%,rgba(60,0,6,.55) 70%,rgba(0,0,0,0) 100%)}
 .netti-trou.sur-disque{width:3.6%;height:3.6%;margin:-1.8% 0 0 -1.8%}
+
+/* pendant la visee, seul le disque se devoile, au rythme de la charge */
+body.netti-on:not(.netti-revele) .disc-fly{visibility:visible;opacity:var(--netti-disque,0)}
+/* le coup parti : plus de viseur */
+.netti.tire .netti-viseur,.netti.tire .netti-cible{display:none}
+.netti.tire{cursor:default}
