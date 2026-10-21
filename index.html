@@ -9084,10 +9084,17 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     var mb = document.getElementById('menuBtn');
     if (mb){ var q = mb.getBoundingClientRect();
       if (ev.clientX >= q.left && ev.clientX <= q.right && ev.clientY >= q.top && ev.clientY <= q.bottom){ mb.click(); return; } }
-    if (!e || e.phase !== 'vise') return;
+    if (!e || (e.phase !== 'vise' && e.phase !== 'annule')) return;
     var d = e.d || poser();
     if (actx && actx.state === 'suspended') actx.resume();
-    if (Math.hypot(souris.x - d.x, souris.y - d.y) <= d.r) e.appui = true;   // seulement sur le disque
+    if (Math.hypot(souris.x - d.x, souris.y - d.y) > d.r) return;           // seulement sur le disque
+    /* un appui pendant le retour (apres une annulation) etait perdu : on
+       reprend la charge la ou le retour en est */
+    if (e.phase === 'annule'){
+      e.charge = (e.c0 || 0) * (1 - ss((performance.now() - e.tAnnule) / (ANNULE * 1000), 0, 1));
+      e.phase = 'vise';
+    }
+    e.appui = true;
   });
   window.addEventListener('pointerup', relache);
 })();
