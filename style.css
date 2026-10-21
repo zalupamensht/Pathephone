@@ -3094,17 +3094,20 @@ body.netti-apparition.is-stage .lyrics{transition:opacity .5s ease .45s,transfor
 body.netti-apparition.is-stage .controls{transition:opacity .43s ease .54s,transform .48s cubic-bezier(.2,.72,.2,1) .54s}
 body.netti-coupe *,body.netti-coupe *::before,body.netti-coupe *::after{transition:none!important}
 /* les trous des balles (provisoires : de simples trous sombres) */
-.netti-trou{position:absolute;pointer-events:none;z-index:3;background:url("assets/netti_trou.png") center/contain no-repeat}
+.netti-trou{position:absolute;pointer-events:none;z-index:3;background:url("assets/netti_trou.png") center/contain no-repeat;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6))}
 .netti-trou.sur-disque{width:17%;height:17%;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
 
 /* pendant la visee : pas de disque blanc ni de pointille, le trou noir les remplace */
-.netti-cible{display:none}
 .netti-lentille,.netti-trou-noir{position:absolute;left:0;top:0;z-index:2;pointer-events:none;will-change:transform;display:none}
 body.netti-on .netti-lentille,body.netti-on .netti-trou-noir{display:block}
-.netti-trou-noir{border-radius:50%;overflow:hidden;background:#000;box-shadow:0 0 0 1px #000}
-.netti-trou-noir img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.netti-trou-noir{border-radius:50%;overflow:hidden;background:#000;box-shadow:0 0 0 1px #000;transform-origin:50% 50%}
+.netti-trou-noir img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:var(--titre,0)}
+/* les eclats du drop, par-dessus tout */
+.netti-eclats{position:fixed;inset:0;z-index:30;pointer-events:none}
+.netti-eclats canvas{position:absolute;will-change:transform,opacity}
 /* au coup, le trou noir s eteint vite : le vinyle rouge prend sa place */
-body.netti-trou-parti .netti-lentille,body.netti-trou-parti .netti-trou-noir{opacity:0;transition:opacity .25s ease}
+/* au drop le disque est la tout de suite, sous les eclats */
+body.netti-apparition .disc-spin{opacity:1!important;transition:none!important}
 /* le coup parti : plus de viseur */
 .netti.tire .netti-viseur,.netti.tire .netti-cible{display:none}
 .netti.tire{cursor:default}
