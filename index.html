@@ -8758,18 +8758,22 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       '  float ang=prof*(4.2*ss(0.,.55,c)+.5*sin(uT*2.2)*c);',
       '  vec2 rp=vec2(dp.x*cos(ang)-dp.y*sin(ang),dp.x*sin(ang)+dp.y*cos(ang));',
       '  vec3 col=monde(uC+rp);',
-      /* l encre noire versee dans le tourbillon : des filets en spirale qui s epaississent et finissent en disque plein */
-      '  float a=atan(dp.y,dp.x);float lr=log(max(d,1.)/R);',
-      /* les filets d encre partent du bord et s enroulent vers le centre : le front avance vers l interieur */
-      '  float spir=sin((a+ang)*3.+lr*8.+uT*6.)*.5+.5;',
-      '  float tex=fbm(vec2((a+ang)*2.5,lr*5.+uT*1.2));',
-      '  float filets0=ss(.48,.72,spir*.7+tex*.5);',
-      '  float front=R*(1.3-1.38*c);',
-      '  float derriere=ss(front-.22*R,front+.04*R,d);',
-      '  float encre=derriere*max(filets0,ss(front+.05*R,front+.5*R,d))*ss(0.,.12,c);',
-      '  float dedans=1.-ss(R*.985,R*1.01,d);',
-      '  encre*=d<R?1.:(1.-ss(R,R*1.32,d))*(1.-ss(.45,.85,c));',
-      '  encre=max(encre*mix(1.,dedans,ss(.3,.8,c)),ss(.86,.99,c)*dedans);',
+      /* le disque : l image du disque noir au titre, tordue de plus en plus
+         (a la fin, tout enroule : spirales blanches du titre dans le noir) ;
+         elle arrive par arcs d encre, du bord vers le centre */
+      '  float a=atan(dp.y,dp.x);float rr=d/R;',
+      '  float tw=(9.*ss(0.,1.,c)+.6*sin(uT*1.6)*c)*pow(max(1.-rr,0.),1.4)+ang;',
+      '  vec2 ep=vec2(dp.x*cos(tw)-dp.y*sin(tw),dp.x*sin(tw)+dp.y*cos(tw));',
+      '  vec3 disque=texture2D(uE,ep/(2.*R)+.5).rgb;',
+      '  float arcs=n(vec2(rr*15.,(a+tw)*1.6+uT*2.))*.62+fbm(vec2(rr*7.,(a+tw)*3.-uT))*.5;',
+      '  float seuil=1.3-1.62*c+.6*(1.-rr);',
+      '  float masque=ss(seuil,seuil+.12,arcs);',
+      '  masque=max(masque,ss(.9,1.,c));',
+      '  masque*=1.-ss(R*.985,R*1.01,d);',
+      '  col=mix(col,disque,masque);',
+      /* quelques arcs debordent un peu au debut, puis rentrent */
+      '  float deb=(1.-ss(R,R*1.25,d))*ss(.55,.9,n(vec2(rr*15.,(a+tw)*1.6+uT*2.)))*ss(.05,.3,c)*(1.-ss(.5,.85,c))*step(R,d);',
+      '  col*=1.-deb*.85;',
       /* la matiere noire autour, qui deborde un peu et s effiloche */
       '  float x=(d-R)/R;',
       '  float w=fbm(vec2((a+ang)*2.2+uT*.35,x*3.2-uT*.55))*1.25;',
@@ -8783,10 +8787,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       '  float noir=d>R?clamp(halo+filets,0.,1.)*fall:0.;',
       '  noir=max(noir,gg*.95);',
       '  col*=1.-noir;',
-      '  col=mix(col,vec3(0.),encre);',
-      /* le titre se pose quand le disque est plein */
-      '  vec2 e=dp/(2.*R)+.5;float t=texture2D(uE,e).r;',
-      '  col=mix(col,vec3(1.),t*ss(.82,1.,c)*(1.-ss(R*.97,R,d)));',
+
       '  float bordA=1.-ss(bord*.9,bord,max(abs(dp.x),abs(dp.y)));',
       '  gl_FragColor=vec4(col,bordA);}'
     ].join('\n');
