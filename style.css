@@ -3066,11 +3066,11 @@ body.netti-on:not(.netti-revele) .albums,body.netti-on:not(.netti-revele) .album
 body:not(.netti-on) .netti-source{display:none}
 .netti-anneau{background:radial-gradient(circle closest-side,rgba(0,0,0,0) 66%,#000 84%,rgba(0,0,0,0) 99%)}
 body:not(.netti-on) .netti-port,body:not(.netti-on) .netti-anneau{display:none}
-.netti.pret .netti-viseur circle,.netti.pret .netti-viseur path{stroke:#ffd9d9}
+.netti.pret .netti-viseur{filter:drop-shadow(0 0 6px rgba(255,60,60,.7)) brightness(1.4)}
 .netti-cible,.netti-viseur{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
 .netti-cible circle{fill:none;stroke:rgba(255,255,255,.45);stroke-width:.6;stroke-dasharray:2 2.5}
 .netti.charge .netti-cible{opacity:0}
-.netti-viseur{will-change:transform}
+.netti-viseur{will-change:transform;filter:drop-shadow(0 0 1px rgba(255,255,255,.55)) drop-shadow(0 0 3px rgba(0,0,0,.6))}
 .netti-viseur circle,.netti-viseur path{fill:none;stroke:#fff;stroke-width:1.1;vector-effect:non-scaling-stroke;
   filter:drop-shadow(0 0 2px rgba(0,0,0,.8))}
 .netti-viseur .pt{fill:#fff}
@@ -3094,9 +3094,8 @@ body.netti-apparition.is-stage .lyrics{transition:opacity .5s ease .45s,transfor
 body.netti-apparition.is-stage .controls{transition:opacity .43s ease .54s,transform .48s cubic-bezier(.2,.72,.2,1) .54s}
 body.netti-coupe *,body.netti-coupe *::before,body.netti-coupe *::after{transition:none!important}
 /* les trous des balles (provisoires : de simples trous sombres) */
-.netti-trou{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;pointer-events:none;z-index:3;
-  background:radial-gradient(circle,#000 0 38%,#1a0003 52%,rgba(60,0,6,.55) 70%,rgba(0,0,0,0) 100%)}
-.netti-trou.sur-disque{width:3.6%;height:3.6%;margin:-1.8% 0 0 -1.8%}
+.netti-trou{position:absolute;pointer-events:none;z-index:3;background:url("assets/netti_trou.png") center/contain no-repeat}
+.netti-trou.sur-disque{width:17%;height:17%;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
 
 /* pendant la visee, seul le disque se devoile, au rythme de la charge */
 body.netti-on:not(.netti-revele) .disc-fly{visibility:visible;opacity:var(--netti-disque,0)}

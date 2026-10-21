@@ -20,7 +20,7 @@
 <link rel="preload" href="assets/fonts/Kingjola.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ZenKakuGothicNew-Medium-jp.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=144">
+<link rel="stylesheet" href="style.css?v=146">
 </head>
 <body>
 
@@ -256,10 +256,7 @@
      sick commence, la page apparait. Squelette : la beaute viendra apres -->
 <div class="netti" id="nettIntro" aria-hidden="true">
   <svg class="netti-cible" id="nettiCible" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48"/></svg>
-  <svg class="netti-viseur" id="nettiViseur" viewBox="0 0 100 100">
-    <circle cx="50" cy="50" r="48"/><circle cx="50" cy="50" r="2.2" class="pt"/>
-    <path d="M50 0V36M50 64V100M0 50H36M64 50H100"/>
-  </svg>
+  <img class="netti-viseur" id="nettiViseur" src="assets/netti_viseur.png" alt="">
   <div class="netti-eclair" id="nettiEclair"></div>
   <p class="netti-consigne" id="nettiConsigne">HOLD TO SHOOT</p>
 </div>
@@ -8748,6 +8745,12 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       if (u >= 1){ e.phase = 'vise'; e.charge = 0; racine.classList.remove('charge', 'pret'); }
     } else if (e.phase === 'tirs'){
       trembler(6, t);
+      /* le cercle s ouvre d un coup jusqu au-dela de l ecran, puis s efface */
+      var w = Math.min(1, (t - e.tCoup) / 300), k2 = w * w * w;
+      if (!e.ouvert){
+        peindre({ r: e.r0 + (loin() * 1.7 - e.r0) * k2, vu: 1, nuit: 0, brume: e.b0 * (1 - w) });
+        if (w >= 1){ e.ouvert = true; port.style.opacity = anneau.style.opacity = 0; }
+      }
     } else if (e.phase === 'coup'){
       var w = Math.min(1, (t - e.tCoup) / 220);
       peindre({ r: pres() + w * loin() * 1.2, vu: 1, nuit: e.v.nuit * (1 - w), brume: e.v.brume * (1 - w) });
@@ -8780,6 +8783,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     if (spin){
       var t2 = document.createElement('span'); t2.className = 'netti-trou sur-disque';
       t2.style.left = (fx * 100) + '%'; t2.style.top = (fy * 100) + '%';
+      t2.style.transform = 'translate(-50%,-50%) rotate(' + Math.round(Math.random() * 360) + 'deg) scale(' + (.8 + Math.random() * .45).toFixed(2) + ')' + (Math.random() < .5 ? ' scaleX(-1)' : '');
       spin.appendChild(t2); trousSpin.push(t2);
     }
   }
@@ -8787,7 +8791,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     e.phase = 'tirs'; e.tCoup = performance.now();
     consigne.classList.remove('on'); racine.classList.remove('pret');
     racine.classList.add('tire');                       // le viseur disparait
-    port.style.opacity = anneau.style.opacity = 0;      // le hublot et l anneau s en vont : tout est rouge
+    e.r0 = (e.v && e.v.r) || pres(); e.b0 = (e.v && e.v.brume) || 0; e.ouvert = false;
     body.style.setProperty('--netti-disque', 1);
     /* you ready? se tait au premier coup ; sick se charge aussitot, arrete,
        pour partir pile au drop */
