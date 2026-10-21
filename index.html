@@ -20,7 +20,7 @@
 <link rel="preload" href="assets/fonts/Kingjola.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ZenKakuGothicNew-Medium-jp.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=149">
+<link rel="stylesheet" href="style.css?v=151">
 </head>
 <body>
 
@@ -8732,7 +8732,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
      s effiloche, et laisse s echapper quelques gouttes noires. Hors du carre,
      rien ne change : la courbure s eteint avant le bord. */
   var lent = document.getElementById('nettiLentille'), trouNoir = document.getElementById('nettiTrouNoir');
-  var gl = null, prog = null, texA = null, texB = null, U = {}, LTAILLE = 3.6;
+  var gl = null, prog = null, texA = null, texB = null, texE = null, etiqPrete = false, U = {}, LTAILLE = 3.6;
   function initLentille(){
     if (gl !== null) return !!gl;
     try { gl = lent.getContext('webgl', { premultipliedAlpha: false, alpha: true }); } catch (x) { gl = false; }
@@ -8740,43 +8740,46 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     var vs = 'attribute vec2 a;varying vec2 v;void main(){v=a*.5+.5;gl_Position=vec4(a,0.,1.);}';
     var fs = [
       'precision highp float;varying vec2 v;',
-      'uniform sampler2D uA,uB;uniform vec2 uRes,uVid,uOrig,uC;uniform float uL,uR,uRb,uG,uT,uHaveB,uPR,uPVu,uPBr;uniform vec2 uPC;',
+      'uniform sampler2D uA,uB,uE;uniform vec2 uRes,uVid,uOrig,uC;uniform float uL,uRb,uG,uS,uT,uHaveB,uPR,uPVu,uPBr;uniform vec2 uPC;',
       'float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
       'float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}',
       'float fbm(vec2 p){float s=0.,a=.5;for(int k=0;k<5;k++){s+=a*n(p);p*=2.03;a*=.5;}return s;}',
-      /* l ecran -> l image du film (recadrage « cover ») */
       'vec2 cov(vec2 q){float k=max(uRes.x/uVid.x,uRes.y/uVid.y);vec2 sz=uVid*k;return (q-(uRes-sz)*.5)/sz;}',
-      'vec3 film(vec2 q){return texture2D(uA,cov(q)).rgb;}',
-      'vec3 monde(vec2 q){vec3 c=film(q);',
+      'vec3 monde(vec2 q){vec3 c=texture2D(uA,cov(q)).rgb;',
       '  if(uHaveB>.5){float d=length(q-uPC);float m=1.-smoothstep(.7*uPR,uPR,d);c=mix(c,texture2D(uB,cov(q)).rgb,uPVu*m);',
       '    float r=d/uPR;float an=smoothstep(.66,.84,r)*(1.-smoothstep(.84,.99,r));c*=1.-uPBr*an;}',
       '  return c;}',
+      /* la scene : le monde, et le disque noir au titre */
+      'vec3 scene(vec2 q){vec2 e=(q-uC)/(2.*uRb)+.5;float d=length(q-uC);vec3 t=texture2D(uE,e).rgb;',
+      '  float m=1.-smoothstep(uRb-1.2,uRb+.6,d);return mix(monde(q),t,m);}',
       'void main(){',
-      '  vec2 p=uOrig+vec2(v.x,1.-v.y)*uL;vec2 dp=p-uC;float d=length(dp);vec2 dir=dp/max(d,1e-3);',
-      '  float R=uR;float bord=uL*.5;',
+      '  vec2 p=uOrig+vec2(v.x,1.-v.y)*uL;vec2 dp=p-uC;float d=length(dp);',
+      '  float R=uRb;float bord=uL*.5;',
       '  float fall=1.-smoothstep(R*1.05,bord*.97,d);',
-      '  fall*=uG;',
-      /* la courbure : l image se tire vers le trou, et tourne un peu */
-      '  float bend=R*R*.55/max(d,R)*fall;',
-      '  float ang=.35*fall*fall*sin(uT*.6)+.25*fall*fall;',
-      '  vec2 rd=vec2(dir.x*cos(ang)-dir.y*sin(ang),dir.x*sin(ang)+dir.y*cos(ang));',
-      '  vec2 q=uC+rd*max(d-bend,R*.15);',
-      '  vec3 col=monde(q);',
-      /* la matiere noire : un halo qui tourne et s effiloche */
-      '  float a=atan(dp.y,dp.x);float x=(d-R)/uRb;',
-      '  float w=fbm(vec2(a*2.2+uT*.35,x*3.2-uT*.55))*1.25;',
-      '  float w2=fbm(vec2(a*5.+uT*.8,x*7.-uT*1.1));',
-      /* le halo reste leger pres du bord : le noir plein garde la taille exacte du disque */
+      '  float edge=1.-smoothstep(bord*.78,bord*.97,d);',
+      /* la voronka : tout se tord vers le centre, plus fort pres du trou */
+      '  float prox=exp(-pow(d/(R*1.15),2.)*1.4)*edge;',
+      '  float dehors=smoothstep(R,R*1.35,d);',
+      '  float ang=uS*prox*(1.+.12*sin(uT*1.7))+(uG*.3*fall*fall+uG*.25*sin(uT*.45)*prox)*dehors;',
+      '  vec2 rp=vec2(dp.x*cos(ang)-dp.y*sin(ang),dp.x*sin(ang)+dp.y*cos(ang));',
+      '  float aspir=1.+.45*min(uS,6.)/6.*prox;',
+      '  float bend=d>R?uG*R*R*.55/max(d,R)*fall:0.;',
+      '  float k2=d>R?max(d-bend,R*.15)/max(d,1e-3):1.;',
+      '  vec2 q=uC+rp*k2*aspir;',
+      '  vec3 col=scene(q);',
+      /* la matiere noire, et l ombre qui avale ce qui est pres du trou */
+      '  float a=atan(dp.y,dp.x);float x=(d-R)/R;',
+      '  float w=fbm(vec2(a*2.2-ang*.6+uT*.35,x*3.2-uT*.55))*1.25;',
+      '  float w2=fbm(vec2(a*5.-ang+uT*.8,x*7.-uT*1.1));',
       '  float halo=exp(-max(x,0.)*4.)*(.22+.45*w);',
       '  float filets=smoothstep(.55,.85,w2)*exp(-max(x,0.)*2.4)*.55;',
-      '  float noir=clamp(halo+filets,0.,1.)*fall*uG;',
-      /* des gouttes qui s echappent */
+      '  float avale=(1.-smoothstep(R*.98,R*1.5,d))*.55*uG;',
+      '  float noir=clamp(halo+filets+avale,0.,1.)*fall*uG;',
       '  float g=0.;for(int k=0;k<14;k++){float fk=float(k);float s=fract(uT*.07+h(vec2(fk,1.3)));float aa=h(vec2(fk,7.))*6.2832+uT*.05;',
-      '    vec2 c2=uC+vec2(cos(aa),sin(aa))*(R+uRb*(.04+s*.9));float rr=uRb*(.035+.03*h(vec2(fk,3.)))*(1.-s)*uG;',
+      '    vec2 c2=uC+vec2(cos(aa),sin(aa))*R*(1.04+s*.9);float rr=R*(.035+.03*h(vec2(fk,3.)))*(1.-s)*uG;',
       '    g=max(g,(1.-smoothstep(rr*.6,rr,length(p-c2)))*(1.-s));}',
       '  noir=max(noir,g*.95);',
-      '  col*=1.-noir;',
-      '  float dedans=1.-smoothstep(R-1.5,R+.5,d);col=mix(col,vec3(0.),dedans);',
+      '  if(d>R) col*=1.-noir; else col*=1.-.25*uG*smoothstep(.0,1.,uS/6.);',
       '  float bordA=1.-smoothstep(bord*.9,bord,max(abs(p.x-uC.x),abs(p.y-uC.y)));',
       '  gl_FragColor=vec4(col,bordA);}'
     ].join('\n');
@@ -8788,27 +8791,30 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     var buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
     var loc = gl.getAttribLocation(prog, 'a'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    ['uA','uB','uRes','uVid','uOrig','uC','uL','uR','uRb','uG','uT','uHaveB','uPR','uPVu','uPBr','uPC'].forEach(function(n){ U[n] = gl.getUniformLocation(prog, n); });
+    ['uA','uB','uE','uRes','uVid','uOrig','uC','uL','uRb','uG','uS','uT','uHaveB','uPR','uPVu','uPBr','uPC'].forEach(function(n){ U[n] = gl.getUniformLocation(prog, n); });
     function tex(unit){ var t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0,0,0,255])); return t; }
-    texA = tex(0); texB = tex(1);
-    gl.uniform1i(U.uA, 0); gl.uniform1i(U.uB, 1);
+    texA = tex(0); texB = tex(1); texE = tex(2);
+    gl.uniform1i(U.uA, 0); gl.uniform1i(U.uB, 1); gl.uniform1i(U.uE, 2);
+    /* le disque noir au titre : la pochette, une fois chargee */
+    var etiq = trouNoir.querySelector('img');
+    function poserEtiquette(){ gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, texE);
+      try { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, etiq); etiqPrete = true; } catch (x) {} }
+    if (etiq.complete && etiq.naturalWidth) poserEtiquette(); else etiq.addEventListener('load', poserEtiquette);
     return true;
   }
-  function lentille(t, d, g){
-    g = g || 0;
-    lent.style.opacity = g > .002 ? 1 : 0;
-    trouNoir.style.opacity = g > .002 ? 1 : 0;
-    trouNoir.style.setProperty('--g', g.toFixed(4));
-    trouNoir.style.setProperty('--titre', ss(g, .45, .95).toFixed(3));
+  /* g : la matiere noire (0..1) ; sw : la torsion de la voronka (radians) */
+  function lentille(t, d, g, sw){
+    g = g || 0; sw = sw || 0;
     var L = Math.round(d.r * LTAILLE), x0 = d.x - L / 2, y0 = d.y - L / 2;
     lent.style.width = lent.style.height = L + 'px';
     lent.style.transform = 'translate(' + x0 + 'px,' + y0 + 'px)';
     trouNoir.style.width = trouNoir.style.height = (2 * d.r) + 'px';
-    trouNoir.style.transform = 'translate(' + (d.x - d.r) + 'px,' + (d.y - d.r) + 'px) scale(' + Math.max(.001, g) + ')';
-    if (g <= .002 || !initLentille() || !film || film.readyState < 2) return;
+    trouNoir.style.transform = 'translate(' + (d.x - d.r) + 'px,' + (d.y - d.r) + 'px)';
+    if (!initLentille() || !film || film.readyState < 2 || !etiqPrete) return;
+    lent.style.opacity = 1;
     var dpr = Math.min(2, window.devicePixelRatio || 1), px = Math.round(L * dpr);
     if (lent.width !== px){ lent.width = lent.height = px; }
     gl.viewport(0, 0, px, px);
@@ -8818,7 +8824,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     if (avecB){ gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, texB);
       try { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, rouge); } catch (x) {} }
     gl.uniform2f(U.uRes, innerWidth, innerHeight); gl.uniform2f(U.uVid, film.videoWidth || 1280, film.videoHeight || 720);
-    gl.uniform2f(U.uOrig, x0, y0); gl.uniform2f(U.uC, d.x, d.y); gl.uniform1f(U.uL, L); gl.uniform1f(U.uR, d.r * Math.max(.002, g)); gl.uniform1f(U.uRb, d.r); gl.uniform1f(U.uG, g);
+    gl.uniform2f(U.uOrig, x0, y0); gl.uniform2f(U.uC, d.x, d.y); gl.uniform1f(U.uL, L); gl.uniform1f(U.uRb, d.r); gl.uniform1f(U.uG, g); gl.uniform1f(U.uS, sw);
     gl.uniform1f(U.uT, t / 1000); gl.uniform1f(U.uHaveB, avecB ? 1 : 0);
     gl.uniform2f(U.uPC, pv.x, pv.y); gl.uniform1f(U.uPR, pv.R); gl.uniform1f(U.uPVu, pv.vu); gl.uniform1f(U.uPBr, pv.brume);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -8831,17 +8837,21 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     var d = e.d || poser(); e.d = d;
     viseur.style.transform = 'translate(' + (souris.x - 2 * d.r * VISEUR) + 'px,' + (souris.y - 2 * d.r * VISEUR) + 'px)';
     caler();
-    var g = 0;
-    if (e.phase === 'vise') g = e.charge > 0 ? 1 - Math.pow(1 - e.charge, 2.2) : 0;
-    else if (e.phase === 'annule') g = (e.g0 || 0) * (1 - ss((t - e.tAnnule) / (ANNULE * 1000), 0, 1));
-    else g = 1;
-    e.g = g;
-    lentille(t, d, g);
+    /* la charge effective : la voronka et la matiere noire suivent la meme
+       courbe que le rouge — tout arrive ensemble */
+    var c = 0;
+    if (e.phase === 'vise') c = e.charge;
+    else if (e.phase === 'annule') c = (e.c0 || 0) * (1 - ss((t - e.tAnnule) / (ANNULE * 1000), 0, 1));
+    else c = 1;
+    e.g = c;
+    var g = ss(c, .08, .85);
+    var sw = 7.5 * Math.pow(Math.sin(Math.PI * Math.min(1, c)), 1.3);   // monte puis se defait : le titre redevient lisible
+    lentille(t, d, g, sw);
     if (e.phase === 'vise'){
       /* le viseur quitte le disque pendant la charge : tout s annule aussitot */
       if (e.appui && Math.hypot(souris.x - d.x, souris.y - d.y) > d.r){
         e.appui = false;
-        if (e.charge > 0){ e.phase = 'annule'; e.tAnnule = performance.now(); e.v0 = e.v || etat(e.charge, t); e.dq0 = ss(e.charge, 0, .9); e.g0 = e.g; }
+        if (e.charge > 0){ e.phase = 'annule'; e.tAnnule = performance.now(); e.v0 = e.v || etat(e.charge, t); e.dq0 = ss(e.charge, 0, .9); e.c0 = e.charge; }
       }
       if (e.appui) e.charge = Math.min(1, e.charge + dt / CHARGE);
       var v = e.charge > 0 ? etat(e.charge, t) : { r: loin(), vu: 0, nuit: 0, brume: 0 };
@@ -8884,7 +8894,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     var d = e.d || poser();
     var surDisque = Math.hypot(souris.x - d.x, souris.y - d.y) <= d.r;
     if (e.charge >= 1 && surDisque) coup();
-    else if (e.charge > 0){ e.phase = 'annule'; e.tAnnule = performance.now(); e.v0 = e.v; e.dq0 = ss(e.charge, 0, .9); e.g0 = e.g; }
+    else if (e.charge > 0){ e.phase = 'annule'; e.tAnnule = performance.now(); e.v0 = e.v; e.dq0 = ss(e.charge, 0, .9); e.c0 = e.charge; }
   }
   /* un trou dans le disque : sur l intro par-dessus, et sur le disque lui-meme
      (il tourne avec lui et reste apres le drop) */
@@ -8909,7 +8919,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   var eclats = null;
   function preparerEclats(t){
     var d = e.d || poser();
-    lentille(t, d, 1);                                   // une image fraiche dans la toile WebGL
+    lentille(t, d, 1, 0);                                // une image fraiche dans la toile WebGL
     var W = innerWidth, H = innerHeight;
     var L = Math.round(d.r * LTAILLE), x0 = d.x - L / 2, y0 = d.y - L / 2;
     var snap = document.createElement('canvas'); snap.width = W; snap.height = H;
@@ -8920,11 +8930,6 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       try { c2.drawImage(rouge, (W - vw) / 2, (H - vh) / 2, vw, vh); } catch (x) {}
     }
     try { c2.drawImage(lent, x0, y0, L, L); } catch (x) {}
-    var cov = trouNoir.querySelector('img');
-    c2.save(); c2.beginPath(); c2.arc(d.x, d.y, d.r, 0, Math.PI * 2); c2.clip();
-    c2.fillStyle = '#000'; c2.fillRect(d.x - d.r, d.y - d.r, 2 * d.r, 2 * d.r);
-    try { c2.drawImage(cov, d.x - d.r, d.y - d.r, 2 * d.r, 2 * d.r); } catch (x) {}
-    c2.restore();
     e.trous.forEach(function(q){
       c2.save(); c2.translate(q.x, q.y); c2.rotate(q.rot * Math.PI / 180); if (q.mir) c2.scale(-1, 1);
       try { c2.drawImage(imgTrou, -q.s / 2, -q.s / 2, q.s, q.s); } catch (x) {}
@@ -9051,7 +9056,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     eclats = null;
     initLentille();
     /* un premier dessin, invisible, pour que la carte graphique soit prete */
-    setTimeout(function(){ if (e && e.phase === 'vise' && e.charge === 0){ var d0 = e.d || poser(); lentille(performance.now(), d0, 1); lentille(performance.now(), d0, 0); } }, 1200);
+    setTimeout(function(){ if (e && e.phase === 'vise' && e.charge === 0){ var d0 = e.d || poser(); lentille(performance.now(), d0, 0, 0); } }, 1200);
     rouge.preload = 'auto'; try { rouge.load(); } catch (x) {}
     peindre({ r: loin(), vu: 0, nuit: 0, brume: 0 });
     setTimeout(function(){ if (e && e.phase === 'vise') consigne.classList.add('on'); }, 2500);
