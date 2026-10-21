@@ -8733,7 +8733,14 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
      rien ne change : la courbure s eteint avant le bord. */
   var lent = document.getElementById('nettiLentille'), trouNoir = document.getElementById('nettiTrouNoir');
   var gl = null, prog = null, texA = null, texB = null, texE = null, etiqPrete = false, U = {}, LTAILLE = 3.6;
+  /* la carte graphique peut retirer le contexte (Safari sous pression memoire) :
+     sans preventDefault il ne revenait jamais et le trou noir disparaissait
+     jusqu au rechargement ; on le reconstruit quand il revient */
+  var glPerdu = false;
+  lent.addEventListener('webglcontextlost', function(ev){ ev.preventDefault(); glPerdu = true; });
+  lent.addEventListener('webglcontextrestored', function(){ glPerdu = false; gl = null; prog = null; etiqPrete = false; U = {}; });
   function initLentille(){
+    if (glPerdu) return false;
     if (gl !== null) return !!gl;
     try { gl = lent.getContext('webgl', { premultipliedAlpha: false, alpha: true }); } catch (x) { gl = false; }
     if (!gl){ gl = false; return false; }
