@@ -8629,7 +8629,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   var cible = document.getElementById('nettiCible'), eclair = document.getElementById('nettiEclair');
   var consigne = document.getElementById('nettiConsigne');
   var film = document.getElementById('nettFilm');
-  var CHARGE = 2.5, ANNULE = .65;             // secondes
+  var CHARGE = 2.8, ANNULE = .65;             // secondes
   var VISEUR = 300 / 2 / 160;                 // image 600 px, grand cercle de rayon 150 px : rayon du cercle = rayon du disque
   /* trois coups (les trois sons de l auteur), sur les temps de sick (89 bpm),
      puis le drop sur le quatrieme : sick part a cet instant */
@@ -8769,13 +8769,24 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
          (a la fin, tout enroule : spirales blanches du titre dans le noir) ;
          elle arrive par arcs d encre, du bord vers le centre */
       '  float a=atan(dp.y,dp.x);float rr=d/R;',
-      /* tout tourne dans le meme sens : le centre s enroule d abord (spirale), puis le bord
-         rattrape le centre jusqu a deux tours pleins : a la fin le titre est droit et lisible */
-      '  float e=ss(.62,1.,c);',
-      '  float tw0=(8.*ss(0.,.62,c)+.6*sin(uT*1.6)*c*(1.-e))*pow(max(1.-rr,0.),1.4)+ang;',
-      '  float tw=mix(tw0,12.566371,e);',
-      '  vec2 ep=vec2(dp.x*cos(tw)-dp.y*sin(tw),dp.x*sin(tw)+dp.y*cos(tw));',
-      '  vec3 disque=texture2D(uE,ep/(2.*R)+.5).rgb;',
+      /* la spirale s enroule toujours dans le meme sens ; vers la fin le titre s ouvre depuis
+         le centre et s y rassemble a partir de coulures d encre (une aquarelle frappee, a l envers),
+         presque droit, en finissant un leger quart de tour */
+      '  float tw=(9.*ss(0.,.9,c)+.6*sin(uT*1.6)*c)*pow(max(1.-rr,0.),1.4)+ang;',
+      '  vec2 sp=vec2(dp.x*cos(tw)-dp.y*sin(tw),dp.x*sin(tw)+dp.y*cos(tw));',
+      '  vec3 spir=texture2D(uE,sp/(2.*R)+.5).rgb;',
+      '  vec3 disque;{',
+      '  float f=ss(.5,1.,c);float k=1.-f;float th=-.45*k*k;',
+      '  vec2 u=dp/R;',
+      '  vec2 w=vec2(fbm(u*2.3+vec2(uT*.25,1.7))-.5,fbm(u*2.3+vec2(4.1,uT*.25))-.5);',
+      '  vec2 q=u;q.y=u.y/(1.+.9*k*(.6+.8*fbm(vec2(u.x*3.,uT*.2))));',
+      '  q+=w*k*.165;q.x+=sin(u.y*7.+uT*1.3)*.0105*k;',
+      '  vec3 tit=vec3(0.);',
+      '  for(int i=0;i<10;i++){float fi=float(i);vec2 o=q+vec2(sin(fi*2.4)*.02,(fi-4.5)*.03)*k*.45;vec2 r=vec2(o.x*cos(th)-o.y*sin(th),o.x*sin(th)+o.y*cos(th));',
+      '    tit+=texture2D(uE,r*.5+.5).rgb;}',
+      '  tit=tit*.1;tit=pow(tit,vec3(mix(1.,.7,k)))*mix(1.,.85,k);',
+      '  float fo=ss(.5,.97,c);float ouv=1.-ss(fo*R*1.1-R*.18,fo*R*1.1,d);',
+      '  disque=mix(spir*(1.-.6*fo),tit,ouv);}',
       '  float arcs=n(vec2(rr*15.,(a+tw)*1.6+uT*2.))*.62+fbm(vec2(rr*7.,(a+tw)*3.-uT))*.5;',
       '  float seuil=1.3-1.62*c+.6*(1.-rr);',
       '  float masque=ss(seuil,seuil+.12,arcs);',
