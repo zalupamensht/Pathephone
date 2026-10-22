@@ -8769,7 +8769,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       '  vec2 p=uOrig+vec2(v.x,1.-v.y)*uL;vec2 dp=p-uC;float d=length(dp);',
       '  float R=uRb;float c=uS;',
       /* le tourbillon : une eau qu on fait tourner du doigt ; il s eteint en douceur avant le bord de la toile */
-      '  float prof=exp(-pow(d/(R*1.15),2.))*(1.-ss(R*1.15,R*1.72,d));',
+      '  float prof=exp(-pow(d/(R*1.15),2.))*(1.-ss(R*1.15,R*1.5,d));',
       '  float ang=prof*(4.2*ss(0.,.55,c)+.5*sin(uT*2.2)*c);',
       '  vec2 rp=vec2(dp.x*cos(ang)-dp.y*sin(ang),dp.x*sin(ang)+dp.y*cos(ang));',
       '  vec3 col=monde(uC+rp);',
@@ -8818,8 +8818,13 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       '  noir=max(noir,gg*.95);',
       '  col*=1.-noir;',
 
+      /* hors du tourbillon la toile devient transparente (en cercle) : le vrai fond passe dessous,
+         seule la matiere noire y reste ; avant, le carre de la toile se voyait aux changements de plan */
+      '  float dedans=1.-ss(R*1.42,R*1.58,d);',
+      '  float A=dedans+(1.-dedans)*noir;',
+      '  vec3 C=A>.001?dedans*col/A:vec3(0.);',
       '  float bordA=1.-ss(bord*.9,bord,max(abs(dp.x),abs(dp.y)));',
-      '  gl_FragColor=vec4(col,bordA);}'
+      '  gl_FragColor=vec4(C,A*bordA);}'
     ].join('\n');
     function sh(t, src){ var o = gl.createShader(t); gl.shaderSource(o, src); gl.compileShader(o);
       if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)){ console.warn(gl.getShaderInfoLog(o)); return null; } return o; }
@@ -8903,7 +8908,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       body.style.setProperty('--netti-disque', (e.dq0 * (1 - u)).toFixed(3));
       if (u >= 1){ e.phase = 'vise'; e.charge = 0; racine.classList.remove('charge', 'pret'); }
     } else if (e.phase === 'tirs'){
-      trembler(6, t);
+      trembler(0, t);                       // des le premier tir, la camera ne tremble plus
       /* le cercle s ouvre d un coup jusqu au-dela de l ecran, puis s efface */
       var w = Math.min(1, (t - e.tCoup) / 300), k2 = w * w * w;
       if (!e.ouvert){
