@@ -20,7 +20,7 @@
 <link rel="preload" href="assets/fonts/Kingjola.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ZenKakuGothicNew-Medium-jp.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=154">
+<link rel="stylesheet" href="style.css?v=155">
 </head>
 <body>
 
@@ -260,7 +260,16 @@
      sick commence, la page apparait. Squelette : la beaute viendra apres -->
 <div class="netti" id="nettIntro" aria-hidden="true">
   <svg class="netti-cible" id="nettiCible" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48"/></svg>
-  <img class="netti-viseur" id="nettiViseur" src="assets/netti_viseur.png" alt="">
+  <div class="netti-viseur netti-montre" id="nettiViseur">
+    <img class="nm-cadran" src="assets/netti_cadran.webp" alt="">
+    <img class="nm-titre" id="nettiTitre" src="assets/netti_titre.webp" alt="">
+    <svg class="nm-aiguilles" viewBox="0 0 400 400">
+      <g id="nettiHeure"><line x1="200" y1="212" x2="200" y2="125" class="ombre" stroke-width="9"/><line x1="200" y1="212" x2="200" y2="125" stroke="#fff" stroke-width="6"/></g>
+      <g id="nettiMinute"><line x1="200" y1="212" x2="200" y2="93" class="ombre" stroke-width="7"/><line x1="200" y1="212" x2="200" y2="93" stroke="#fff" stroke-width="4"/></g>
+      <g id="nettiSeconde"><line x1="200" y1="218" x2="200" y2="66" stroke="#e3202f" stroke-width="2"/></g>
+      <line x1="200" y1="200" x2="200.01" y2="200" stroke="#e3202f" stroke-width="10"/>
+    </svg>
+  </div>
   <div class="netti-eclair" id="nettiEclair"></div>
   <p class="netti-consigne" id="nettiConsigne">HOLD TO SHOOT</p>
 </div>
@@ -8630,7 +8639,19 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   var consigne = document.getElementById('nettiConsigne');
   var film = document.getElementById('nettFilm');
   var CHARGE = 2.8, ANNULE = .65;             // secondes
-  var VISEUR = 300 / 2 / 160;                 // image 600 px, grand cercle de rayon 150 px : rayon du cercle = rayon du disque
+  var VISEUR = 300 / 2 / 160;                 // boite = 3,75 rayons du disque (le cadran est dessine pour cette boite)
+  /* le viseur-montre : le titre tourne en anneau, les aiguilles filent vers midi avec la charge */
+  var mTitre = document.getElementById('nettiTitre'), mH = document.getElementById('nettiHeure'),
+      mM = document.getElementById('nettiMinute'), mS = document.getElementById('nettiSeconde'), mRot = 0;
+  function montre(c, dt){
+    var q = c * c * (3 - 2 * c);
+    mRot = (mRot + dt * (7 + 150 * c * c)) % 360;
+    mTitre.style.transform = 'rotate(' + mRot.toFixed(2) + 'deg)';
+    var sec = (Date.now() / 1000 % 60) * 6;
+    mH.setAttribute('transform', 'rotate(' + (-5 + 5 * q).toFixed(2) + ' 200 200)');
+    mM.setAttribute('transform', 'rotate(' + (-60 + 60 * q).toFixed(2) + ' 200 200)');
+    mS.setAttribute('transform', 'rotate(' + (sec * (1 - q) + 1440 * q).toFixed(2) + ' 200 200)');
+  }
   /* trois coups (les trois sons de l auteur), sur les temps de sick (89 bpm),
      puis le drop sur le quatrieme : sick part a cet instant */
   /* les coups sont joues par Web Audio, programmes a l echantillon pres sur
@@ -8887,6 +8908,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     else c = 1;
     e.g = c;
     lentille(t, d, c, c);
+    montre(c, dt);
     if (e.phase === 'vise'){
       /* le viseur quitte le disque pendant la charge : tout s annule aussitot */
       if (e.appui && Math.hypot(souris.x - d.x, souris.y - d.y) > d.r){
