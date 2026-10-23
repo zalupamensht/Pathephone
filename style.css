@@ -3075,6 +3075,7 @@ body:not(.netti-on) .netti-port,body:not(.netti-on) .netti-anneau{display:none}
 .netti-viseur.netti-montre,.netti.pret .netti-viseur.netti-montre{filter:none}
 .netti-montre>*{position:absolute;inset:0;width:100%;height:100%}
 .netti-montre .nm-aig{will-change:transform}
+.netti-montre .nm-aig-k{transform:scale(1.278)}
 .netti.pret .netti-montre .nm-cadran{filter:drop-shadow(0 0 6px rgba(255,60,60,.8)) brightness(1.3)}
 .netti-cible,.netti-viseur{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
 .netti-cible circle{fill:none;stroke:rgba(255,255,255,.45);stroke-width:.6;stroke-dasharray:2 2.5}

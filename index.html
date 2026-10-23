@@ -20,7 +20,7 @@
 <link rel="preload" href="assets/fonts/Kingjola.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ZenKakuGothicNew-Medium-jp.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=156">
+<link rel="stylesheet" href="style.css?v=157">
 </head>
 <body>
 
@@ -261,11 +261,11 @@
 <div class="netti" id="nettIntro" aria-hidden="true">
   <svg class="netti-cible" id="nettiCible" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48"/></svg>
   <div class="netti-viseur netti-montre" id="nettiViseur">
-    <img class="nm-cadran" src="assets/netti_soleil.webp" alt="">
+    <img class="nm-cadran" src="assets/netti_montre.webp" alt="">
     <img class="nm-aig" id="nettiHeure" src="assets/netti_aig_heure.webp" alt="">
     <img class="nm-aig" id="nettiMinute" src="assets/netti_aig_minute.webp" alt="">
     <img class="nm-aig" id="nettiSeconde" src="assets/netti_aig_seconde.webp" alt="">
-    <img class="nm-moyeu" src="assets/netti_moyeu.webp" alt="">
+    <img class="nm-moyeu nm-aig-k" src="assets/netti_moyeu.webp" alt="">
   </div>
   <div class="netti-eclair" id="nettiEclair"></div>
   <p class="netti-consigne" id="nettiConsigne">HOLD TO SHOOT</p>
@@ -8636,15 +8636,16 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   var consigne = document.getElementById('nettiConsigne');
   var film = document.getElementById('nettFilm');
   var CHARGE = 2.8, ANNULE = .65;             // secondes
-  var VISEUR = 700 / 230 / 2;                 // le soleil : boite carree, cadran de rayon 230 sur une demi-boite de 700 = rayon du disque
+  var VISEUR = 700 / 294 / 2;                 // le viseur-montre : boite carree, cadran de rayon 294 sur une demi-boite de 700 = rayon du disque
+  var AIG_K = 294 / 230;                       // les aiguilles ont ete taillees pour un cadran de 230
   /* le viseur-montre (soleil rouge et cadran) : les aiguilles filent vers midi avec la charge */
   var mH = document.getElementById('nettiHeure'), mM = document.getElementById('nettiMinute'), mS = document.getElementById('nettiSeconde');
   function montre(c, dt){
     var q = c * c * (3 - 2 * c);
     var sec = (Date.now() / 1000 % 60) * 6;
-    mH.style.transform = 'rotate(' + (-5 + 5 * q).toFixed(2) + 'deg)';
-    mM.style.transform = 'rotate(' + (-60 + 60 * q).toFixed(2) + 'deg)';
-    mS.style.transform = 'rotate(' + (sec * (1 - q) + 1440 * q).toFixed(2) + 'deg)';
+    mH.style.transform = 'rotate(' + (-5 + 5 * q).toFixed(2) + 'deg) scale(' + AIG_K + ')';
+    mM.style.transform = 'rotate(' + (-60 + 60 * q).toFixed(2) + 'deg) scale(' + AIG_K + ')';
+    mS.style.transform = 'rotate(' + (sec * (1 - q) + 1440 * q).toFixed(2) + 'deg) scale(' + AIG_K + ')';
   }
   /* trois coups (les trois sons de l auteur), sur les temps de sick (89 bpm),
      puis le drop sur le quatrieme : sick part a cet instant */
