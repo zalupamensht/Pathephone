@@ -20,7 +20,7 @@
 <link rel="preload" href="assets/fonts/Kingjola.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ZenKakuGothicNew-Medium-jp.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=157">
+<link rel="stylesheet" href="style.css?v=158">
 </head>
 <body>
 
@@ -261,7 +261,7 @@
 <div class="netti" id="nettIntro" aria-hidden="true">
   <svg class="netti-cible" id="nettiCible" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48"/></svg>
   <div class="netti-viseur netti-montre" id="nettiViseur">
-    <img class="nm-cadran" src="assets/netti_montre.webp" alt="">
+    <img class="nm-cadran" src="assets/netti_montre2.webp" alt="">
     <img class="nm-aig" id="nettiHeure" src="assets/netti_aig_heure.webp" alt="">
     <img class="nm-aig" id="nettiMinute" src="assets/netti_aig_minute.webp" alt="">
     <img class="nm-aig" id="nettiSeconde" src="assets/netti_aig_seconde.webp" alt="">
@@ -8636,8 +8636,8 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   var consigne = document.getElementById('nettiConsigne');
   var film = document.getElementById('nettFilm');
   var CHARGE = 2.8, ANNULE = .65;             // secondes
-  var VISEUR = 700 / 294 / 2;                 // le viseur-montre : boite carree, cadran de rayon 294 sur une demi-boite de 700 = rayon du disque
-  var AIG_K = 294 / 230;                       // les aiguilles ont ete taillees pour un cadran de 230
+  var VISEUR = 1400 / 286.7 / 2;              // le viseur-montre : boite carree, cadran de rayon 286,7 sur une demi-boite de 1400 = rayon du disque
+  var AIG_K = 286.7 / 230 * 1400 / 2800;       // aiguilles taillees pour un cadran de 230 sur une image de 1400
   /* le viseur-montre (soleil rouge et cadran) : les aiguilles filent vers midi avec la charge */
   var mH = document.getElementById('nettiHeure'), mM = document.getElementById('nettiMinute'), mS = document.getElementById('nettiSeconde');
   function montre(c, dt){
