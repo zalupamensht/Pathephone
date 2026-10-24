@@ -20,7 +20,7 @@
 <link rel="preload" href="assets/fonts/Kingjola.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ZenKakuGothicNew-Medium-jp.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=160">
+<link rel="stylesheet" href="style.css?v=164">
 </head>
 <body>
 
@@ -261,11 +261,14 @@
 <div class="netti" id="nettIntro" aria-hidden="true">
   <svg class="netti-cible" id="nettiCible" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48"/></svg>
   <div class="netti-viseur netti-montre" id="nettiViseur">
-    <img class="nm-cadran" src="assets/netti_montre4.webp" alt="">
-    <img class="nm-aig" id="nettiHeure" src="assets/netti_aig_heure.webp" alt="">
-    <img class="nm-aig" id="nettiMinute" src="assets/netti_aig_minute.webp" alt="">
-    <img class="nm-aig" id="nettiSeconde" src="assets/netti_aig_seconde.webp" alt="">
-    <img class="nm-moyeu nm-aig-k" src="assets/netti_moyeu.webp" alt="">
+    <img class="nm-dehors" id="nettiDehors" src="assets/netti_montre9.webp" alt="">
+    <div class="nm-int" id="nettiInt">
+      <img class="nm-cadran" src="assets/netti_montre9.webp" alt="">
+      <img class="nm-aig" id="nettiHeure" src="assets/netti_aig_heure.webp" alt="">
+      <img class="nm-aig" id="nettiMinute" src="assets/netti_aig_minute.webp" alt="">
+      <img class="nm-aig" id="nettiSeconde" src="assets/netti_aig_seconde.webp" alt="">
+      <img class="nm-moyeu nm-aig-k" src="assets/netti_moyeu.webp" alt="">
+    </div>
   </div>
   <div class="netti-eclair" id="nettiEclair"></div>
   <p class="netti-consigne" id="nettiConsigne">HOLD TO SHOOT</p>
@@ -8636,16 +8639,28 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   var consigne = document.getElementById('nettiConsigne');
   var film = document.getElementById('nettFilm');
   var CHARGE = 2.8, ANNULE = .65;             // secondes
-  var VISEUR = 1040 / 279.5 / 2;              // le viseur-montre : boite carree, cadran de rayon 279,5 sur une demi-boite de 1040 = rayon du disque
-  var AIG_K = 279.5 / 230 * 1400 / 2080;       // aiguilles taillees pour un cadran de 230 sur une image de 1400
+  var VISEUR = 1300 / 328.4 / 2;               // le viseur-montre : boite carree, bord du cadran (rayon 330) sur une demi-boite de 1300 = bord du disque
+  var AIG_K = 328.4 / 230 * 1400 / 2600;       // aiguilles taillees pour un cadran de 230 sur une image de 1400
+              // a la fin de la charge le viseur se fixe sur le disque, puis le trou noir l avale
   /* le viseur-montre (soleil rouge et cadran) : les aiguilles filent vers midi avec la charge */
   var mH = document.getElementById('nettiHeure'), mM = document.getElementById('nettiMinute'), mS = document.getElementById('nettiSeconde');
+  var mDehors = document.getElementById('nettiDehors'), mInt = document.getElementById('nettiInt');
+  var mSec = 0, mSec0 = 0;
   function montre(c, dt){
-    var q = c * c * (3 - 2 * c);
-    var sec = (Date.now() / 1000 % 60) * 6;
+    /* le cadran (ce qui est sur le disque) coule dans la matiere noire : il s enfonce un peu,
+       perd son eclat et sa nettete, comme sous une eau noire ; le reste du viseur reste */
+    var e2 = ss(c, .66, .98);          // seulement une fois les aiguilles a midi
+    mInt.style.transform = e2 > 0 ? 'scale(' + (1 - .07 * e2).toFixed(4) + ')' : '';
+    mInt.style.filter = e2 > 0 ? 'blur(' + (3.5 * e2 * e2).toFixed(2) + 'px) brightness(' + (1 - .75 * e2).toFixed(3) + ')' : '';
+    mInt.style.opacity = (1 - e2 * e2 * e2).toFixed(3);
+    var q = ss(c, 0, .6);              // les aiguilles atteignent midi aux 3/5 de la charge, puis le cadran coule
+    /* la trotteuse file en rond tant qu on vise ; des qu on charge elle part de la ou elle est
+       et rejoint midi en deux tours, pile a la pleine charge */
+    if (c <= 0){ mSec = (mSec + dt * 220) % 360; mSec0 = mSec; }
+    var sec = mSec0 + q * (720 + 360 - mSec0);
     mH.style.transform = 'rotate(' + (-5 + 5 * q).toFixed(2) + 'deg) scale(' + AIG_K + ')';
     mM.style.transform = 'rotate(' + (-60 + 60 * q).toFixed(2) + 'deg) scale(' + AIG_K + ')';
-    mS.style.transform = 'rotate(' + (sec * (1 - q) + 1440 * q).toFixed(2) + 'deg) scale(' + AIG_K + ')';
+    mS.style.transform = 'rotate(' + sec.toFixed(2) + 'deg) scale(' + AIG_K + ')';
   }
   /* trois coups (les trois sons de l auteur), sur les temps de sick (89 bpm),
      puis le drop sur le quatrieme : sick part a cet instant */
@@ -8893,7 +8908,6 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     if (!body.classList.contains('alb-nett') || body.classList.contains('is-picking') && !body.classList.contains('is-sortie')){ finir(); return; }
     var dt = Math.min(.05, (t - (e.t || t)) / 1000); e.t = t;
     var d = e.d || poser(); e.d = d;
-    viseur.style.transform = 'translate(' + (souris.x - 2 * d.r * VISEUR) + 'px,' + (souris.y - 2 * d.r * VISEUR) + 'px)';
     caler();
     /* la charge effective : la voronka et la matiere noire suivent la meme
        courbe que le rouge — tout arrive ensemble */
@@ -8902,6 +8916,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     else if (e.phase === 'annule') c = (e.c0 || 0) * (1 - ss((t - e.tAnnule) / (ANNULE * 1000), 0, 1));
     else c = 1;
     e.g = c;
+    viseur.style.transform = 'translate(' + (souris.x - 2 * d.r * VISEUR) + 'px,' + (souris.y - 2 * d.r * VISEUR) + 'px)';
     lentille(t, d, c, c);
     montre(c, dt);
     if (e.phase === 'vise'){
