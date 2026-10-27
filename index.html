@@ -20,7 +20,7 @@
 <link rel="preload" href="assets/fonts/Kingjola.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/InstrumentSerif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ZenKakuGothicNew-Medium-jp.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=164">
+<link rel="stylesheet" href="style.css?v=167">
 </head>
 <body>
 
@@ -265,8 +265,8 @@
     <div class="nm-int" id="nettiInt">
       <img class="nm-cadran" src="assets/netti_montre9.webp" alt="">
       <img class="nm-aig" id="nettiHeure" src="assets/netti_aig_heure.webp" alt="">
-      <img class="nm-aig" id="nettiMinute" src="assets/netti_aig_minute.webp" alt="">
-      <img class="nm-aig" id="nettiSeconde" src="assets/netti_aig_seconde.webp" alt="">
+      <img class="nm-aig" id="nettiMinute" src="assets/netti_aig_seconde.webp" alt="">
+      <img class="nm-aig" id="nettiSeconde" src="assets/netti_aig_minute.webp" alt="">
       <img class="nm-moyeu nm-aig-k" src="assets/netti_moyeu.webp" alt="">
     </div>
   </div>
@@ -8638,29 +8638,70 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   var cible = document.getElementById('nettiCible'), eclair = document.getElementById('nettiEclair');
   var consigne = document.getElementById('nettiConsigne');
   var film = document.getElementById('nettFilm');
-  var CHARGE = 2.8, ANNULE = .65;             // secondes
+  var CHARGE = 4.6, ANNULE = .65;               // secondes
   var VISEUR = 1300 / 328.4 / 2;               // le viseur-montre : boite carree, bord du cadran (rayon 330) sur une demi-boite de 1300 = bord du disque
   var AIG_K = 328.4 / 230 * 1400 / 2600;       // aiguilles taillees pour un cadran de 230 sur une image de 1400
               // a la fin de la charge le viseur se fixe sur le disque, puis le trou noir l avale
   /* le viseur-montre (soleil rouge et cadran) : les aiguilles filent vers midi avec la charge */
   var mH = document.getElementById('nettiHeure'), mM = document.getElementById('nettiMinute'), mS = document.getElementById('nettiSeconde');
   var mDehors = document.getElementById('nettiDehors'), mInt = document.getElementById('nettiInt');
-  var mSec = 0, mSec0 = 0;
+  var mT0 = -6000, mS0 = 0;
+  /* l encre de la matiere noire rampe sur le cadran : des filets en spirale partent
+     du bord et gagnent le centre ; le cadran disparait dessous, net, par morceaux */
+  var cEnc = document.createElement('canvas'); cEnc.width = cEnc.height = 256;
+  var xEnc = cEnc.getContext('2d'), NE = 256,
+      imEnc = xEnc.createImageData(NE, NE), champ = new Float32Array(NE * NE), eEnc = -1;
+  (function(){
+    function h(x, y){ var t = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return t - Math.floor(t); }
+    function n(x, y){ var i = Math.floor(x), j = Math.floor(y), f = x - i, g = y - j; f = f * f * (3 - 2 * f); g = g * g * (3 - 2 * g);
+      return (h(i, j) * (1 - f) + h(i + 1, j) * f) * (1 - g) + (h(i, j + 1) * (1 - f) + h(i + 1, j + 1) * f) * g; }
+    function fbm(x, y){ var s = 0, a = .5; for (var k = 0; k < 4; k++){ s += a * n(x, y); x *= 2.03; y *= 2.03; a *= .5; } return s; }
+    for (var y = 0; y < NE; y++) for (var x = 0; x < NE; x++){
+      var u = (x + .5) / NE * 2 - 1, v = (y + .5) / NE * 2 - 1, rr = Math.sqrt(u * u + v * v), a = Math.atan2(v, u);
+      var tw = a + 3.4 * (1 - rr);                       // les filets s enroulent vers le centre
+      var arcs = n(rr * 14, (tw + Math.PI) * 3.2) * .6 + fbm(rr * 6, (tw + Math.PI) * 2.2) * .4;
+      champ[y * NE + x] = rr > 1 ? -1 : (1 - rr) * .7 + (1 - arcs) * 1.0;   // les filets dominent : on les voit avancer
+    }
+    /* en rang (0..1) : l encre gagne la meme surface a chaque instant, du debut a la fin */
+    var idx = [], k2; for (k2 = 0; k2 < NE * NE; k2++) if (champ[k2] >= 0) idx.push(k2);
+    idx.sort(function(p, q){ return champ[p] - champ[q]; });
+    for (k2 = 0; k2 < idx.length; k2++) champ[idx[k2]] = k2 / idx.length;
+  })();
+  function encre(e){
+    if (Math.abs(e - eEnc) < .002) return; eEnc = e;
+    var st = mInt.style;
+    if (e <= 0){ st.webkitMaskImage = st.maskImage = ''; return; }
+    var seuil = e * 1.04 - .02, d = imEnc.data;
+    for (var k = 0; k < NE * NE; k++){
+      var f = champ[k], al = f < 0 ? 0 : Math.max(0, Math.min(1, (seuil - f) / .02));
+      d[k * 4] = d[k * 4 + 1] = d[k * 4 + 2] = 0; d[k * 4 + 3] = f < 0 ? 0 : (1 - al) * 255;
+    }
+    xEnc.putImageData(imEnc, 0, 0);
+    /* le cadran ne reste que la ou l encre n est pas encore : dessous, la matiere et son titre */
+    var url = 'url(' + cEnc.toDataURL() + ')';
+    st.webkitMaskImage = st.maskImage = url;
+    st.webkitMaskSize = st.maskSize = '26.4% 26.4%';
+    st.webkitMaskPosition = st.maskPosition = 'center';
+    st.webkitMaskRepeat = st.maskRepeat = 'no-repeat';
+  }
   function montre(c, dt){
     /* le cadran (ce qui est sur le disque) coule dans la matiere noire : il s enfonce un peu,
        perd son eclat et sa nettete, comme sous une eau noire ; le reste du viseur reste */
-    var e2 = ss(c, .66, .98);          // seulement une fois les aiguilles a midi
-    mInt.style.transform = e2 > 0 ? 'scale(' + (1 - .07 * e2).toFixed(4) + ')' : '';
-    mInt.style.filter = e2 > 0 ? 'blur(' + (3.5 * e2 * e2).toFixed(2) + 'px) brightness(' + (1 - .75 * e2).toFixed(3) + ')' : '';
-    mInt.style.opacity = (1 - e2 * e2 * e2).toFixed(3);
-    var q = ss(c, 0, .6);              // les aiguilles atteignent midi aux 3/5 de la charge, puis le cadran coule
-    /* la trotteuse file en rond tant qu on vise ; des qu on charge elle part de la ou elle est
-       et rejoint midi en deux tours, pile a la pleine charge */
-    if (c <= 0){ mSec = (mSec + dt * 220) % 360; mSec0 = mSec; }
-    var sec = mSec0 + q * (720 + 360 - mSec0);
-    mH.style.transform = 'rotate(' + (-5 + 5 * q).toFixed(2) + 'deg) scale(' + AIG_K + ')';
-    mM.style.transform = 'rotate(' + (-60 + 60 * q).toFixed(2) + 'deg) scale(' + AIG_K + ')';
-    mS.style.transform = 'rotate(' + sec.toFixed(2) + 'deg) scale(' + AIG_K + ')';
+    var e2 = Math.max(0, Math.min(1, (c - .61) / .38));          // seulement une fois les aiguilles a midi
+    encre(e2);
+    /* une vraie montre dont on accelere le temps : T = secondes avant midi.
+       En visant : 10:20 et la trotteuse avance d un cran par seconde reelle.
+       En chargeant : le temps s emballe puis ralentit et s arrete pile a midi
+       (2,8 s), la trotteuse tourne vite, la grande aiguille en suit, la petite
+       en suit encore ; ensuite seulement le cadran coule. */
+    if (c <= 0){ var tS = Date.now() / 1000, sS = Math.floor(tS), fS = Math.min(1, (tS - sS) / .12);
+      mT0 = -6000; mS0 = ((sS % 60) - 1 + fS * fS * (3 - 2 * fS)) * 6; }
+    var u = Math.min(1, c / .6), k = u * u * u * (u * (u * 6 - 15) + 10);   // part doucement, file, se pose
+    var T = mT0 * (1 - k);
+    mH.style.transform = 'rotate(' + (T / 120).toFixed(3) + 'deg) scale(' + AIG_K + ')';
+    mM.style.transform = 'rotate(' + (T / 10).toFixed(3) + 'deg) scale(' + AIG_K + ')';
+    /* la trotteuse : douze tours vifs (a la vraie vitesse elle ne serait qu un flou) */
+    mS.style.transform = 'rotate(' + (mS0 + k * (12 * 360 + 360 - mS0)).toFixed(2) + 'deg) scale(' + AIG_K + ')';
   }
   /* trois coups (les trois sons de l auteur), sur les temps de sick (89 bpm),
      puis le drop sur le quatrieme : sick part a cet instant */
