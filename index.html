@@ -80,7 +80,7 @@
   <!-- le trou noir de l intro : une lentille (WebGL) qui courbe l image autour de lui
        et l assombrit de matiere noire, et le disque noir au titre de l album -->
   <canvas class="netti-lentille" id="nettiLentille"></canvas>
-  <div class="netti-trou-noir" id="nettiTrouNoir"><img src="assets/cover7_d.png?v=2" alt=""></div>
+  <div class="netti-trou-noir" id="nettiTrouNoir"><img data-nett-src="assets/cover7_d.png?v=2" alt=""></div>
   <span class="blob b1"></span>
   <span class="blob b2"></span>
   <span class="blob b3"></span>
@@ -117,13 +117,13 @@
          debut a la fin du morceau, mene par son temps ; les autres pistes
          gardent la photo -->
     <video class="nett-film" id="nettFilm" src="assets/nett_film.mp4?v=2"
-           poster="assets/nett_film_p.webp"
+           data-nett-poster="assets/nett_film_p.webp"
            muted loop playsinline preload="none"
            disablepictureinpicture aria-hidden="true"></video>
     <!-- sa version demoniaque (meme montage, memes coupes, ciel de sang, a
          l envers dans chaque plan) : sur les pistes sales -->
     <video class="nett-film-d" id="nettFilmD" src="assets/nett_film_d.mp4?v=3"
-           poster="assets/nett_film_d_p.webp"
+           data-nett-poster="assets/nett_film_d_p.webp"
            muted loop playsinline preload="none"
            disablepictureinpicture aria-hidden="true"></video>
     <!-- ce qui vit par dessus le fond : fleurs, traits de lumiere, braises -->
@@ -258,16 +258,19 @@
      taille du disque ; on vise l emplacement du disque, on tient le bouton, et
      autour du viseur s ouvre le monde rouge ; au bout de la charge, le coup :
      sick commence, la page apparait. Squelette : la beaute viendra apres -->
+<!-- ses images (data-nett-src, data-nett-poster) ne se chargent qu une fois
+     Nettspend regarde (voir nettArmer dans le script) : avant, pres de 1,3 Mo
+     partaient pour tout le monde au premier affichage -->
 <div class="netti" id="nettIntro" aria-hidden="true">
   <svg class="netti-cible" id="nettiCible" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48"/></svg>
   <div class="netti-viseur netti-montre" id="nettiViseur">
-    <img class="nm-dehors" id="nettiDehors" src="assets/netti_montre10.webp" alt="">
+    <img class="nm-dehors" id="nettiDehors" data-nett-src="assets/netti_montre10.webp" alt="">
     <div class="nm-int" id="nettiInt">
-      <img class="nm-cadran" src="assets/netti_montre10.webp" alt="">
-      <img class="nm-aig" id="nettiHeure" src="assets/netti_aig_heure.webp" alt="">
-      <img class="nm-aig" id="nettiMinute" src="assets/netti_aig_seconde.webp" alt="">
-      <img class="nm-aig" id="nettiSeconde" src="assets/netti_aig_minute.webp" alt="">
-      <img class="nm-moyeu nm-aig-k" src="assets/netti_moyeu.webp" alt="">
+      <img class="nm-cadran" data-nett-src="assets/netti_montre10.webp" alt="">
+      <img class="nm-aig" id="nettiHeure" data-nett-src="assets/netti_aig_heure.webp" alt="">
+      <img class="nm-aig" id="nettiMinute" data-nett-src="assets/netti_aig_seconde.webp" alt="">
+      <img class="nm-aig" id="nettiSeconde" data-nett-src="assets/netti_aig_minute.webp" alt="">
+      <img class="nm-moyeu nm-aig-k" data-nett-src="assets/netti_moyeu.webp" alt="">
     </div>
   </div>
   <div class="netti-eclair" id="nettiEclair"></div>
@@ -5294,6 +5297,37 @@ var ALBUMS = [
 var CUR_ALBUM = 0;
 function ALB(){ return ALBUMS[CUR_ALBUM]; }
 
+/* Les images prises d avance restent tenues ici. Une new Image() lachee
+   aussitot partait au ramasse-miettes, et l image avec elle : au moment de
+   la montrer, le navigateur redemandait le fichier au serveur (un aller et
+   retour a chaque changement d album, des secondes quand le cache du serveur
+   est froid, ou si l horloge de l ordinateur est decalee et que tout le
+   cache parait perime). Tenue ici, elle est reprise telle quelle, sans
+   reseau. imagePrete : une promesse qui tient quand l image est decodee. */
+var IMAGES = {};
+function garderImage(src){
+  if (!src) return null;
+  var im = IMAGES[src];
+  if (!im){ im = new Image(); im.decoding = 'async'; im.src = src; IMAGES[src] = im; }
+  return im;
+}
+function imagePrete(src){
+  var im = garderImage(src);
+  if (!im) return Promise.resolve();
+  if (im.complete && im.naturalWidth) return im.decode ? im.decode().catch(function(){}) : Promise.resolve();
+  return new Promise(function(ok){
+    im.addEventListener('load', function(){ (im.decode ? im.decode() : Promise.resolve()).catch(function(){}).then(ok); }, {once: true});
+    im.addEventListener('error', function(){ ok(); }, {once: true});
+  });
+}
+/* attend que tout soit pret, mais jamais plus de max ms */
+function quandPret(promesses, max, fn){
+  var fait = false;
+  function go(){ if (!fait){ fait = true; fn(); } }
+  Promise.all(promesses).then(go, go);
+  setTimeout(go, max);
+}
+
 
 /* Version telephone : meme fonctions, mise en page simple et legere.
    Le seuil est le meme que dans la feuille de style, sinon les deux
@@ -6244,7 +6278,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   /* on charge les images de l album voisin a l avance : au clic, le disque
      change d un coup au lieu de clignoter en blanc le temps du telechargement */
   ALBUMS.forEach(function(a){
-    [a.disc, a.cover].forEach(function(src){ var i = new Image(); i.src = src; });
+    [a.disc, a.cover].forEach(garderImage);
   });
 
   var items = ALBUMS.map(function(a, i){
@@ -7328,7 +7362,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   /* les disques et les pochettes des trois albums sont pris d avance :
      sans cela, en changeant d album, l ancien disque restait affiche le
      temps que le nouveau se telecharge */
-  ALBUMS.forEach(function(a){ [a.disc, a.cover].forEach(function(s){ var i = new Image(); i.src = s; }); });
+  ALBUMS.forEach(function(a){ [a.disc, a.cover].forEach(garderImage); });
 
   /* trois barres : la barre allumee dit quel album est ouvert, et un clic
      deroule la liste de tous les albums */
@@ -7374,9 +7408,18 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     /* les vignettes tout de suite (elles sont legeres), le reste plus tard :
        tout charger au moment du changement d album saturait la ligne juste
        pendant l animation */
-    p.media.forEach(function(m){ if (m.th){ var t = new Image(); t.src = m.th; } });
-    /* le premier element se prepare tout de suite : c est lui qu on va voir */
-    if (estFilm(p.media[0].src)) film(p.media[0].src);
+    p.media.forEach(function(m){ if (m.th) garderImage(m.th); });
+    /* le premier element se prepare tout de suite : c est lui qu on va voir
+       (le film, et l image qui le couvre tant qu il n est pas parti ; ou
+       l image elle meme) */
+    if (estFilm(p.media[0].src)){ film(p.media[0].src); garderImage(p.media[0].poster || p.media[0].th); }
+    else garderImage(p.media[0].src);
+    /* et la premiere image des deux albums d a cote : c est ce qu on verra
+       en y arrivant, elle doit etre la avant le prochain coup de molette */
+    [(i + 1) % n, (i - 1 + n) % n].forEach(function(k){
+      var m = PK[k].media[0];
+      garderImage(estFilm(m.src) ? (m.poster || m.th) : m.src);
+    });
     clearTimeout(tCharge);
     tCharge = setTimeout(function(){ charger(p); }, 900);
   }
@@ -7388,8 +7431,8 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       if (avance[m.src]) return;
       /* le film se charge dans le lecteur du fond lui meme : deux lecteurs
          sur le meme fichier, c etaient deux decodeurs pour rien */
-      if (estFilm(m.src)){ avance[m.src] = true; if (m === p.media[0]) film(m.src); return; }
-      var im = new Image(); im.src = m.src; avance[m.src] = im;
+      if (estFilm(m.src)){ avance[m.src] = true; if (m === p.media[0]) film(m.src); if (m.poster) garderImage(m.poster); return; }
+      avance[m.src] = garderImage(m.src);
     });
     /* et pendant qu on est ici, les albums d a cote se preparent en douce :
        leurs vignettes et leurs images. C est ce qui faisait attendre au
@@ -7402,16 +7445,20 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     var n = ALBUMS.length;
     [(cur + 1) % n, (cur - 1 + n) % n].forEach(function(i){
       PK[i].media.forEach(function(m){
-        if (m.th && !avance['th:' + m.th]){ avance['th:' + m.th] = true; var t = new Image(); t.src = m.th; }
+        if (m.th) garderImage(m.th);
         /* les films restent pour plus tard : deux albums de films charges
-           d avance, c est la ligne saturee pour rien */
-        if (estFilm(m.src) || avance[m.src]) return;
-        var im = new Image(); im.src = m.src; avance[m.src] = im;
+           d avance, c est la ligne saturee pour rien. Mais l image qui
+           couvre le premier, si : c est elle qu on voit en arrivant */
+        if (estFilm(m.src)){ if (m === PK[i].media[0] && m.poster) garderImage(m.poster); return; }
+        if (avance[m.src]) return;
+        avance[m.src] = garderImage(m.src);
       });
-      var co = new Image(); co.src = ALBUMS[i].cover;
+      garderImage(ALBUMS[i].disc); garderImage(ALBUMS[i].cover);
     });
   }
   var avance = {};
+  /* l element lui meme, pret a etre peint (rien si le navigateur ne sait pas) */
+  function decoder(el){ return el.decode ? el.decode().catch(function(){}) : Promise.resolve(); }
   function estFilm(m){ return /\.mp4(\?|$)/.test(m); }
 
   function attendre(){
@@ -7591,10 +7638,20 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     setTimeout(function(){
       pk.classList.add(dir > 0 ? 'out-u' : 'out-d');
       setTimeout(function(){
-        pk.classList.remove('out-u', 'out-d');
         cur = vise != null ? vise : (cur + dir + ALBUMS.length) % ALBUMS.length;
         remplir(cur);
         son.jouer();
+        /* l album ne revient qu une fois son disque, sa pochette, ses voisins
+           et sa premiere image de fond decodes : avant, l ancien disque restait
+           a l ecran le temps que le nouveau arrive, puis changeait d un coup.
+           Il est encore hors champ (l animation de sortie garde sa fin) ; sur
+           une ligne tres lente, on n attend pas plus d une seconde et demie */
+        var a = ALBUMS[cur], m0 = PK[cur].media[0], n = ALBUMS.length;
+        quandPret([imagePrete(a.disc), imagePrete(a.cover),
+                   imagePrete(ALBUMS[(cur - 1 + n) % n].cover), imagePrete(ALBUMS[(cur + 1) % n].cover),
+                   imagePrete(estFilm(m0.src) ? (m0.poster || m0.th) : m0.src),
+                   decoder(disc), decoder(sleeve)], 1500, function(){
+        pk.classList.remove('out-u', 'out-d');
         pk.classList.add(dir > 0 ? 'in-u' : 'in-d');
         setTimeout(function(){
           pk.classList.remove('in-u', 'in-d'); occupe = false;
@@ -7606,6 +7663,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
           else if (plongeEnAttente){ plongeEnAttente = false; plonger(); }
           else attendre();
         }, 520);
+        });
       }, 420);
     }, 0);
   }
@@ -8650,8 +8708,11 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
      du bord et gagnent le centre ; le cadran disparait dessous, net, par morceaux */
   var cEnc = document.createElement('canvas'); cEnc.width = cEnc.height = 256;
   var xEnc = cEnc.getContext('2d'), NE = 256,
-      imEnc = xEnc.createImageData(NE, NE), champ = new Float32Array(NE * NE), eEnc = -1;
-  (function(){
+      imEnc = xEnc.createImageData(NE, NE), champ = new Float32Array(NE * NE), eEnc = -1, champPret = false;
+  /* le champ des filets se calcule a la premiere intro, pas au chargement
+     de la page (une trentaine de ms de calcul que personne d autre n attend) */
+  function preparerChamp(){
+    if (champPret) return; champPret = true;
     function h(x, y){ var t = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return t - Math.floor(t); }
     function n(x, y){ var i = Math.floor(x), j = Math.floor(y), f = x - i, g = y - j; f = f * f * (3 - 2 * f); g = g * g * (3 - 2 * g);
       return (h(i, j) * (1 - f) + h(i + 1, j) * f) * (1 - g) + (h(i, j + 1) * (1 - f) + h(i + 1, j + 1) * f) * g; }
@@ -8666,11 +8727,12 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     var idx = [], k2; for (k2 = 0; k2 < NE * NE; k2++) if (champ[k2] >= 0) idx.push(k2);
     idx.sort(function(p, q){ return champ[p] - champ[q]; });
     for (k2 = 0; k2 < idx.length; k2++) champ[idx[k2]] = k2 / idx.length;
-  })();
+  }
   function encre(e){
     if (Math.abs(e - eEnc) < .002) return; eEnc = e;
     var st = mInt.style;
     if (e <= 0){ st.webkitMaskImage = st.maskImage = ''; return; }
+    preparerChamp();
     var seuil = e * 1.04 - .02, d = imEnc.data;
     for (var k = 0; k < NE * NE; k++){
       var f = champ[k], al = f < 0 ? 0 : Math.max(0, Math.min(1, (seuil - f) / .02));
@@ -8717,6 +8779,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
         .then(function(b){ return new Promise(function(ok, ko){ actx.decodeAudioData(b, ok, ko); }); })
         .then(function(buf){ TIRS[k] = buf; }).catch(function(){});
     });
+    chargerPlug();
   }
   function jouer(k, quand){
     if (!actx || !TIRS[k]) return;
@@ -8725,6 +8788,95 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     src.buffer = TIRS[k]; src.connect(g); g.connect(actx.destination); src.start(quand);
   }
   var TEMPS = 60 / 89 / 2, PREMIER = .084;      // les coups sur chaque croche (deux fois plus vite que les temps) ; premier temps de sick
+  /* le plug de sick, arrange par l auteur dans FL (Project_27) : une mesure en boucle
+     pendant la charge, qui monte pendant que you ready descend. Au lacher, la mesure
+     en cours finit ; la suivante est celle des tirs (do, si bemol, la sur les temps,
+     puis do, si bemol, la en croches = les trois coups) ; le drop tombe sur la barre d apres */
+  var PROFONDEUR = true;                        // le plug vient de loin (filtre ferme + echo) ; false : rien que le volume
+  var MESURE = 60 / 89 * 4, PLUG = {}, pl = null, ch = null;
+  function chargerPlug(){
+    if (!actx || PLUG.charge) return; PLUG.charge = true;
+    ['boucle', 'tirs'].forEach(function(nom){
+      fetch('assets/netti_plug_' + nom + '.mp3?v=1').then(function(r){ return r.arrayBuffer(); })
+        .then(function(b){ return new Promise(function(ok, ko){ actx.decodeAudioData(b, ok, ko); }); })
+        .then(function(buf){
+          /* le mp3 peut garder un peu de silence devant : la mesure commence a la premiere attaque */
+          var d = buf.getChannelData(0), i = 0, n = Math.min(d.length, 8192);
+          while (i < n && Math.abs(d[i]) < .003) i++;
+          PLUG[nom] = { buf: buf, deb: i < n ? Math.max(0, i - 8) / buf.sampleRate : 0 };
+        }).catch(function(){});
+    });
+  }
+  function volBase(){
+    var th = document.getElementById('theme'), v = document.getElementById('vol');
+    return th && th.muted ? 0 : (v ? v.value / 100 : .85);
+  }
+  function chaine(){
+    if (ch) return ch;
+    ch = { maitre: actx.createGain(), filtre: actx.createBiquadFilter(), sec: actx.createGain(), mouille: actx.createGain(), echo: actx.createConvolver() };
+    ch.maitre.gain.value = 0;
+    ch.filtre.type = 'lowpass'; ch.filtre.Q.value = .7; ch.filtre.frequency.value = PROFONDEUR ? 500 : 20000;
+    /* l echo : un bruit qui s eteint en 1,8 s */
+    var L = Math.round(1.8 * actx.sampleRate), ir = actx.createBuffer(2, L, actx.sampleRate);
+    for (var c = 0; c < 2; c++){ var x = ir.getChannelData(c), s = 0, k;
+      for (k = 0; k < L; k++){ x[k] = (Math.random() * 2 - 1) * Math.exp(-k / actx.sampleRate * 3.2); s += x[k] * x[k]; }
+      s = 1 / Math.sqrt(s); for (k = 0; k < L; k++) x[k] *= s; }
+    ch.echo.normalize = false; ch.echo.buffer = ir;
+    ch.filtre.connect(ch.sec); ch.filtre.connect(ch.echo); ch.echo.connect(ch.mouille);
+    ch.sec.connect(ch.maitre); ch.mouille.connect(ch.maitre); ch.maitre.connect(actx.destination);
+    return ch;
+  }
+  function plugDemarrer(){
+    if (pl || !actx || !PLUG.boucle) return;
+    chaine();
+    pl = { t0: actx.currentTime + .06, n: 0, src: {}, nTirs: -1 };
+    plugAvancer();
+  }
+  function mesure(n){
+    var p = PLUG[n === pl.nTirs ? 'tirs' : 'boucle']; if (!p) return;
+    var quand = pl.t0 + n * MESURE, retard = Math.max(0, actx.currentTime - quand);
+    if (retard >= MESURE) return;
+    var s = actx.createBufferSource(); s.buffer = p.buf; s.connect(ch.filtre);
+    s.start(quand + retard, p.deb + retard, MESURE - retard);
+    pl.src[n] = s;
+  }
+  function plugAvancer(){                       // les mesures sont posees un peu d avance, a l echantillon pres
+    while (pl && pl.t0 + pl.n * MESURE < actx.currentTime + .3){
+      if (pl.nTirs >= 0 && pl.n > pl.nTirs) break;
+      mesure(pl.n); pl.n++;
+    }
+  }
+  /* c : la charge (0..1) ; le plug monte, you ready descend (a puissance egale) */
+  function plugRegler(c, youReady){
+    if (!pl || !ch) return;
+    var vb = volBase(), now = actx.currentTime;
+    ch.maitre.gain.setTargetAtTime(Math.sin(c * Math.PI / 2) * vb, now, .03);
+    ch.filtre.frequency.setTargetAtTime(PROFONDEUR ? 500 * Math.pow(36, c) : 20000, now, .03);
+    ch.sec.gain.setTargetAtTime(PROFONDEUR ? 1 - .55 * (1 - c) : 1, now, .03);
+    ch.mouille.gain.setTargetAtTime(PROFONDEUR ? .9 * (1 - c) : 0, now, .03);
+    var th = document.getElementById('theme');
+    if (th && youReady) th.volume = Math.max(0, Math.min(1, vb * Math.cos(c * Math.PI / 2)));
+  }
+  function plugArreter(laisser){                // laisser : la mesure des tirs finit d elle-meme, pile au drop
+    if (!pl) return;
+    if (!laisser){
+      for (var n in pl.src){ try { pl.src[n].stop(); } catch (x) {} }
+      if (ch) ch.maitre.gain.setTargetAtTime(0, actx.currentTime, .02);
+    }
+    pl = null;
+    var th = document.getElementById('theme'); if (th) th.volume = volBase();
+  }
+  /* le lacher : la mesure en cours finit, la suivante est celle des tirs */
+  function attendre(){
+    if (!pl || !PLUG.tirs){ coup(); return; }   // le son n est pas la : on tire tout de suite, comme avant
+    var n = Math.floor((actx.currentTime + .05 - pl.t0) / MESURE) + 1;
+    if (pl.src[n]){ try { pl.src[n].stop(); } catch (x) {} delete pl.src[n]; }
+    pl.nTirs = n; pl.n = Math.min(pl.n, n);
+    plugAvancer();
+    e.tTir = pl.t0 + n * MESURE + 2.5 * TEMPS * 2;            // les coups : sur le « et » du 3e temps, le 4e, son « et »
+    [0, 1, 2].forEach(function(k){ jouer(k, e.tTir + k * TEMPS); });
+    e.phase = 'attente';
+  }
   var trousSpin = [];
   var e = null, souris = { x: innerWidth / 2, y: innerHeight / 2 };
   function ss(x, a, b){ var t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
@@ -8954,13 +9106,18 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
        courbe que le rouge — tout arrive ensemble */
     var c = 0;
     if (e.phase === 'vise') c = e.charge;
+    else if (e.phase === 'attente') c = 1;
     else if (e.phase === 'annule') c = (e.c0 || 0) * (1 - ss((t - e.tAnnule) / (ANNULE * 1000), 0, 1));
     else c = 1;
     e.g = c;
     viseur.style.transform = 'translate(' + (souris.x - 2 * d.r * VISEUR) + 'px,' + (souris.y - 2 * d.r * VISEUR) + 'px)';
     lentille(t, d, c, c);
     montre(c, dt);
-    if (e.phase === 'vise'){
+    if (!pl && e.phase === 'vise' && e.charge > 0) plugDemarrer();      // le son arrive apres l appui : il part quand meme
+    if (pl){ plugAvancer(); plugRegler(c, e.phase !== 'tirs' && e.phase !== 'coup'); }
+    /* l attente apres le lacher : le premier coup part sur la grille du plug */
+    if (e.phase === 'attente' && actx.currentTime >= e.tTir - .02) coup(e.tTir);
+    if (e.phase === 'vise' || e.phase === 'attente'){
       /* le viseur quitte le disque pendant la charge : tout s annule aussitot */
       if (e.appui && Math.hypot(souris.x - d.x, souris.y - d.y) > d.r){
         e.appui = false;
@@ -8978,7 +9135,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       peindre({ r: v0.r + (loin() * 1.15 - v0.r) * u, vu: v0.vu * (1 - u), nuit: v0.nuit * (1 - u), brume: v0.brume * (1 - u) * (1 - u) });
       trembler(4 * (1 - u), t);
       body.style.setProperty('--netti-disque', (e.dq0 * (1 - u)).toFixed(3));
-      if (u >= 1){ e.phase = 'vise'; e.charge = 0; racine.classList.remove('charge', 'pret'); }
+      if (u >= 1){ e.phase = 'vise'; e.charge = 0; racine.classList.remove('charge', 'pret'); plugArreter(); }
     } else if (e.phase === 'tirs'){
       recul(t);                             // plus de tremblement : une secousse seche par tir
       /* le cercle s ouvre d un coup jusqu au-dela de l ecran, puis s efface */
@@ -9019,13 +9176,13 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     /* le coup ne part que si le viseur est sur le disque au moment ou l on lache */
     var d = e.d || poser();
     var surDisque = Math.hypot(souris.x - d.x, souris.y - d.y) <= d.r;
-    if (e.charge >= 1 && surDisque) coup();
+    if (e.charge >= 1 && surDisque) attendre();
     else if (e.charge > 0){ e.phase = 'annule'; e.tAnnule = performance.now(); e.v0 = e.v; e.dq0 = ss(e.charge, 0, .9); e.c0 = e.charge; }
   }
   /* un trou dans le disque : sur l intro par-dessus, et sur le disque lui-meme
      (il tourne avec lui et reste apres le drop) */
   /* les trous : tires dans le trou noir ; le troisieme en plein centre */
-  var imgTrou = new Image(); imgTrou.src = 'assets/netti_trou.png';
+  var imgTrou = new Image();             // charge avec le reste de l intro (nettArmer)
   function trou(k){
     var d = e.d || poser();
     var a = Math.random() * Math.PI * 2, r = k === 2 ? 0 : .3 + Math.random() * .4;
@@ -9116,7 +9273,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       if (age < 1.6) requestAnimationFrame(tomber); else couche.remove();
     })(t0);
   }
-  function coup(){
+  function coup(tTir){
     e.phase = 'tirs'; e.tCoup = performance.now();
     consigne.classList.remove('on'); racine.classList.remove('pret');
     racine.classList.add('tire');                       // le viseur disparait
@@ -9125,14 +9282,16 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     /* you ready? se tait au premier coup ; sick se charge aussitot, arrete,
        pour partir pile au drop */
     var si = -1; ALB().tracks.forEach(function(tr, j){ if (tr.name === 'sick') si = j; });
-    var th1 = document.getElementById('theme'); if (th1) th1.loop = false;
+    var th1 = document.getElementById('theme'); if (th1){ th1.loop = false; th1.volume = volBase(); }
     if (si >= 0 && window.__playTrack) window.__playTrack(si, false, true);
     if (si >= 0 && window.__dockJump) window.__dockJump(si);
     if (actx && actx.state === 'suspended') actx.resume();
-    var t0 = actx ? actx.currentTime + .03 : 0;
+    var t0 = actx ? actx.currentTime + .03 : 0, avant = 30;
+    /* venu de l attente : les coups sont deja poses sur la grille du plug */
+    if (tTir != null){ avant = Math.max(0, (tTir - actx.currentTime) * 1000); e.tCoup += avant - 30; }
     [0, 1, 2].forEach(function(k){
-      jouer(k, t0 + k * TEMPS);
-      setTimeout(function(){ if (e){ trou(k); if (k === 2) setTimeout(function(){ if (e) preparerEclats(performance.now()); }, 40); } }, 30 + k * TEMPS * 1000);
+      if (tTir == null) jouer(k, t0 + k * TEMPS);
+      setTimeout(function(){ if (e){ trou(k); if (k === 2) setTimeout(function(){ if (e) preparerEclats(performance.now()); }, 40); } }, avant + k * TEMPS * 1000);
     });
     /* le drop sur le quatrieme temps : sick demarre pour que son premier temps y tombe */
     setTimeout(function(){
@@ -9142,7 +9301,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       monter();
       if (window.__playNow) window.__playNow();
       finir(); setTimeout(function(){ body.classList.remove('netti-apparition'); }, 1200);
-    }, 30 + (3 * TEMPS - PREMIER) * 1000);
+    }, avant + (3 * TEMPS - PREMIER) * 1000);
   }
   /* la page remonte comme apres l atterrissage (deux fois plus vite) ; le
      viseur et le hublot restent par-dessus jusqu au drop */
@@ -9157,7 +9316,9 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   }
   function finir(){
     if (!e) return;
+    var auDrop = e.phase === 'tirs';
     e = null;
+    plugArreter(auDrop);
     body.classList.remove('netti-on', 'netti-revele');
     Array.prototype.slice.call(racine.querySelectorAll('.netti-trou')).forEach(function(x){ x.remove(); });
     racine.classList.remove('tire');
@@ -9171,6 +9332,8 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   window.__nettIntro = function(){
     if (e) return;
     e = { phase: 'vise', charge: 0, appui: false, t: 0, d: null, v: null, trous: [], g: 0 };
+    nettArmer();
+    preparerChamp();
     preparer();
     /* tant qu on n a pas tire, you ready? tourne en boucle (sinon la piste
        suivante partait sous l intro et les films s arretaient) */
@@ -9210,8 +9373,34 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
       e.phase = 'vise';
     }
     e.appui = true;
+    plugDemarrer();
   });
   window.addEventListener('pointerup', relache);
+  window.__nettiArmer = function(){ if (!imgTrou.src) imgTrou.src = 'assets/netti_trou.png'; };
+})();
+
+/* Les images de Nettspend qui ne servent qu a lui (le viseur-montre de
+   l intro, l etiquette du trou noir, les images d attente de ses films) ne
+   partent qu une fois l album regarde : quand body prend alb-nett (le choix
+   du disque s arrete sur lui, ou sa page s ouvre). Avant, elles etaient
+   dans la page et chargees par tout le monde au depart */
+function nettArmer(){
+  if (nettArmer.fait) return; nettArmer.fait = true;
+  Array.prototype.forEach.call(document.querySelectorAll('[data-nett-src]'), function(el){
+    el.src = el.getAttribute('data-nett-src'); el.removeAttribute('data-nett-src');
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-nett-poster]'), function(el){
+    el.setAttribute('poster', el.getAttribute('data-nett-poster')); el.removeAttribute('data-nett-poster');
+  });
+  if (window.__nettiArmer) window.__nettiArmer();
+}
+(function(){
+  if (document.body.classList.contains('alb-nett')){ nettArmer(); return; }
+  if (!window.MutationObserver) return nettArmer();
+  var obs = new MutationObserver(function(){
+    if (document.body.classList.contains('alb-nett')){ obs.disconnect(); nettArmer(); }
+  });
+  obs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
 })();
 </script>
 
