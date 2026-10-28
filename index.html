@@ -7378,9 +7378,37 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     b.addEventListener('click', function(e){ e.stopPropagation(); fermerListe(); allerA(+b.dataset.i); });
   });
 
+  /* une image du choix qui n est pas encore la : l element garde a l ecran
+     l ANCIEN dessin tant que le nouveau n est pas charge (l ancien disque sous
+     la nouvelle pochette). On le cache jusqu a ce que le bon arrive */
+  function poserImage(el, src){
+    var im = garderImage(src);
+    el.src = src;
+    if (im && !(im.complete && im.naturalWidth)){
+      el.style.visibility = 'hidden';
+      var voir = function(){ if (el.getAttribute('src') === src) el.style.visibility = ''; };
+      im.addEventListener('load', voir, {once: true}); im.addEventListener('error', voir, {once: true});
+    } else el.style.visibility = '';
+  }
+  /* tout ce que le choix montre en arrivant sur un album (disque, pochette,
+     premiere image), pour tous les albums : quelques Mo, pris en douce apres
+     l ouverture du site, du plus proche au plus loin. Sans cela le premier
+     passage sur chaque album attendait le reseau */
+  function prechargerTout(){
+    var n = ALBUMS.length, liste = [];
+    for (var d = 1; d <= n / 2; d++) [(cur + d) % n, (cur - d + n) % n].forEach(function(k){
+      if (liste.indexOf(k) < 0) liste.push(k);
+    });
+    (function suite(){
+      var k = liste.shift(); if (k == null || parti) return;
+      var m = PK[k].media[0];
+      Promise.all([imagePrete(ALBUMS[k].disc), imagePrete(ALBUMS[k].cover),
+                   imagePrete(estFilm(m.src) ? (m.poster || m.th) : m.src)]).then(suite, suite);
+    })();
+  }
   function remplir(i){
     var a = ALBUMS[i], p = PK[i];
-    disc.src = a.disc; sleeve.src = a.cover;
+    poserImage(disc, a.disc); poserImage(sleeve, a.cover);
     pk.dataset.alb = i;
     /* le grain et la vignette du site suivent l album regarde */
     ALBUMS.forEach(function(o){ body.classList.remove('alb-' + o.theme); });
@@ -7389,8 +7417,8 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     [].slice.call(liste.children).forEach(function(b, j){ b.classList.toggle('on', j === i); });
     /* les voisins qui depassent : au dessus le precedent, au dessous le suivant */
     var n = ALBUMS.length;
-    hautImg.src = ALBUMS[(i - 1 + n) % n].cover;
-    basImg.src = ALBUMS[(i + 1) % n].cover;
+    poserImage(hautImg, ALBUMS[(i - 1 + n) % n].cover);
+    poserImage(basImg, ALBUMS[(i + 1) % n].cover);
     info.innerHTML =
       '<div class="pk-kind">Album</div>' +
       '<h2 class="pk-title">' + a.title + '</h2>' +
@@ -8003,6 +8031,7 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
   remplir(cur);
   son.jouer();
   attendre();
+  setTimeout(prechargerTout, 2500);
   window.__picker = function(){ return { album: cur, ouvert: pk.classList.contains('is-open'), parti: parti, son: son.etat() }; };
 })();
 </script>
