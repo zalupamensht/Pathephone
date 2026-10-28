@@ -8832,9 +8832,9 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     pl = { t0: actx.currentTime + .06, n: 0, src: {}, nTirs: -1 };
     plugAvancer();
   }
-  function mesure(n){
+  function mesure(n, dep){                      // dep : on entre dans la mesure a dep secondes (la fin des tirs)
     var p = PLUG[n === pl.nTirs ? 'tirs' : 'boucle']; if (!p) return;
-    var quand = pl.t0 + n * MESURE, retard = Math.max(0, actx.currentTime - quand);
+    var quand = pl.t0 + n * MESURE, retard = Math.max(dep || 0, actx.currentTime - quand);
     if (retard >= MESURE) return;
     var s = actx.createBufferSource(); s.buffer = p.buf; s.connect(ch.filtre);
     s.start(quand + retard, p.deb + retard, MESURE - retard);
@@ -8866,14 +8866,24 @@ window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is
     pl = null;
     var th = document.getElementById('theme'); if (th) th.volume = volBase();
   }
-  /* le lacher : la mesure en cours finit, la suivante est celle des tirs */
+  /* le lacher : les tirs au plus tot. Les coups tombent sur le « et » du 3e temps, le 4e et
+     son « et » ; lache avant (sur la 1re, 2e ou 3e note), ils partent dans cette mesure-ci,
+     a la place de la fin de la boucle ; lache sur la 4e note, c est la mesure suivante */
   function attendre(){
     if (!pl || !PLUG.tirs){ coup(); return; }   // le son n est pas la : on tire tout de suite, comme avant
-    var n = Math.floor((actx.currentTime + .05 - pl.t0) / MESURE) + 1;
-    if (pl.src[n]){ try { pl.src[n].stop(); } catch (x) {} delete pl.src[n]; }
-    pl.nTirs = n; pl.n = Math.min(pl.n, n);
+    var POS = 2.5 * TEMPS * 2, now = actx.currentTime;
+    var cur = Math.max(0, Math.floor((now - pl.t0) / MESURE)), n = cur;
+    if (now + .1 > pl.t0 + n * MESURE + POS) n++;              // trop tard pour cette mesure
+    /* les mesures de boucle deja posees apres celle des tirs n ont plus lieu d etre */
+    for (var k in pl.src) if (+k >= n && !(+k === cur && n === cur)){ try { pl.src[k].stop(); } catch (x) {} delete pl.src[k]; }
+    pl.nTirs = n;
+    if (n === cur && pl.src[n]){
+      /* la mesure en cours : la boucle s arrete pile sur le premier coup, la mesure des tirs prend la suite */
+      try { pl.src[n].stop(pl.t0 + n * MESURE + POS); } catch (x) {}
+      mesure(n, POS); pl.n = n + 1;
+    } else pl.n = Math.min(pl.n, n);
     plugAvancer();
-    e.tTir = pl.t0 + n * MESURE + 2.5 * TEMPS * 2;            // les coups : sur le « et » du 3e temps, le 4e, son « et »
+    e.tTir = pl.t0 + n * MESURE + POS;
     [0, 1, 2].forEach(function(k){ jouer(k, e.tTir + k * TEMPS); });
     e.phase = 'attente';
   }
