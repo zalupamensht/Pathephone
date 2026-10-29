@@ -122,8 +122,8 @@
            disablepictureinpicture aria-hidden="true"></video>
     <!-- sa version demoniaque (meme montage, memes coupes, ciel de sang, a
          l envers dans chaque plan) : sur les pistes sales -->
-    <video class="nett-film-d" id="nettFilmD" src="assets/nett_film_d.mp4?v=3"
-           data-nett-poster="assets/nett_film_d_p.webp"
+    <video class="nett-film-d" id="nettFilmD" src="assets/nett_film_d.mp4?v=4"
+           data-nett-poster="assets/nett_film_d_p.webp?v=4"
            muted loop playsinline preload="none"
            disablepictureinpicture aria-hidden="true"></video>
     <!-- ce qui vit par dessus le fond : fleurs, traits de lumiere, braises -->
@@ -7264,9 +7264,10 @@ window.__prechargerPsy = filmDeFond({ id:'psyFilm', theme:'psy', classe:'is-film
 /* Nettspend : le montage dure tout « you ready? » (73 bpm, compte en double) */
 window.__prechargerNett = filmDeFond({ id:'nettFilm', theme:'nett', classe:'is-film-nett',
   pistes:['you ready?'], origine:'you ready?', elan:1, temps:360.863 });
-/* et sa version demoniaque, sur les pistes sales (pour l instant : sick) */
+/* et sa version demoniaque, sur sick : nos scenes coupees sur le patron d un tiktok
+   (coupes et changements d angle mis sur la grille de sick, six fois seize mesures) */
 window.__prechargerNettD = filmDeFond({ id:'nettFilmD', theme:'nett', classe:'is-film-nettd',
-  pistes:['sick'], origine:null, temps:360.863 });
+  pistes:['sick'], origine:'sick', temps:384 });
 
 (function(){
   var pk = document.getElementById('picker');
